@@ -13,5 +13,9 @@
         "vmArgs": [
             "-Djava.util.logging.config.file=src/test/resources/logging.properties"
         ]
-    }
+    },
+    "Lua.diagnostics.globals": [
+        "describe",
+        "it"
+    ]
 }
