@@ -1,0 +1,98 @@
+sources:
+  - type: maven
+    path: pom.xml
+    modules:
+      - integration_tests
+excludes:
+  # Project is written in Lua, no need to test with Java 17
+  - "E-PK-CORE-17: Missing required file: '.github/workflows/ci-build-next-java.yml'"
+linkReplacements:
+build:
+  exasolDbVersions:
+    - "8.29.1"
+  workflows:
+    - name: ci-build.yml
+      stepCustomizations:
+        - action: INSERT_AFTER
+          stepId: setup-java
+          content:
+            name: Install Lua
+            id: install-lua
+            uses: leafo/gh-actions-lua@v10
+            with:
+              luaVersion: 5.4
+        - action: INSERT_AFTER
+          stepId: install-lua
+          content:
+            name: Install LuaRocks
+            id: install-luarocks
+            uses: leafo/gh-actions-luarocks@v4
+            with:
+              luaRocksVersion: "3.11.1"
+        - action: INSERT_AFTER
+          stepId: install-luarocks
+          content:
+            name: Install Lua dependencies
+            id: install-lua-dependencies
+            run: luarocks --local install *.rockspec --deps-only
+        - action: INSERT_AFTER
+          stepId: build-pk-verify
+          content:
+            name: Archive code coverage results
+            id: archive-luacov-report
+            uses: actions/upload-artifact@v4
+            with:
+              name: luacov.report.out-exasol-${{ matrix.exasol_db_version }}
+              path: target/luacov-reports/luacov.report.out
+              if-no-files-found: error
+        - action: REPLACE
+          stepId: sonar-analysis
+          content:
+            name: Skip SonarCloud analysis
+            id: sonar-analysis
+            run: echo "SonarCloud analysis is skipped because the project is written in Lua."
+        - action: INSERT_AFTER
+          stepId: sonar-analysis
+          content:
+            name: Static code analysis for Lua
+            id: static-code-analysis-lua
+            run: ./tools/runluacheck.sh
+        # Generate dummy error code reports. Error code crawler does not support Lua projects yet.
+        - action: INSERT_AFTER
+          stepId: build-pk-verify
+          content:
+            name: Generate dummy error code report
+            id: generate-dummy-error-code-report
+            run: echo '{"$schema":"https://schemas.exasol.com/error_code_report-1.0.0.json","errorCodes":[]}' > target/error_code_report.json
+
+    - name: release.yml
+      stepCustomizations:
+        - action: INSERT_AFTER
+          stepId: setup-jdks
+          content:
+            name: Install Lua
+            id: install-lua
+            uses: leafo/gh-actions-lua@v10
+            with:
+              luaVersion: 5.4
+        - action: INSERT_AFTER
+          stepId: install-lua
+          content:
+            name: Install LuaRocks
+            id: install-luarocks
+            uses: leafo/gh-actions-luarocks@v4
+            with:
+              luaRocksVersion: "3.11.1"
+        - action: INSERT_AFTER
+          stepId: install-luarocks
+          content:
+            name: Install Lua dependencies
+            id: install-lua-dependencies
+            run: luarocks --local install *.rockspec --deps-only
+        # Generate dummy error code reports. Error code crawler does not support Lua projects yet.
+        - action: INSERT_AFTER
+          stepId: build
+          content:
+            name: Generate dummy error code report
+            id: generate-dummy-error-code-report
+            run: echo '{"$schema":"https://schemas.exasol.com/error_code_report-1.0.0.json","errorCodes":[]}' > target/error_code_report.json

@@ -1,0 +1,5 @@
+error-tags:
+  VSDAB:
+    packages:
+      - com.exasol.adapter.dialects.databricks
+    highest-index: 1
