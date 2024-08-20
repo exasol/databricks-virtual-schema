@@ -40,7 +40,8 @@ build:
             uses: actions/cache@v4
             with:
               path: ~/.luarocks
-              key: ${{ runner.os }}-lua-${{ hashFiles("*.rockspec") }}
+              key: |
+                ${{ runner.os }}-lua-${{ hashFiles('*.rockspec') }}
               restore-keys: "${{ runner.os }}-lua-"
         - action: INSERT_AFTER
           stepId: cache-lua-dependencies
@@ -114,7 +115,8 @@ build:
             uses: actions/cache@v4
             with:
               path: ~/.luarocks
-              key: ${{ runner.os }}-lua-${{ hashFiles("*.rockspec") }}
+              key: |
+                ${{ runner.os }}-lua-${{ hashFiles('*.rockspec') }}
               restore-keys: "${{ runner.os }}-lua-"
         - action: INSERT_AFTER
           stepId: cache-lua-dependencies
