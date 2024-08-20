@@ -29,6 +29,12 @@
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
+            <artifactId>maven-project-version-getter</artifactId>
+            <version>1.2.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.exasol</groupId>
             <artifactId>exasol-testcontainers</artifactId>
             <version>7.1.1</version>
             <scope>test</scope>

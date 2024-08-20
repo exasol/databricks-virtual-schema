@@ -2,7 +2,7 @@ sources:
   - type: maven
     path: pom.xml
     modules:
-      - integration_tests
+    #  - integration_tests
     artifacts:
       - target/databricks-virtual-schema-dist-${version}.lua
 excludes:

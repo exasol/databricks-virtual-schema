@@ -14,6 +14,7 @@ Code name:
 
 * Added `com.exasol:exasol-testcontainers:7.1.1`
 * Added `com.exasol:hamcrest-resultset-matcher:1.6.5`
+* Added `com.exasol:maven-project-version-getter:1.2.0`
 * Added `com.exasol:test-db-builder-java:3.5.4`
 * Added `com.exasol:udf-debugging-java:0.6.13`
 * Added `com.exasol:virtual-schema-shared-integration-tests:3.0.0`
@@ -31,7 +32,6 @@ Code name:
 * Added `org.apache.maven.plugins:maven-compiler-plugin:3.13.0`
 * Added `org.apache.maven.plugins:maven-deploy-plugin:2.7`
 * Added `org.apache.maven.plugins:maven-enforcer-plugin:3.5.0`
-* Added `org.apache.maven.plugins:maven-failsafe-plugin:3.2.5`
 * Added `org.apache.maven.plugins:maven-install-plugin:2.4`
 * Added `org.apache.maven.plugins:maven-jar-plugin:2.4`
 * Added `org.apache.maven.plugins:maven-resources-plugin:2.6`
