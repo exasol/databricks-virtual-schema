@@ -83,6 +83,14 @@ jobs:
         with: {
           luaRocksVersion: 3.11.1
         }
+      - name: Cache Lua dependencies
+        id: cache-lua-dependencies
+        uses: actions/cache@v4
+        with: {
+          path: ~/.luarocks,
+          key: '${{ runner.os }}-lua-${{ hashFiles("*.rockspec") }}',
+          restore-keys: '${{ runner.os }}-lua-'
+        }
       - {
         name: Install Lua dependencies,
         id: install-lua-dependencies,
