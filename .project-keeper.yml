@@ -45,18 +45,28 @@ build:
               name: luacov.report.out-exasol-${{ matrix.exasol_db_version }}
               path: target/luacov-reports/luacov.report.out
               if-no-files-found: error
+
+        # Replace Sonar
+        - action: REPLACE
+          stepId: cache-sonar
+          content:
+            name: Skip SonarCloud cache
+            id: cache-sonar
+            run: echo "SonarCloud analysis is skipped because the project is written in Lua."
         - action: REPLACE
           stepId: sonar-analysis
           content:
             name: Skip SonarCloud analysis
             id: sonar-analysis
             run: echo "SonarCloud analysis is skipped because the project is written in Lua."
+
         - action: INSERT_AFTER
           stepId: sonar-analysis
           content:
             name: Static code analysis for Lua
             id: static-code-analysis-lua
             run: ./tools/runluacheck.sh
+
         # Generate dummy error code reports. Error code crawler does not support Lua projects yet.
         - action: INSERT_AFTER
           stepId: build-pk-verify
