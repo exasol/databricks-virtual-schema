@@ -3,6 +3,8 @@ sources:
     path: pom.xml
     modules:
       - integration_tests
+    artifacts:
+      - target/databricks-virtual-schema-dist-${version}.lua
 excludes:
   # Project is written in Lua, no need to test with Java 17
   - "E-PK-CORE-17: Missing required file: '.github/workflows/ci-build-next-java.yml'"
