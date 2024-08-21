@@ -11,4 +11,9 @@ class AdapterIT extends AbstractIntegrationTestBase {
         final VirtualSchema vs = testSetup.createVirtualSchema();
         testSetup.assertions().virtualSchemaExists(vs);
     }
+
+    @Test
+    void testDb() {
+        testSetup.databricks().createTable();
+    }
 }

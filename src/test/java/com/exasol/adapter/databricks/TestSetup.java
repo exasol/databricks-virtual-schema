@@ -35,16 +35,19 @@ class TestSetup implements AutoCloseable {
     private final ExasolContainer<? extends ExasolContainer<?>> exasol;
     private final Connection connection;
     private final ExasolObjectFactory objectFactory;
+    private final DatabricksFixture databricksFixture;
     private AdapterScript adapterScript;
 
     private TestSetup(final ExasolContainer<? extends ExasolContainer<?>> exasol, final Connection connection,
-            final ExasolObjectFactory objectFactory) {
+            final ExasolObjectFactory objectFactory, final DatabricksFixture databricksFixture) {
         this.exasol = exasol;
         this.connection = connection;
         this.objectFactory = objectFactory;
+        this.databricksFixture = databricksFixture;
     }
 
     public static TestSetup start() {
+        TestConfig testConfig = TestConfig.read();
         final ExasolContainer<? extends ExasolContainer<?>> exasol = new ExasolContainer<>(DEFAULT_EXASOL_VERSION) //
                 .withReuse(true);
         exasol.start();
@@ -52,7 +55,7 @@ class TestSetup implements AutoCloseable {
         final Connection connection = exasol.createConnection();
         final ExasolObjectFactory objectFactory = new ExasolObjectFactory(connection,
                 ExasolObjectConfiguration.builder().build());
-        return new TestSetup(exasol, connection, objectFactory);
+        return new TestSetup(exasol, connection, objectFactory, DatabricksFixture.create(testConfig));
     }
 
     public void buildAdapter() {
@@ -99,6 +102,10 @@ class TestSetup implements AutoCloseable {
         return new DbAssertions(this.connection);
     }
 
+    public DatabricksFixture databricks() {
+        return this.databricksFixture;
+    }
+
     private AdapterScript createAdapterScript() {
         final ExasolSchema adapterSchema = objectFactory.createSchema("ADAPTER_SCRIPT_SCHEMA");
         return adapterSchema.createAdapterScript("DATABRICKS_VS_ADAPTER", AdapterScript.Language.LUA,
@@ -121,5 +128,6 @@ class TestSetup implements AutoCloseable {
             LOG.log(Level.WARNING, "Failed to close connection", exception);
         }
         this.exasol.close();
+        this.databricksFixture.close();
     }
 }
