@@ -15,7 +15,9 @@ class AbstractIntegrationTestBase {
 
     @AfterAll
     static void afterAll() {
-        testSetup.close();
-        testSetup = null;
+        if (testSetup != null) {
+            testSetup.close();
+            testSetup = null;
+        }
     }
 }
