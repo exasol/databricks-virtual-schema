@@ -1,5 +1,12 @@
 # Databricks Virtual Schema Developer Guide
 
+## IDE Setup
+
+### VSCode
+
+1. Install recommended extensions (see [`.vscode/extensions.json`](../../.vscode/extensions.json))
+2. Configure `busted` using the [Lua add-on manager](https://luals.github.io/wiki/addons/#addon-manager) to get type hints and documentation when writing Lua unit tests
+
 ## Enable Debug Logging for UDF
 
 To get logs from the VS UDF start `nc` and get the local IP address as described in the [documentation](https://docs.exasol.com/db/latest/database_concepts/virtual_schema/logging.htm):
