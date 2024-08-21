@@ -76,12 +76,13 @@ build:
             id: sonar-analysis
             run: echo "SonarCloud analysis is skipped because the project is written in Lua."
 
-        - action: INSERT_AFTER
-          stepId: sonar-analysis
-          content:
-            name: Static code analysis for Lua
-            id: static-code-analysis-lua
-            run: ./tools/runluacheck.sh
+        # Disabled until implementation is started
+        #- action: INSERT_AFTER
+        #  stepId: sonar-analysis
+        #  content:
+        #    name: Static code analysis for Lua
+        #    id: static-code-analysis-lua
+        #    run: ./tools/runluacheck.sh
 
         # Generate dummy error code reports. Error code crawler does not support Lua projects yet.
         - action: INSERT_AFTER

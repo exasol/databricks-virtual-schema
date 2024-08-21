@@ -5,9 +5,6 @@ DatabricksAdapterProperties.__index = DatabricksAdapterProperties
 local AdapterProperties = require("exasol.vscl.AdapterProperties")
 setmetatable(DatabricksAdapterProperties, AdapterProperties)
 
-local ExaError = require("ExaError")
-local text = require("exasol.vscl.text")
-
 --- Create a new `ExasolAdapterProperties` instance
 -- @param raw_properties unparsed user-defined properties
 -- @return new instance
@@ -23,10 +20,9 @@ end
 
 --- Get the class of the object
 -- @return class
-function DatabricksAdapterProperties:class() return DatabricksAdapterProperties end
-
-local SCHEMA_NAME_PROPERTY<const> = "SCHEMA_NAME"
-local TABLE_FILTER_PROPERTY<const> = "TABLE_FILTER"
+function DatabricksAdapterProperties:class()
+    return DatabricksAdapterProperties
+end
 
 --- Validate the adapter properties.
 -- @raise validation error

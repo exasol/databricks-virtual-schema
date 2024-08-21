@@ -1,6 +1,14 @@
 # Databricks Virtual Schema Developer Guide
 
-## IDE Setup
+## Initial Setup
+
+### Install Test and Build Dependencies
+
+```sh
+luarocks install --local busted
+luarocks install --local ldoc
+luarocks install --local --server=https://luarocks.org/dev luaformatter
+```
 
 ### VSCode
 
@@ -40,4 +48,10 @@ When using VS Code you can specify the properties in [`.vscode/settings.json`](.
         ]
     }
 }
+```
+
+## Format Lua Sources
+
+```sh
+./tools/format-lua.sh
 ```

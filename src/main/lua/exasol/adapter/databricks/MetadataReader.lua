@@ -3,12 +3,6 @@
 local MetadataReader = {}
 MetadataReader.__index = MetadataReader
 
-local log = require("remotelog")
-local text = require("exasol.vscl.text")
-local ExaError = require("ExaError")
-
-local DEFAULT_SRID<const> = 0
-
 --- Create a new `MetadataReader`.
 -- @param exasol_context handle to local database functions and status
 -- @return metadata reader
@@ -32,7 +26,7 @@ end
 -- @return schema metadata
 function MetadataReader:read(config)
     local tables = {}
-    return {tables = tables, adapterNotes = "notes"}
+    return {tables = tables, adapterNotes = "notes", config = config}
 end
 
 return MetadataReader
