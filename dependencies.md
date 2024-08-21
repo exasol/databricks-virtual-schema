@@ -28,11 +28,12 @@
 | [Maven Surefire Plugin][27]                             | [Apache-2.0][21]                  |
 | [Versions Maven Plugin][28]                             | [Apache License, Version 2.0][21] |
 | [duplicate-finder-maven-plugin Maven Mojo][29]          | [Apache License 2.0][30]          |
-| [JaCoCo :: Maven Plugin][31]                            | [EPL-2.0][32]                     |
-| [error-code-crawler-maven-plugin][33]                   | [MIT License][34]                 |
-| [Reproducible Build Maven Plugin][35]                   | [Apache 2.0][26]                  |
-| [Exec Maven Plugin][36]                                 | [Apache License 2][21]            |
-| [Project Keeper Maven plugin][37]                       | [The MIT License][38]             |
+| [Maven Failsafe Plugin][31]                             | [Apache-2.0][21]                  |
+| [JaCoCo :: Maven Plugin][32]                            | [EPL-2.0][33]                     |
+| [error-code-crawler-maven-plugin][34]                   | [MIT License][35]                 |
+| [Reproducible Build Maven Plugin][36]                   | [Apache 2.0][26]                  |
+| [Exec Maven Plugin][37]                                 | [Apache License 2][21]            |
+| [Project Keeper Maven plugin][38]                       | [The MIT License][39]             |
 
 [0]: http://hamcrest.org/JavaHamcrest/
 [1]: https://raw.githubusercontent.com/hamcrest/JavaHamcrest/master/LICENSE
@@ -65,11 +66,12 @@
 [28]: https://www.mojohaus.org/versions/versions-maven-plugin/
 [29]: https://basepom.github.io/duplicate-finder-maven-plugin
 [30]: http://www.apache.org/licenses/LICENSE-2.0.html
-[31]: https://www.jacoco.org/jacoco/trunk/doc/maven.html
-[32]: https://www.eclipse.org/legal/epl-2.0/
-[33]: https://github.com/exasol/error-code-crawler-maven-plugin/
-[34]: https://github.com/exasol/error-code-crawler-maven-plugin/blob/main/LICENSE
-[35]: http://zlika.github.io/reproducible-build-maven-plugin
-[36]: https://www.mojohaus.org/exec-maven-plugin
-[37]: https://github.com/exasol/project-keeper/
-[38]: https://github.com/exasol/project-keeper/blob/main/LICENSE
+[31]: https://maven.apache.org/surefire/maven-failsafe-plugin/
+[32]: https://www.jacoco.org/jacoco/trunk/doc/maven.html
+[33]: https://www.eclipse.org/legal/epl-2.0/
+[34]: https://github.com/exasol/error-code-crawler-maven-plugin/
+[35]: https://github.com/exasol/error-code-crawler-maven-plugin/blob/main/LICENSE
+[36]: http://zlika.github.io/reproducible-build-maven-plugin
+[37]: https://www.mojohaus.org/exec-maven-plugin
+[38]: https://github.com/exasol/project-keeper/
+[39]: https://github.com/exasol/project-keeper/blob/main/LICENSE
