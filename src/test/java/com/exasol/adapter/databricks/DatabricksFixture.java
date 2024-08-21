@@ -8,6 +8,8 @@ import java.net.http.*;
 import com.databricks.sdk.WorkspaceClient;
 import com.databricks.sdk.core.DatabricksConfig;
 import com.databricks.sdk.service.catalog.CatalogInfo;
+import com.databricks.sdk.service.catalog.CreateCatalog;
+import com.databricks.sdk.service.workspace.ObjectInfo;
 
 class DatabricksFixture implements AutoCloseable {
 
@@ -29,7 +31,18 @@ class DatabricksFixture implements AutoCloseable {
     }
 
     void createTable() {
-        final CatalogInfo catalog = client.catalogs().create("databrics-vs-catalog-" + System.currentTimeMillis());
+        final long timestamp = System.currentTimeMillis();
+        System.out.println("workspace list");
+        for (final ObjectInfo o : client.workspace().list("/Workspace/Users/christoph.pirkl@exasol.com/data/")) {
+            System.out.println(o.getPath());
+        }
+
+        // client.metastores().create(
+        // new CreateMetastore().setName("databrics-vs-metastore-" + timestamp).setStorageRoot("storage root"));
+        final CatalogInfo catalog = client.catalogs()
+                .create(new CreateCatalog().setName("databrics-vs-catalog-" + timestamp)
+                        .setComment("Databricks VS integration tests")
+                        .setStorageRoot("/Workspace/Users/christoph.pirkl@exasol.com/data/"));
         createTable(catalog.getName(), "mySchema", "myTable");
     }
 
