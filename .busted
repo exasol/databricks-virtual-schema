@@ -1,0 +1,15 @@
+return {
+    _all = {
+        shuffle = true,
+        recursive = true,
+        verbose = true,
+        lazy = false,
+        ["auto-insulate"] = true,
+        ["keep-going"] = true,
+        ["defer-print"] = false,
+        lpath = "./src/main/lua/?.lua;./src/test/lua/?.lua",
+        ROOT = {"./src/test/lua/"},
+        coverage = true
+    },
+    default = {}
+}
