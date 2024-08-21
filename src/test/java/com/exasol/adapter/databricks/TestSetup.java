@@ -1,13 +1,11 @@
 package com.exasol.adapter.databricks;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,7 +15,19 @@ import com.exasol.mavenprojectversiongetter.MavenProjectVersionGetter;
 
 class TestSetup implements AutoCloseable {
 
-    private static Logger LOG = Logger.getLogger(TestSetup.class.getName());
+    private static final Logger LOG = Logger.getLogger(TestSetup.class.getName());
+    private static final String EXASOL_LUA_MODULE_LOADER_WORKAROUND = "table.insert(" //
+            + "package.searchers" //
+            + ",\n" //
+            + "    function (module_name)\n" //
+            + "        local loader = package.preload[module_name]\n" //
+            + "        if(loader == nil) then\n" //
+            + "            error(\"Module \" .. module_name .. \" not found in package.preload.\")\n" //
+            + "        else\n" //
+            + "            return loader\n" //
+            + "        end\n" //
+            + "    end\n" //
+            + ")\n\n";
     private static final String VERSION = MavenProjectVersionGetter.getCurrentProjectVersion();
     private static final Path ADAPTER_PATH = Path.of("target/databricks-virtual-schema-dist-" + VERSION + ".lua");
 
@@ -40,15 +50,38 @@ class TestSetup implements AutoCloseable {
         exasol.start();
         exasol.purgeDatabase();
         final Connection connection = exasol.createConnection();
-        final ExasolObjectFactory objectFactory = new ExasolObjectFactory(connection);
-
+        final ExasolObjectFactory objectFactory = new ExasolObjectFactory(connection,
+                ExasolObjectConfiguration.builder().build());
         return new TestSetup(exasol, connection, objectFactory);
     }
 
-    private AdapterScript createAdapterScript() {
-        final ExasolSchema adapterSchema = objectFactory.createSchema("ADAPTER_SCRIPT_SCHEMA");
-        return adapterSchema.createAdapterScript("DATABRICKS_VS_ADAPTER", AdapterScript.Language.LUA,
-                readAdapterContent());
+    public void buildAdapter() {
+        runProcess(List.of("luarocks", "make", "--local"));
+    }
+
+    private static void runProcess(final List<String> command) {
+        final ProcessBuilder processBuilder = new ProcessBuilder(command).redirectErrorStream(true);
+        LOG.info(() -> "Starting process " + command);
+        try {
+            final StringBuilder output = new StringBuilder();
+            final Process process = processBuilder.start();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                    LOG.info("command >" + line);
+                }
+            }
+            final int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new IllegalStateException(
+                        "Command " + command + " failed with exit code " + exitCode + ", output: '" + output + "'");
+            }
+        } catch (final IOException exception) {
+            throw new UncheckedIOException("Failed to run command " + command, exception);
+        } catch (final InterruptedException exception) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     public VirtualSchema createVirtualSchema() {
@@ -60,6 +93,12 @@ class TestSetup implements AutoCloseable {
                 .adapterScript(this.adapterScript) //
                 .properties(properties) //
                 .build();
+    }
+
+    private AdapterScript createAdapterScript() {
+        final ExasolSchema adapterSchema = objectFactory.createSchema("ADAPTER_SCRIPT_SCHEMA");
+        return adapterSchema.createAdapterScript("DATABRICKS_VS_ADAPTER", AdapterScript.Language.LUA,
+                EXASOL_LUA_MODULE_LOADER_WORKAROUND + readAdapterContent());
     }
 
     private static String readAdapterContent() {

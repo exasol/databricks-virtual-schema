@@ -35,3 +35,6 @@ If you want to set up a Virtual Schema for a different database system, please h
 * [Dependencies](dependencies.md)
 
 Find all the documentation in the [Virtual Schemas project](https://github.com/exasol/virtual-schemas/tree/master/doc).
+
+### Information for Developers
+* [Developer Guide](doc/developer_guide/developer_guide.md)

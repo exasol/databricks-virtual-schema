@@ -12,6 +12,7 @@ class AbstractIntegrationTestBase {
     @BeforeAll
     static void beforeAll() {
         testSetup = TestSetup.start();
+        testSetup.buildAdapter();
     }
 
     protected TestSetup testSetup() {

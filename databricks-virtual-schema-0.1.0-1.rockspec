@@ -40,9 +40,10 @@ test = {
 
 local package_items = {
     "exasol.adapter.databricks.adapter_capabilities",
-    "exasol.adapter.databricks.Adapter",
+    "exasol.adapter.databricks.DatabricksAdapter",
+    "exasol.adapter.databricks.DatabricksAdapterProperties",
+    "exasol.adapter.databricks.DatabricksQueryRewriter",
     "exasol.adapter.databricks.MetadataReader",
-    "exasol.adapter.databricks.QueryRewriter",
     -- from remotelog
     "remotelog", "ExaError", "MessageExpander",
     -- from virtual-schema-common-lua"
