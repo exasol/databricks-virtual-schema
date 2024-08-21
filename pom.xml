@@ -7,6 +7,10 @@
     <name>Virtual Schema for Databricks</name>
     <description>Virtual Schema for MySQL</description>
     <url>https://github.com/exasol/databricks-virtual-schema/</url>
+    <properties>
+        <!-- Java only used for tests, so we can use the latest Java features. -->
+        <java.version>17</java.version>
+    </properties>
     <dependencies>
         <!--Unit test dependencies -->
         <dependency>

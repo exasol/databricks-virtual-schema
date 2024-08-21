@@ -89,10 +89,14 @@ class TestSetup implements AutoCloseable {
             this.adapterScript = createAdapterScript();
         }
         final Map<String, String> properties = new HashMap<>();
-        return objectFactory.createVirtualSchemaBuilder("DATABRICKS_VS_" + System.currentTimeMillis())
+        return objectFactory.createVirtualSchemaBuilder("DATABRICKS_VS") //
                 .adapterScript(this.adapterScript) //
                 .properties(properties) //
                 .build();
+    }
+
+    public DbAssertions assertions() {
+        return new DbAssertions(this.connection);
     }
 
     private AdapterScript createAdapterScript() {
