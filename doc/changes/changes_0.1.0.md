@@ -10,6 +10,10 @@ Code name:
 
 ## Dependency Updates
 
+### Compile Dependency Updates
+
+* Added `com.databricks:databricks-sdk-java:0.29.0`
+
 ### Test Dependency Updates
 
 * Added `com.exasol:exasol-testcontainers:7.1.1`
