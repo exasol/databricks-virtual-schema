@@ -37,13 +37,16 @@ class TestSetup implements AutoCloseable {
     private final Connection connection;
     private final ExasolObjectFactory objectFactory;
     private final DatabricksFixture databricksFixture;
+    private final UdfLogCapturer udfLogCapturer;
     private AdapterScript adapterScript;
 
     private TestSetup(final ExasolContainer<? extends ExasolContainer<?>> exasol, final Connection connection,
-            final ExasolObjectFactory objectFactory, final DatabricksFixture databricksFixture) {
+            final ExasolObjectFactory objectFactory, final UdfLogCapturer udfLogCapturer,
+            final DatabricksFixture databricksFixture) {
         this.exasol = exasol;
         this.connection = connection;
         this.objectFactory = objectFactory;
+        this.udfLogCapturer = udfLogCapturer;
         this.databricksFixture = databricksFixture;
     }
 
@@ -56,7 +59,8 @@ class TestSetup implements AutoCloseable {
         final Connection connection = exasol.createConnection();
         final ExasolObjectFactory objectFactory = new ExasolObjectFactory(connection,
                 ExasolObjectConfiguration.builder().build());
-        return new TestSetup(exasol, connection, objectFactory, DatabricksFixture.create(testConfig));
+        final UdfLogCapturer udfLogCapturer = UdfLogCapturer.start();
+        return new TestSetup(exasol, connection, objectFactory, udfLogCapturer, DatabricksFixture.create(testConfig));
     }
 
     public void buildAdapter() {
@@ -93,6 +97,9 @@ class TestSetup implements AutoCloseable {
             this.adapterScript = createAdapterScript();
         }
         final Map<String, String> properties = new HashMap<>();
+        properties.put("DEBUG_ADDRESS", this.udfLogCapturer.getServerHost() + ":" + this.udfLogCapturer.getPort());
+        properties.put("LOG_LEVEL", "TRACE");
+        LOG.fine(() -> "Creating virtual schema with properties: " + properties);
         return objectFactory.createVirtualSchemaBuilder("DATABRICKS_VS") //
                 .adapterScript(this.adapterScript) //
                 .properties(properties) //
@@ -123,6 +130,7 @@ class TestSetup implements AutoCloseable {
 
     @Override
     public void close() {
+        this.udfLogCapturer.close();
         try {
             this.connection.close();
         } catch (final SQLException exception) {
