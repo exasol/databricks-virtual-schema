@@ -52,6 +52,19 @@ build:
             name: Install Lua dependencies
             id: install-lua-dependencies
             run: luarocks --local install *.rockspec --deps-only
+
+        - action: INSERT_AFTER
+          stepId: enable-testcontainer-reuse
+          content:
+            name: Configure Databricks credentials
+            id: configure-databricks-credentials
+            run: |
+              cat > test.properties <<EOL
+              databricks.token = ${{ secrets.DATABRICKS_TOKEN }}
+              databricks.host = ${{ secrets.DATABRICKS_HOST }}
+              databricks.storageRoot = ${{ secrets.DATABRICKS_STORAGE_ROOT }}
+              EOL
+
         - action: INSERT_AFTER
           stepId: build-pk-verify
           content:

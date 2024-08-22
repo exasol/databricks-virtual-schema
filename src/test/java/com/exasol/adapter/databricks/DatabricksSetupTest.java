@@ -3,6 +3,7 @@ package com.exasol.adapter.databricks;
 import org.junit.jupiter.api.*;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture;
+import com.exasol.adapter.databricks.fixture.TestConfig;
 
 class DatabricksSetupTest {
 

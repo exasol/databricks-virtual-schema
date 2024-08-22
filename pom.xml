@@ -64,7 +64,7 @@
         <dependency>
             <groupId>com.databricks</groupId>
             <artifactId>databricks-sdk-java</artifactId>
-            <version>0.29.0</version>
+            <version>0.30.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -87,10 +87,29 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <compilerArgs>
-                        <arg>-Xlint:all,-path</arg>
+                        <arg>-Xlint:all,-path,-processing</arg>
                         <arg>-Werror</arg>
                     </compilerArgs>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-jdbc-driver</id>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <includeGroupIds>com.databricks</includeGroupIds>
+                            <includeArtifactIds>databricks-jdbc</includeArtifactIds>
+                            <outputDirectory>${project.build.directory}/databricks-jdbc-driver</outputDirectory>
+                            <stripVersion>true</stripVersion>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

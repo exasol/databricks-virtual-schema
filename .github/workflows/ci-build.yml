@@ -88,6 +88,14 @@ jobs:
         id: enable-testcontainer-reuse,
         run: echo 'testcontainers.reuse.enable=true' > "$HOME/.testcontainers.properties"
       }
+      - name: Configure Databricks credentials
+        id: configure-databricks-credentials
+        run: |
+          cat > test.properties <<EOL
+          databricks.token = ${{ secrets.DATABRICKS_TOKEN }}
+          databricks.host = ${{ secrets.DATABRICKS_HOST }}
+          databricks.storageRoot = ${{ secrets.DATABRICKS_STORAGE_ROOT }}
+          EOL
       - name: Run tests and build with Maven
         id: build-pk-verify
         run: |

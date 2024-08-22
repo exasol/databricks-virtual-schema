@@ -1,4 +1,4 @@
-package com.exasol.adapter.databricks;
+package com.exasol.adapter.databricks.fixture;
 
 import java.io.*;
 import java.net.URI;

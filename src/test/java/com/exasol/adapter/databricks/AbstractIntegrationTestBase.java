@@ -3,6 +3,8 @@ package com.exasol.adapter.databricks;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
+import com.exasol.adapter.databricks.fixture.TestSetup;
+
 class AbstractIntegrationTestBase {
 
     protected static TestSetup testSetup;
@@ -10,7 +12,7 @@ class AbstractIntegrationTestBase {
     @BeforeAll
     static void beforeAll() {
         testSetup = TestSetup.start();
-        testSetup.buildAdapter();
+        testSetup.exasol().buildAdapter();
     }
 
     @AfterAll

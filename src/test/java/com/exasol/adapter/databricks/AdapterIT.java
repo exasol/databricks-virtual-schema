@@ -8,8 +8,8 @@ class AdapterIT extends AbstractIntegrationTestBase {
 
     @Test
     void test() {
-        final VirtualSchema vs = testSetup.createVirtualSchema();
-        testSetup.assertions().virtualSchemaExists(vs);
+        final VirtualSchema vs = testSetup.exasol().createVirtualSchema();
+        testSetup.exasol().assertions().virtualSchemaExists(vs);
     }
 
     @Test

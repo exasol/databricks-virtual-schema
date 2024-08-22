@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 import com.databricks.sdk.WorkspaceClient;
 import com.databricks.sdk.service.catalog.*;
-import com.exasol.adapter.databricks.TestConfig;
+import com.exasol.adapter.databricks.fixture.TestConfig;
 import com.exasol.dbbuilder.dialects.*;
 
 class DatabricksObjectWriter extends AbstractImmediateDatabaseObjectWriter {
