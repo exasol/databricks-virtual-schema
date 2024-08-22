@@ -1,14 +1,14 @@
 package com.exasol.adapter.databricks;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.*;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import com.exasol.errorreporting.ExaError;
-
-class TestConfig {
+public class TestConfig {
     private static final Logger LOGGER = Logger.getLogger(TestConfig.class.getName());
     private static final Path CONFIG_FILE = Paths.get("test.properties").toAbsolutePath();
     private final Properties properties;
@@ -17,7 +17,7 @@ class TestConfig {
         this.properties = properties;
     }
 
-    static TestConfig read() {
+    public static TestConfig read() {
         final Path file = CONFIG_FILE;
         if (!Files.exists(file)) {
             throw new IllegalStateException("Config file " + file + " does not exist.");
@@ -25,15 +25,14 @@ class TestConfig {
         return new TestConfig(loadProperties(file));
     }
 
-    static Properties loadProperties(final Path configFile) {
+    private static Properties loadProperties(final Path configFile) {
         LOGGER.info(() -> "Reading config file " + configFile);
         try (InputStream stream = Files.newInputStream(configFile)) {
             final Properties props = new Properties();
             props.load(stream);
             return props;
-        } catch (final IOException e) {
-            throw new UncheckedIOException(ExaError.messageBuilder("E-EITFJ-26")
-                    .message("Error reading config file {{config file path}}", configFile).toString(), e);
+        } catch (final IOException exception) {
+            throw new UncheckedIOException("Error reading config file " + configFile, exception);
         }
     }
 
@@ -49,11 +48,23 @@ class TestConfig {
         return this.properties.getProperty(param);
     }
 
-    String getDatabricksToken() {
+    public String getDatabricksToken() {
         return getMandatoryValue("databricks.token");
     }
 
-    String getDatabricksHost() {
+    public String getDatabricksHost() {
         return getMandatoryValue("databricks.host");
+    }
+
+    public String getDatabricksStorageRoot() {
+        return getMandatoryValue("databricks.storageRoot");
+    }
+
+    public URI getDatabricksHostUri() {
+        try {
+            return new URI(getDatabricksHost());
+        } catch (final URISyntaxException exception) {
+            throw new IllegalStateException("Error parsing URI '" + getDatabricksHost() + "'", exception);
+        }
     }
 }

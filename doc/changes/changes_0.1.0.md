@@ -10,12 +10,10 @@ Code name:
 
 ## Dependency Updates
 
-### Compile Dependency Updates
-
-* Added `com.databricks:databricks-sdk-java:0.29.0`
-
 ### Test Dependency Updates
 
+* Added `com.databricks:databricks-jdbc:2.6.40`
+* Added `com.databricks:databricks-sdk-java:0.29.0`
 * Added `com.exasol:exasol-testcontainers:7.1.1`
 * Added `com.exasol:hamcrest-resultset-matcher:1.6.5`
 * Added `com.exasol:maven-project-version-getter:1.2.0`

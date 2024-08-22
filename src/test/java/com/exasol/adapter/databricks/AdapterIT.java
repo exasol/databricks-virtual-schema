@@ -14,6 +14,8 @@ class AdapterIT extends AbstractIntegrationTestBase {
 
     @Test
     void testDb() {
-        testSetup.databricks().createTable();
+        final long timestamp = System.currentTimeMillis();
+        testSetup.databricks().createCatalog("db-vs-test-" + timestamp).createSchema("db-vs-test-schema-" + timestamp)
+                .createTable("tab", "col", "varchar(10)");
     }
 }

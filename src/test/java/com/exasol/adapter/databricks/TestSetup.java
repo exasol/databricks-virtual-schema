@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture;
 import com.exasol.containers.ExasolContainer;
 import com.exasol.dbbuilder.dialects.exasol.*;
 import com.exasol.mavenprojectversiongetter.MavenProjectVersionGetter;
@@ -47,7 +48,7 @@ class TestSetup implements AutoCloseable {
     }
 
     public static TestSetup start() {
-        TestConfig testConfig = TestConfig.read();
+        final TestConfig testConfig = TestConfig.read();
         final ExasolContainer<? extends ExasolContainer<?>> exasol = new ExasolContainer<>(DEFAULT_EXASOL_VERSION) //
                 .withReuse(true);
         exasol.start();
