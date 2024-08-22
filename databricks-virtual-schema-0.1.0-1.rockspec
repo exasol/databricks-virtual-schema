@@ -44,6 +44,7 @@ local package_items = {
     "exasol.adapter.databricks.DatabricksAdapterProperties",
     "exasol.adapter.databricks.DatabricksQueryRewriter",
     "exasol.adapter.databricks.MetadataReader",
+    "exasol.adapter.databricks.ConnectionReader",
     -- from remotelog
     "remotelog", "ExaError", "MessageExpander",
     -- from virtual-schema-common-lua"

@@ -1,8 +1,7 @@
 --- Main entry point of the Lua Virtual Schema adapter.
 -- It is responsible for creating and wiring up the main adapter objects.
-local Adapter = require("exasol.adapter.databricks.DatabricksAdapter")
-local DatabricksAdapterProperties = require(
-                                        "exasol.adapter.databricks.DatabricksAdapterProperties")
+local DatabricksAdapter = require("exasol.adapter.databricks.DatabricksAdapter")
+local DatabricksAdapterProperties = require("exasol.adapter.databricks.DatabricksAdapterProperties")
 local MetadataReader = require("exasol.adapter.databricks.MetadataReader")
 local RequestDispatcher = require("exasol.vscl.RequestDispatcher")
 
@@ -12,8 +11,7 @@ local RequestDispatcher = require("exasol.vscl.RequestDispatcher")
 function adapter_call(request_as_json)
     local exasol_context = _G.exa
     local metadata_reader = MetadataReader:new(exasol_context)
-    local adapter = Adapter:new(metadata_reader)
-    local dispatcher = RequestDispatcher:new(adapter,
-                                             DatabricksAdapterProperties)
+    local adapter = DatabricksAdapter:new(metadata_reader)
+    local dispatcher = RequestDispatcher:new(adapter, DatabricksAdapterProperties)
     return dispatcher:adapter_call(request_as_json)
 end

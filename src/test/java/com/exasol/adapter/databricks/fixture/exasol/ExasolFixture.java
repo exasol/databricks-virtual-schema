@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture;
 import com.exasol.adapter.databricks.fixture.TestConfig;
 import com.exasol.containers.ExasolContainer;
 import com.exasol.dbbuilder.dialects.exasol.*;
@@ -40,16 +41,19 @@ public class ExasolFixture implements AutoCloseable {
     private final ExasolObjectFactory objectFactory;
     private final UdfLogCapturer udfLogCapturer;
     private AdapterScript adapterScript;
+    private final DatabricksFixture databricksFixture;
 
     private ExasolFixture(final ExasolContainer<? extends ExasolContainer<?>> exasol, final Connection connection,
-            final ExasolObjectFactory objectFactory, final UdfLogCapturer udfLogCapturer) {
+            final ExasolObjectFactory objectFactory, final UdfLogCapturer udfLogCapturer,
+            final DatabricksFixture databricksFixture) {
         this.exasol = exasol;
         this.connection = connection;
         this.objectFactory = objectFactory;
         this.udfLogCapturer = udfLogCapturer;
+        this.databricksFixture = databricksFixture;
     }
 
-    public static ExasolFixture start(final TestConfig config) {
+    public static ExasolFixture start(final TestConfig config, final DatabricksFixture databricksFixture) {
         final ExasolContainer<? extends ExasolContainer<?>> exasol = new ExasolContainer<>(DEFAULT_EXASOL_VERSION) //
                 .withReuse(true);
         exasol.start();
@@ -61,7 +65,7 @@ public class ExasolFixture implements AutoCloseable {
         final ExasolObjectFactory objectFactory = new ExasolObjectFactory(connection,
                 ExasolObjectConfiguration.builder().build());
         final UdfLogCapturer udfLogCapturer = UdfLogCapturer.start();
-        return new ExasolFixture(exasol, connection, objectFactory, udfLogCapturer);
+        return new ExasolFixture(exasol, connection, objectFactory, udfLogCapturer, databricksFixture);
     }
 
     public void buildAdapter() {
@@ -97,14 +101,26 @@ public class ExasolFixture implements AutoCloseable {
         if (this.adapterScript == null) {
             this.adapterScript = createAdapterScript();
         }
+        final String vsName = "DATABRICKS_VS";
+        final ConnectionDefinition connectionDefinition = objectFactory
+                .createConnectionDefinition(vsName + "_CONNECTION", databricksFixture.getJdbcUrl());
+        return createVirtualSchema(vsName, connectionDefinition);
+    }
+
+    private VirtualSchema createVirtualSchema(final String vsName, final ConnectionDefinition connectionDefinition) {
+        return objectFactory.createVirtualSchemaBuilder(vsName) //
+                .adapterScript(this.adapterScript) //
+                .properties(createVirtualSchemaProperties(connectionDefinition)) //
+                .build();
+    }
+
+    private Map<String, String> createVirtualSchemaProperties(final ConnectionDefinition connectionDefinition) {
         final Map<String, String> properties = new HashMap<>();
+        properties.put("CONNECTION_NAME", connectionDefinition.getName());
         properties.put("DEBUG_ADDRESS", this.udfLogCapturer.getServerHost() + ":" + this.udfLogCapturer.getPort());
         properties.put("LOG_LEVEL", "TRACE");
         LOG.fine(() -> "Creating virtual schema with properties: " + properties);
-        return objectFactory.createVirtualSchemaBuilder("DATABRICKS_VS") //
-                .adapterScript(this.adapterScript) //
-                .properties(properties) //
-                .build();
+        return properties;
     }
 
     public DbAssertions assertions() {

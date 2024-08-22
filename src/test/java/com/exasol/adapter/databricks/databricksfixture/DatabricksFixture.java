@@ -65,7 +65,7 @@ public class DatabricksFixture implements AutoCloseable {
         }
     }
 
-    private String getJdbcUrl() {
+    public String getJdbcUrl() {
         final URI databricksUri = config.getDatabricksHostUri();
         final String hostName = databricksUri.getHost();
         final int port = databricksUri.getPort() < 0 ? 443 : databricksUri.getPort();

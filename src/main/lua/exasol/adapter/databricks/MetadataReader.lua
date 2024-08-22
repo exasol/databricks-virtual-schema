@@ -1,3 +1,6 @@
+local ConnectionReader = require("exasol.adapter.databricks.ConnectionReader")
+local log = require("remotelog")
+
 --- This class reads schema, table and column metadata from the source.
 -- @type MetadataReader
 local MetadataReader = {}
@@ -18,15 +21,22 @@ function MetadataReader:_init(exasol_context)
     self._exasol_context = exasol_context
 end
 
+function MetadataReader:_get_connection(properties)
+    local connection_name = properties:get_connection_name()
+    return ConnectionReader:new(self._exasol_context):read(connection_name)
+end
+
 --- Read the database metadata of the given schema (i.e. the internal structure of that schema)
 -- <p>
 -- The scan can optionally be limited to a set of user-defined tables. If the list of tables to include in the scan
 -- is omitted, then all tables in the source schema are scanned and reported.
 -- </p>
 -- @return schema metadata
-function MetadataReader:read(config)
+function MetadataReader:read(properties)
+    local connection = self:_get_connection(properties)
     local tables = {}
-    return {tables = tables, adapterNotes = "notes", config = config}
+    local config = {}
+    return {tables = tables, adapterNotes = "notes", config = config, connection = connection}
 end
 
 return MetadataReader
