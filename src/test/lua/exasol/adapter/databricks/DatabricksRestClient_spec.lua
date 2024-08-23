@@ -3,7 +3,7 @@ local log = require("remotelog")
 local utils = require("exasol.adapter.databricks.test_utils")
 local DatabricksRestClient = require("exasol.adapter.databricks.DatabricksRestClient")
 
-log.set_level("DEBUG")
+log.set_level("TRACE")
 
 local function read_databricks_test_config()
     local config = utils.read_test_config()
