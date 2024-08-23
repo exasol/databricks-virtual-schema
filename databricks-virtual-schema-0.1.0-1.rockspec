@@ -21,7 +21,8 @@ description = {
 }
 
 dependencies = {
-    "virtual-schema-common-lua = 4.0.1-1"
+    "virtual-schema-common-lua = 4.0.1-1",
+    "luasec >= 1.3.2-1",
 }
 
 build_dependencies = {
@@ -45,6 +46,7 @@ local package_items = {
     "exasol.adapter.databricks.DatabricksQueryRewriter",
     "exasol.adapter.databricks.MetadataReader",
     "exasol.adapter.databricks.ConnectionReader",
+    "exasol.adapter.databricks.DatabricksRestClient",
     -- from remotelog
     "remotelog", "ExaError", "MessageExpander",
     -- from virtual-schema-common-lua"

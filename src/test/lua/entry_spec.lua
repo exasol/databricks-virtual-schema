@@ -5,7 +5,7 @@ describe("entry.adapter_call()", function()
     it("can call adapter function", function()
         _G.exa = {
             get_connection = function(connection_name)
-                return {address = "jdbc:databricks:localhost:8888"}
+                return {address = "jdbc:databricks://localhost:8888;CWD=token"}
             end
         }
         adapter_call(

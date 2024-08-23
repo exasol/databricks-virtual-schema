@@ -8,6 +8,7 @@ local RequestDispatcher = require("exasol.vscl.RequestDispatcher")
 --- Handle a Virtual Schema request.
 -- @param request_as_json JSON-encoded adapter request
 -- @return JSON-encoded adapter response
+---@diagnostic disable-next-line: lowercase-global
 function adapter_call(request_as_json)
     local exasol_context = _G.exa
     local metadata_reader = MetadataReader:new(exasol_context)

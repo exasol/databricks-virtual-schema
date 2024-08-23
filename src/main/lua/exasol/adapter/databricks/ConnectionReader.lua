@@ -1,12 +1,7 @@
 require("exasol_types")
+require("exasol.adapter.databricks.common_types")
 local log = require("remotelog")
 local ExaError = require("ExaError")
-
----Connection details for Databricks.
----@class ConnectionDetails
----@field host string Host name
----@field port number Port number
----@field token string? Token
 
 --- This class reads details of a named connection database object from Exasol's Lua script context.
 ---@class ConnectionReader
@@ -55,7 +50,7 @@ end
 
 ---Read the details for the connection object with the given name
 ---@param connection_name string name of the connection to be read
----@return ConnectionDetails connection connection details
+---@return DatabricksConnectionDetails connection connection details
 function ConnectionReader:read(connection_name)
     local connection_details = self._exasol_context:get_connection(connection_name)
     if not connection_details then
@@ -72,7 +67,8 @@ function ConnectionReader:read(connection_name)
                 "URL must be in the form 'jdbc:databricks://<host>:<port>;PWD=<token>'.")))
     end
     port = port or 443
-    return {host = host, port = port, token = token}
+    local url = "https://" .. host .. ":" .. port
+    return {url = url, token = token}
 end
 
 return ConnectionReader;

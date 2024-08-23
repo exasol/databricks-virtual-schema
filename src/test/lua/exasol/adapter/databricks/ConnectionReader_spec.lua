@@ -12,7 +12,7 @@ local function context_mock(connection)
 end
 
 ---@param connection Connection?
----@return ConnectionDetails
+---@return DatabricksConnectionDetails
 local function read_connection(connection)
     return ConnectionReader:new(context_mock(connection)):read("my_connection")
 end
@@ -46,14 +46,14 @@ describe("ConnectionReader", function()
     end)
     describe("parsing valid jdbc url succeeds for", function()
         local test_cases = {
-            {url = "jdbc:databricks://example.com:443", expected = {host = "example.com", port = 443}},
-            {url = "jdbc:databricks://123.0.0.1:443", expected = {host = "123.0.0.1", port = 443}}, {
+            {url = "jdbc:databricks://example.com:8080", expected = {url = "https://example.com:8080"}},
+            {url = "jdbc:databricks://123.0.0.1:443", expected = {url = "https://123.0.0.1:443"}}, {
                 url = "jdbc:databricks://abc-123def-456.cloud.databricks.com:443",
-                expected = {host = "abc-123def-456.cloud.databricks.com", port = 443}
-            }, {url = "jdbc:databricks://example.com:443;unknown=value", expected = {host = "example.com", port = 443}},
+                expected = {url = "https://abc-123def-456.cloud.databricks.com:443"}
+            }, {url = "jdbc:databricks://example.com:443;unknown=value", expected = {url = "https://example.com:443"}},
             {
                 url = "jdbc:databricks://example.com:443;PWD=token",
-                expected = {host = "example.com", port = 443, token = "token"}
+                expected = {url = "https://example.com:443", token = "token"}
             }
         }
         for _, test in ipairs(test_cases) do
