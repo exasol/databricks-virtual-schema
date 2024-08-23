@@ -47,6 +47,9 @@ local package_items = {
     "exasol.adapter.databricks.MetadataReader",
     "exasol.adapter.databricks.ConnectionReader",
     "exasol.adapter.databricks.DatabricksRestClient",
+    "exasol.adapter.databricks.common_types",
+    "exasol.adapter.databricks.databricks_types",
+    "exasol_types",
     -- from remotelog
     "remotelog", "ExaError", "MessageExpander",
     -- from virtual-schema-common-lua"

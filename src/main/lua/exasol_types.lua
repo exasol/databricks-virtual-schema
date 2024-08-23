@@ -5,7 +5,7 @@ local ExasolUdfContext = {}
 ---Get the connection details for the named connection.
 ---@param connection_name string The name of the connection.
 ---@return Connection? connection connection details.
-function ExasolUdfContext:get_connection(connection_name)
+function ExasolUdfContext.get_connection(connection_name)
 end
 ---An Exasol connection
 ---@class Connection

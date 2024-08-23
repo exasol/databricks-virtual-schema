@@ -5,7 +5,7 @@ import org.junit.jupiter.api.*;
 import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture;
 import com.exasol.adapter.databricks.fixture.TestConfig;
 
-class DatabricksSetupTest {
+class DatabricksSetupIT {
 
     private DatabricksFixture databricks;
 

@@ -3,7 +3,7 @@ require("exasol.adapter.databricks.common_types")
 local log = require("remotelog")
 local ExaError = require("ExaError")
 
---- This class reads details of a named connection database object from Exasol's Lua script context.
+--- This class reads details of a Databricks JDBC connection.
 ---@class ConnectionReader
 ---@field _exasol_context ExasolUdfContext handle to local database functions and status
 local ConnectionReader = {};
@@ -52,7 +52,8 @@ end
 ---@param connection_name string name of the connection to be read
 ---@return DatabricksConnectionDetails connection connection details
 function ConnectionReader:read(connection_name)
-    local connection_details = self._exasol_context:get_connection(connection_name)
+    log.trace("Reading connection details for '%s'...", connection_name)
+    local connection_details = self._exasol_context.get_connection(connection_name)
     if not connection_details then
         error(tostring(ExaError:new("E-VSDAB-2", "Connection '" .. connection_name .. "' not found.")))
     end
@@ -68,6 +69,7 @@ function ConnectionReader:read(connection_name)
     end
     port = port or 443
     local url = "https://" .. host .. ":" .. port
+    log.trace("Extracted Databricks URL '%s' from JDBC URL", url)
     return {url = url, token = token}
 end
 

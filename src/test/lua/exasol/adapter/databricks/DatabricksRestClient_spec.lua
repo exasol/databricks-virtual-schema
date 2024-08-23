@@ -16,7 +16,7 @@ local function testee()
     return DatabricksRestClient:new(connection_details)
 end
 
-describe("DatabricksRestClient", function()
+describe("DatabricksRestClient #itest", function()
     describe("_get_request()", function()
         it("should handle error response", function()
             assert.has_error(function()

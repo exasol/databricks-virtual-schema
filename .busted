@@ -11,5 +11,6 @@ return {
         ROOT = {"./src/test/lua/"},
         coverage = true
     },
-    default = {}
+    default = {},
+    utest = {["exclude-tags"] = "itest"}
 }

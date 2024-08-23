@@ -116,9 +116,9 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.4.1</version>
                 <executions>
-                    <!-- Build Lua Code -->
+                    <!-- Run lua unit tests -->
                     <execution>
-                        <id>unit-test</id>
+                        <id>lua-unit-test</id>
                         <phase>test</phase>
                         <goals>
                             <goal>exec</goal>
@@ -127,7 +127,21 @@
                             <executable>${project.basedir}/tools/runtests.sh</executable>
                             <useMavenLogger>true</useMavenLogger>
                             <arguments>
-                                <argument>${project.basedir}</argument>
+                                <argument>--run=utest</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <!-- Run all lua tests -->
+                    <execution>
+                        <id>lua-integration-test</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${project.basedir}/tools/runtests.sh</executable>
+                            <useMavenLogger>true</useMavenLogger>
+                            <arguments>
                             </arguments>
                         </configuration>
                     </execution>
@@ -161,6 +175,17 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.ossindex.maven</groupId>
+                <artifactId>ossindex-maven-plugin</artifactId>
+                <configuration>
+                    <excludeVulnerabilityIds>
+                        <!-- Transitive test dependency org.ini4j:ini4j:jar:0.5.4 via com.databricks:databricks-sdk-java:
+                             Uncontrolled Resource Consumption is acceptable -->
+                        <exclude>CVE-2022-41404</exclude>
+                    </excludeVulnerabilityIds>
+                </configuration>
             </plugin>
         </plugins>
     </build>
