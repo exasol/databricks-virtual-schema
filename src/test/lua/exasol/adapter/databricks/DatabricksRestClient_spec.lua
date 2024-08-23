@@ -22,14 +22,14 @@ describe("DatabricksRestClient #itest", function()
             assert.has_error(function()
                 ---@diagnostic disable-next-line: invisible
                 testee():_get_request("/invalid")
-            end, "E-VSDAB-5: Databricks request for URL '" .. connection_details.url .. "/invalid"
+            end, "E-VSDAB-5: HTTP request for URL '" .. connection_details.url .. "/invalid"
                                      .. "' failed with status 404 ('HTTP/1.1 404 Not Found') and body ''")
         end)
     end)
 
-    describe("list_catalog()", function()
+    describe("list_catalogs()", function()
         it("should be able to list catalogs", function()
-            local catalogs = testee():list_catalog()
+            local catalogs = testee():list_catalogs()
             assert.is_table(catalogs)
             assert.is_true(#catalogs > 0)
             local system_catalog = utils.find_first(catalogs, function(catalog)

@@ -2,7 +2,7 @@ local ExaError = require("ExaError")
 local log = require("remotelog")
 
 --- This class abstracts access to the user-defined properties of the Virtual Schema.
--- @classmod DatabricksAdapterProperties
+---@class DatabricksAdapterProperties
 local DatabricksAdapterProperties = {}
 DatabricksAdapterProperties.__index = DatabricksAdapterProperties
 local AdapterProperties = require("exasol.vscl.AdapterProperties")
