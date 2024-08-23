@@ -36,9 +36,9 @@ function DatabricksRestClient:_get_request(path)
     local body = http_client.request({
         url = url,
         method = "GET",
-        headers = {Authorization = "Bearer " .. self._connection_details.token}
+        headers = {Authorization = "Bearer " .. self._connection_details.token},
+        verify_tls_certificate = false
     })
-    log.trace("Received body %s", body)
     local data = cjson.decode(body)
     if data.next_page_token then
         local exa_error = ExaError:new("E-VSDAB-6",
@@ -48,35 +48,6 @@ function DatabricksRestClient:_get_request(path)
         error(tostring(exa_error))
     end
     return data
-end
-
----Send a GET request to the given path.
----@param path string
----@return table response body
----@private
-function DatabricksRestClient:_simple_get_request(path)
-    local url = self._connection_details.url .. path
-    url = "https://httpbin.org/get"
-    log.debug("Sending GET request to " .. url)
-
-    local sink, get_body = table_sink()
-    local first_result, status_code, response_headers, status_line = http.request({
-        url = url,
-        -- sink = sink,
-        method = "GET",
-        headers = {Authorization = "Bearer token"},
-        redirect = true,
-        sink = sink
-    })
-    log.info("First result %s", first_result)
-    log.info("Second result %s", status_code)
-    log.info("Thrid result %s", response_headers)
-    log.info("Fourth result %s", status_line)
-    log.info("body %s", get_body())
-    log.info("Result: first arg: %s, status: %s, headers %s, status line %s", first_result, status_code,
-             tostring(response_headers), status_line)
-
-    return {catalogs = {}}
 end
 
 ---Get a list of all catalogs.
