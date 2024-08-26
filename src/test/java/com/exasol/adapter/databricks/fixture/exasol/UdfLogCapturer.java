@@ -4,10 +4,12 @@ import java.io.*;
 import java.net.*;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 public class UdfLogCapturer implements AutoCloseable {
     private static final Logger LOG = Logger.getLogger(UdfLogCapturer.class.getName());
@@ -38,11 +40,23 @@ public class UdfLogCapturer implements AutoCloseable {
 
     public static UdfLogCapturer start(final InetAddress bindAddr) {
         final ExecutorService executorService = Executors.newCachedThreadPool();
-        final TcpServer server = TcpServer.create(bindAddr);
+        final TcpServer server = TcpServer.create(bindAddr, executorService);
         final Future<?> serverFuture = executorService.submit(server);
         LOG.info("Started UDF log capturer on " + server.serverSocket.getInetAddress().getHostAddress() + ":"
                 + server.serverSocket.getLocalPort());
         return new UdfLogCapturer(server, serverFuture, executorService);
+    }
+
+    public int getPort() {
+        return this.server.serverSocket.getLocalPort();
+    }
+
+    public String getServerHost() {
+        return this.server.serverSocket.getInetAddress().getHostAddress();
+    }
+
+    public List<String> getCollectedLines() {
+        return this.server.getCollectedLines();
     }
 
     @Override
@@ -65,33 +79,28 @@ public class UdfLogCapturer implements AutoCloseable {
             throw new IllegalStateException("Server did not stop within " + timeout + ": " + exception.getMessage(),
                     exception);
         }
-        LOG.fine("Server stopped after " + Duration.between(start, Instant.now()));
-    }
-
-    public int getPort() {
-        return this.server.serverSocket.getLocalPort();
-    }
-
-    public String getServerHost() {
-        return this.server.serverSocket.getInetAddress().getHostAddress();
+        LOG.fine("Udf log capturer stopped after " + Duration.between(start, Instant.now()));
     }
 
     private static class TcpServer implements Runnable {
         private final AtomicBoolean running = new AtomicBoolean(true);
         private final ServerSocket serverSocket;
+        private final Executor executor;
+        private final List<ClientListener> clientListeners = new CopyOnWriteArrayList<>();
 
-        private TcpServer(final ServerSocket serverSocket) {
+        private TcpServer(final ServerSocket serverSocket, final Executor executor) {
             this.serverSocket = serverSocket;
+            this.executor = executor;
         }
 
-        private static TcpServer create(final InetAddress bindAddr) {
-            return new TcpServer(createServerSocket(bindAddr));
+        private static TcpServer create(final InetAddress bindAddr, final ExecutorService executorService) {
+            return new TcpServer(createServerSocket(SOCKET_TIMEOUT, bindAddr), executorService);
         }
 
-        private static ServerSocket createServerSocket(final InetAddress bindAddr) {
+        private static ServerSocket createServerSocket(final Duration socketTimeout, final InetAddress bindAddr) {
             try {
                 final ServerSocket socket = new ServerSocket(0, 50, bindAddr);
-                socket.setSoTimeout((int) SOCKET_TIMEOUT.toMillis());
+                socket.setSoTimeout((int) socketTimeout.toMillis());
                 return socket;
             } catch (final IOException exception) {
                 throw new UncheckedIOException("Failed to create server socket", exception);
@@ -101,16 +110,22 @@ public class UdfLogCapturer implements AutoCloseable {
         @Override
         public void run() {
             while (running.get()) {
-                try (Socket clientSocket = serverSocket.accept()) {
+                try {
+                    final Socket clientSocket = serverSocket.accept();
                     final ClientListener clientListener = new ClientListener(clientSocket, running);
-                    clientListener.run();
+                    clientListeners.add(clientListener);
+                    executor.execute(clientListener);
                 } catch (final SocketTimeoutException exception) {
-                    // Ignore, continue to accept new connections
+                    // ignore
                 } catch (final IOException exception) {
                     throw new UncheckedIOException("Failed to accept client socket", exception);
                 }
             }
             LOG.fine("TCP server loop finished");
+        }
+
+        private List<String> getCollectedLines() {
+            return clientListeners.stream().flatMap(ClientListener::getCollectedLines).toList();
         }
     }
 
@@ -119,6 +134,7 @@ public class UdfLogCapturer implements AutoCloseable {
         private final int clientId;
         private final Socket clientSocket;
         private final AtomicBoolean running;
+        private final List<String> collectedLines = new CopyOnWriteArrayList<>();
 
         public ClientListener(final Socket clientSocket, final AtomicBoolean running) {
             this.clientSocket = clientSocket;
@@ -149,11 +165,22 @@ public class UdfLogCapturer implements AutoCloseable {
             } catch (final IOException exception) {
                 throw new UncheckedIOException("Failed to read from client #" + clientId + " at socket "
                         + this.clientSocket + ": " + exception, exception);
+            } finally {
+                try {
+                    clientSocket.close();
+                } catch (final IOException exception) {
+                    throw new UncheckedIOException("Failed to close client socket", exception);
+                }
             }
         }
 
         private void processInput(final String inputLine) {
-            LOG.fine(() -> "Client#" + clientId + ">" + inputLine);
+            LOG.fine(() -> "Client#" + clientId + "> " + inputLine);
+            collectedLines.add(inputLine);
+        }
+
+        private Stream<String> getCollectedLines() {
+            return collectedLines.stream();
         }
     }
 }
