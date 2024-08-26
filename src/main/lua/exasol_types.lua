@@ -7,7 +7,7 @@ local ExasolUdfContext = {}
 ---@return Connection? connection connection details.
 function ExasolUdfContext.get_connection(connection_name)
 end
----An Exasol connection
+---An Exasol connection object
 ---@class Connection
 ---@field address string? The address of the connection.
 ---@field user string? The user name for the connection.
