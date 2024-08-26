@@ -68,8 +68,8 @@ class DatabricksObjectWriter extends AbstractImmediateDatabaseObjectWriter {
         try (final PreparedStatement preparedStatement = this.connection.prepareStatement(sql)) {
             rows.forEach(row -> writeRow(table, sql, preparedStatement, row));
         } catch (final SQLException exception) {
-            throw new DatabaseObjectException(table, "Failed to create prepared statement '" + sql + "' for insert.",
-                    exception);
+            throw new DatabaseObjectException(table,
+                    "Failed to create or execute prepared statement '" + sql + "' for insert.", exception);
         }
     }
 

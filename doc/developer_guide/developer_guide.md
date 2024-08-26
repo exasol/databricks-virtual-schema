@@ -17,7 +17,7 @@ luarocks install --local --server=https://luarocks.org/dev luaformatter
 
 ## Debug Logging for UDF
 
-Class `TestSetup` automatically starts `UdfLogCapturer` listening on a local address. It configures the virtual schema with the correct `DEBUG_ADDRESS` and `LOG_LEVEL` and logs messages from the UDF with prefix `udf>`.
+Class `TestSetup` automatically starts `UdfLogCapturer` listening on a local address. It configures the virtual schema with the correct `DEBUG_ADDRESS` and `LOG_LEVEL` and logs messages from the UDF with prefix `Client #1>`.
 
 ## Run Lua Tests
 
