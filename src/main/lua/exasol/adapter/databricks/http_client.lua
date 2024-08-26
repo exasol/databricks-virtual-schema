@@ -11,7 +11,9 @@ http.USERAGENT = "Exasol Databricks Virtual Schema"
 ---@field url string
 ---@field method "GET" | "POST" | nil
 ---@field headers table<string, string> | nil
----@field verify_tls_certificate boolean | nil
+---@field verify_tls_certificate boolean | nil default: true
+
+---@alias SocketFactory fun(args: table<string,any>): TCPSocket
 
 local M = {}
 
@@ -34,23 +36,15 @@ local function table_sink()
     return sink, result_getter
 end
 
-local https_mt = {
-    -- Create proxy functions for each call through the metatable 
-    __index = function(tbl, key)
-        local f = function(prxy, ...)
-            local c = prxy.c
-            return c[key](c, ...)
-        end
-        tbl[key] = f -- Save new proxy function in cache for speed 
-        return f
-    end
-}
-
+---Create a new TCP socket factory configured with the given parameters.
+---Adapted from https://stackoverflow.com/a/43067952
+---@param params table
+---@return SocketFactory socket_factory
 local function new_socket_factory(params)
     return function()
         local t = {c = socket.try(socket.tcp())}
         function t:connect(host, port)
-            log.trace("Connecting to %s:%d", host, port)
+            log.trace("Creating socket to %s:%d", host, port)
             ---@diagnostic disable-next-line: undefined-field
             socket.try(self.c:connect(host, port))
             self.c = socket.try(ssl.wrap(self.c, params))
@@ -58,32 +52,52 @@ local function new_socket_factory(params)
             socket.try(self.c:dohandshake())
             return 1
         end
-        return setmetatable(t, https_mt)
+        return setmetatable(t, {
+            -- Create proxy functions for each call through the metatable 
+            __index = function(tbl, key)
+                local f = function(prxy, ...)
+                    local c = prxy.c
+                    return c[key](c, ...)
+                end
+                tbl[key] = f -- Save new proxy function in cache for speed 
+                return f
+            end
+        })
     end
 end
 
-local function is_https(url)
-    return url:match("^https://") ~= nil
+---@param url string
+---@return boolean is_unencrypted
+local function is_unencrypted(url)
+    return url:match("^http://") ~= nil
+end
+
+---@param verify_tls_certificate boolean
+---@return table<string,any> args
+local function get_socket_params(verify_tls_certificate)
+    local verify_mode = verify_tls_certificate and "peer" or "none"
+    return {protocol = "tlsv1_2", mode = "client", verify = verify_mode, options = "all"}
 end
 
 ---@param args RequestArgs
----@return table<string,any> args
-local function get_socket_params(args)
-    local verify_tls_certificate = args.verify_tls_certificate or false
-    local verify_mode = verify_tls_certificate and "peer" or "none"
-    return {protocol = "tlsv1_2", mode = "client", verify = verify_mode, options = "all"}
+---@return SocketFactory | nil socket_factory
+---@private
+function M._create_socket_factory(args)
+    if is_unencrypted(args.url) then
+        return nil
+    end
+    local verify_tls_certificate = args.verify_tls_certificate == nil or args.verify_tls_certificate
+    if verify_tls_certificate then
+        return nil
+    else
+        return new_socket_factory(get_socket_params(false))
+    end
 end
 
 ---@param args RequestArgs
 ---@return string response_body
 function M.request(args)
     local url = args.url
-    if not is_https(url) then
-        local exa_error = tostring(ExaError:new("E-VSDAB-7", "Only HTTPS URLs are supported, but got {{url}}",
-                                                {url = url}))
-        log.error(exa_error)
-        error(exa_error)
-    end
     local method = args.method or "GET"
     local headers = args.headers or {}
 
@@ -96,7 +110,7 @@ function M.request(args)
         headers = headers,
         redirect = true,
         sink = sink,
-        create = new_socket_factory(get_socket_params(args))
+        create = M._create_socket_factory(args)
     })
     if result ~= 1 then
         local exa_error = tostring(ExaError:new("E-VSDAB-6",
