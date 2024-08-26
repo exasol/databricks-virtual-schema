@@ -8,6 +8,8 @@ sources:
 excludes:
   # Project is written in Lua, no need to test with Java 17
   - "E-PK-CORE-17: Missing required file: '.github/workflows/ci-build-next-java.yml'"
+  # Project does not use Sonar and does not contain badges
+  - regex: "E-PK-CORE-62: The project's README\\.md does not contain a valid badges block\\. Please add or replace the following badges:.*"
 linkReplacements:
 build:
   freeDiskSpace: true
