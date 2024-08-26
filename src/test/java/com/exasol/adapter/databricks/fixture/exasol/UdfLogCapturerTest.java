@@ -37,7 +37,7 @@ class UdfLogCapturerTest {
     void acceptsTcpConnections() throws IOException, InterruptedException {
         try (final UdfLogCapturer udfLogCapturer = UdfLogCapturer.start()) {
             sendLines(udfLogCapturer, List.of("Hello, World!"));
-            Thread.sleep(10); // wait for the server to process the lines
+            Thread.sleep(50); // wait for the server to process the lines
             assertThat(udfLogCapturer.getCollectedLines(), contains("Hello, World!"));
         }
     }
