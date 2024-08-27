@@ -22,7 +22,8 @@ description = {
 
 dependencies = {
     "virtual-schema-common-lua = 4.0.1-1",
-    "luasocket == 3.0rc1-2", -- Same version as available for Exasol UDFs
+    --"luasocket == 3.0rc1-2", -- Same version as available for Exasol UDFs
+    "luasocket >= 3.1.0-1",
     "luasec >= 1.0.2-1", -- Required for configuring TLS, same version as in Exasol
 }
 
