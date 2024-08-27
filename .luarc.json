@@ -48,6 +48,9 @@
         }
     },
     "workspace": {
+        "ignoreDir": [
+            ".luarocks/" // Directory is used on GitHub Actions and causes findings during type checking
+        ],
         "library": [
             "target/lua-type-definitions/luasocket/library",
             "target/lua-type-definitions/busted/library"
