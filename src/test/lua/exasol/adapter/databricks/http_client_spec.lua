@@ -49,6 +49,12 @@ describe("http_client #itest", function()
                              "E-VSDAB-6: HTTP request for URL 'https://unknown-host.example' failed with result 'host or service not provided, or not known'")
         end)
 
+        it("fails for non-200 status code", function()
+            assert.error_matches(function()
+                http_client.request({url = "https://example.com/invalidpath"})
+            end, "E%-VSDAB%-5: HTTP request for URL 'https://example.com/invalidpath' failed with status 500")
+        end)
+
         it("sends unecrypted GET request", function()
             local response = http_client.request({url = "http://example.com"})
             assert.is_true(response:match("<html>") ~= nil)
