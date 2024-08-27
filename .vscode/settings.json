@@ -13,5 +13,7 @@
         "vmArgs": [
             "-Djava.util.logging.config.file=src/test/resources/logging.properties"
         ]
-    }
+    },
+    "busted-test-explorer.cwd": "${workspaceFolder}",
+    "vscode-lua-format.configPath": ".lua-format"
 }

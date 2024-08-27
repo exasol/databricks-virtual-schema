@@ -1,0 +1,7 @@
+---@meta databricks_types
+---Details for a Databricks catalog. Catalogs are the first layer in Databrick's three-level namespace (catalog.schema.table). They contain schemas.
+---See https://docs.databricks.com/en/catalogs/index.html
+---@class DatabricksCatalog
+---@field name string Name of the catalog
+---@field browse_only boolean If true, the principal can only access selective metadata
+---@field full_name string Full name of the catalog

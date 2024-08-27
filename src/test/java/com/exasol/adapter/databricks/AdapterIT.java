@@ -8,7 +8,14 @@ class AdapterIT extends AbstractIntegrationTestBase {
 
     @Test
     void test() {
-        final VirtualSchema vs = testSetup.createVirtualSchema();
-        testSetup.assertions().virtualSchemaExists(vs);
+        final VirtualSchema vs = testSetup.exasol().createVirtualSchema();
+        testSetup.exasol().assertions().virtualSchemaExists(vs);
+    }
+
+    @Test
+    void testDb() {
+        final long timestamp = System.currentTimeMillis();
+        testSetup.databricks().createCatalog("db-vs-test-" + timestamp).createSchema("db-vs-test-schema-" + timestamp)
+                .createTable("tab", "col", "varchar(10)");
     }
 }

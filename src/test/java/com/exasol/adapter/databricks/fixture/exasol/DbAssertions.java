@@ -1,4 +1,4 @@
-package com.exasol.adapter.databricks;
+package com.exasol.adapter.databricks.fixture.exasol;
 
 import static com.exasol.matcher.ResultSetStructureMatcher.table;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -9,7 +9,7 @@ import org.hamcrest.Matcher;
 
 import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
 
-class DbAssertions {
+public class DbAssertions {
 
     private final Connection connection;
 
@@ -17,7 +17,7 @@ class DbAssertions {
         this.connection = connection;
     }
 
-    void query(final String query, final Matcher<ResultSet> matcher) {
+    public void query(final String query, final Matcher<ResultSet> matcher) {
         try (final Statement statement = this.connection.createStatement();
                 final ResultSet resultSet = statement.executeQuery(query)) {
             assertThat(resultSet, matcher);
@@ -26,7 +26,7 @@ class DbAssertions {
         }
     }
 
-    void virtualSchemaExists(VirtualSchema virtualSchema) {
+    public void virtualSchemaExists(final VirtualSchema virtualSchema) {
         query("""
                 select SCHEMA_NAME, ADAPTER_SCRIPT_SCHEMA, ADAPTER_SCRIPT_NAME, ADAPTER_NOTES
                 from EXA_ALL_VIRTUAL_SCHEMAS

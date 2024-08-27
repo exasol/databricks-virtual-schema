@@ -1,4 +1,5 @@
 local log = require("remotelog")
+local ConnectionReader = require("exasol.adapter.databricks.ConnectionReader")
 
 -- Derive from AbstractVirtualSchemaAdapter
 local DatabricksAdapter = {}
@@ -33,7 +34,7 @@ end
 --- Get the name of the Virtual Schema adapter.
 -- @return Virtual Schema adapter name
 function DatabricksAdapter:get_name()
-    return "Row-level Security adapter (Lua)"
+    return "Databricks Virtual Schema (Lua)"
 end
 
 --- Create a virtual schema.
@@ -46,9 +47,8 @@ function DatabricksAdapter:create_virtual_schema(request, properties)
     return {type = "createVirtualSchema", schemaMetadata = metadata}
 end
 
-function DatabricksAdapter:_handle_schema_scanning_request(_request, _properties)
-    local config = ""
-    return self._metadata_reader:read(config)
+function DatabricksAdapter:_handle_schema_scanning_request(_request, properties)
+    return self._metadata_reader:read(properties)
 end
 
 --- Refresh the metadata of the Virtual Schema.

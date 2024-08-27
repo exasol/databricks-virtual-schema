@@ -21,7 +21,9 @@ description = {
 }
 
 dependencies = {
-    "virtual-schema-common-lua = 4.0.1-1"
+    "virtual-schema-common-lua = 4.0.1-1",
+    "luasocket == 3.0rc1-2", -- Same version as available for Exasol UDFs
+    "luasec >= 1.0.2-1", -- Required for configuring TLS, same version as in Exasol
 }
 
 build_dependencies = {
@@ -44,6 +46,13 @@ local package_items = {
     "exasol.adapter.databricks.DatabricksAdapterProperties",
     "exasol.adapter.databricks.DatabricksQueryRewriter",
     "exasol.adapter.databricks.MetadataReader",
+    "exasol.adapter.databricks.ConnectionReader",
+    "exasol.adapter.databricks.DatabricksRestClient",
+    "exasol.adapter.databricks.http_client",
+    "exasol.adapter.databricks.util",
+    "exasol.adapter.databricks.common_types",
+    "exasol.adapter.databricks.databricks_types",
+    "exasol_types",
     -- from remotelog
     "remotelog", "ExaError", "MessageExpander",
     -- from virtual-schema-common-lua"

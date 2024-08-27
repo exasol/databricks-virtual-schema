@@ -1,4 +1,4 @@
-package com.exasol.adapter.databricks;
+package com.exasol.adapter.databricks.fixture.exasol;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -9,13 +9,15 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture;
+import com.exasol.adapter.databricks.fixture.TestConfig;
 import com.exasol.containers.ExasolContainer;
 import com.exasol.dbbuilder.dialects.exasol.*;
+import com.exasol.drivers.JdbcDriver;
 import com.exasol.mavenprojectversiongetter.MavenProjectVersionGetter;
 
-class TestSetup implements AutoCloseable {
-
-    private static final Logger LOG = Logger.getLogger(TestSetup.class.getName());
+public class ExasolFixture implements AutoCloseable {
+    private static final Logger LOG = Logger.getLogger(ExasolFixture.class.getName());
     private static final String EXASOL_LUA_MODULE_LOADER_WORKAROUND = "table.insert(" //
             + "package.searchers" //
             + ",\n" //
@@ -29,30 +31,41 @@ class TestSetup implements AutoCloseable {
             + "    end\n" //
             + ")\n\n";
     private static final String VERSION = MavenProjectVersionGetter.getCurrentProjectVersion();
-    private static final Path ADAPTER_PATH = Path.of("target/databricks-virtual-schema-dist-" + VERSION + ".lua");
+    private static final Path TARGET_DIR = Path.of("target").toAbsolutePath();
+    private static final Path ADAPTER_PATH = TARGET_DIR.resolve("databricks-virtual-schema-dist-" + VERSION + ".lua");
+    private static final Path JDBC_DRIVER_PATH = TARGET_DIR.resolve("databricks-jdbc-driver/databricks-jdbc.jar");
 
     private static final String DEFAULT_EXASOL_VERSION = "8.29.1";
     private final ExasolContainer<? extends ExasolContainer<?>> exasol;
     private final Connection connection;
     private final ExasolObjectFactory objectFactory;
+    private final UdfLogCapturer udfLogCapturer;
     private AdapterScript adapterScript;
+    private final DatabricksFixture databricksFixture;
 
-    private TestSetup(final ExasolContainer<? extends ExasolContainer<?>> exasol, final Connection connection,
-            final ExasolObjectFactory objectFactory) {
+    private ExasolFixture(final ExasolContainer<? extends ExasolContainer<?>> exasol, final Connection connection,
+            final ExasolObjectFactory objectFactory, final UdfLogCapturer udfLogCapturer,
+            final DatabricksFixture databricksFixture) {
         this.exasol = exasol;
         this.connection = connection;
         this.objectFactory = objectFactory;
+        this.udfLogCapturer = udfLogCapturer;
+        this.databricksFixture = databricksFixture;
     }
 
-    public static TestSetup start() {
+    public static ExasolFixture start(final TestConfig config, final DatabricksFixture databricksFixture) {
         final ExasolContainer<? extends ExasolContainer<?>> exasol = new ExasolContainer<>(DEFAULT_EXASOL_VERSION) //
                 .withReuse(true);
         exasol.start();
-        exasol.purgeDatabase();
+        exasol.getDriverManager()
+                .install(JdbcDriver.builder("DATABRICKS").enableSecurityManager(true)
+                        .mainClass("com.databricks.client.jdbc.Driver").prefix("jdbc:databricks")
+                        .sourceFile(JDBC_DRIVER_PATH).build());
         final Connection connection = exasol.createConnection();
         final ExasolObjectFactory objectFactory = new ExasolObjectFactory(connection,
                 ExasolObjectConfiguration.builder().build());
-        return new TestSetup(exasol, connection, objectFactory);
+        final UdfLogCapturer udfLogCapturer = UdfLogCapturer.start();
+        return new ExasolFixture(exasol, connection, objectFactory, udfLogCapturer, databricksFixture);
     }
 
     public void buildAdapter() {
@@ -69,7 +82,7 @@ class TestSetup implements AutoCloseable {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     output.append(line).append("\n");
-                    LOG.info("command >" + line);
+                    LOG.info("cmd>" + line);
                 }
             }
             final int exitCode = process.waitFor();
@@ -88,11 +101,26 @@ class TestSetup implements AutoCloseable {
         if (this.adapterScript == null) {
             this.adapterScript = createAdapterScript();
         }
-        final Map<String, String> properties = new HashMap<>();
-        return objectFactory.createVirtualSchemaBuilder("DATABRICKS_VS") //
+        final String vsName = "DATABRICKS_VS";
+        final ConnectionDefinition connectionDefinition = objectFactory
+                .createConnectionDefinition(vsName + "_CONNECTION", databricksFixture.getJdbcUrl());
+        return createVirtualSchema(vsName, connectionDefinition);
+    }
+
+    private VirtualSchema createVirtualSchema(final String vsName, final ConnectionDefinition connectionDefinition) {
+        return objectFactory.createVirtualSchemaBuilder(vsName) //
                 .adapterScript(this.adapterScript) //
-                .properties(properties) //
+                .properties(createVirtualSchemaProperties(connectionDefinition)) //
                 .build();
+    }
+
+    private Map<String, String> createVirtualSchemaProperties(final ConnectionDefinition connectionDefinition) {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put("CONNECTION_NAME", connectionDefinition.getName());
+        properties.put("DEBUG_ADDRESS", this.udfLogCapturer.getServerHost() + ":" + this.udfLogCapturer.getPort());
+        properties.put("LOG_LEVEL", "TRACE");
+        LOG.fine(() -> "Creating virtual schema with properties: " + properties);
+        return properties;
     }
 
     public DbAssertions assertions() {
@@ -115,6 +143,7 @@ class TestSetup implements AutoCloseable {
 
     @Override
     public void close() {
+        this.udfLogCapturer.close();
         try {
             this.connection.close();
         } catch (final SQLException exception) {

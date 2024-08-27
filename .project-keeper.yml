@@ -8,6 +8,8 @@ sources:
 excludes:
   # Project is written in Lua, no need to test with Java 17
   - "E-PK-CORE-17: Missing required file: '.github/workflows/ci-build-next-java.yml'"
+  # Project does not use Sonar and does not contain badges
+  - regex: "E-PK-CORE-62: The project's README\\.md does not contain a valid badges block\\. Please add or replace the following badges:.*"
 linkReplacements:
 build:
   freeDiskSpace: true
@@ -52,6 +54,19 @@ build:
             name: Install Lua dependencies
             id: install-lua-dependencies
             run: luarocks --local install *.rockspec --deps-only
+
+        - action: INSERT_AFTER
+          stepId: enable-testcontainer-reuse
+          content:
+            name: Configure Databricks credentials
+            id: configure-databricks-credentials
+            run: |
+              cat > test.properties <<EOL
+              databricks.token = ${{ secrets.DATABRICKS_TOKEN }}
+              databricks.host = ${{ secrets.DATABRICKS_HOST }}
+              databricks.storageRoot = ${{ secrets.DATABRICKS_STORAGE_ROOT }}
+              EOL
+
         - action: INSERT_AFTER
           stepId: build-pk-verify
           content:

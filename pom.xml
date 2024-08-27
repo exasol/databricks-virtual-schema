@@ -62,6 +62,18 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.databricks</groupId>
+            <artifactId>databricks-sdk-java</artifactId>
+            <version>0.30.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.databricks</groupId>
+            <artifactId>databricks-jdbc</artifactId>
+            <version>2.6.40</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
             <version>2.0.16</version>
@@ -75,19 +87,38 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <compilerArgs>
-                        <arg>-Xlint:all,-path</arg>
+                        <arg>-Xlint:all,-path,-processing</arg>
                         <arg>-Werror</arg>
                     </compilerArgs>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-jdbc-driver</id>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <includeGroupIds>com.databricks</includeGroupIds>
+                            <includeArtifactIds>databricks-jdbc</includeArtifactIds>
+                            <outputDirectory>${project.build.directory}/databricks-jdbc-driver</outputDirectory>
+                            <stripVersion>true</stripVersion>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.4.1</version>
                 <executions>
-                    <!-- Build Lua Code -->
+                    <!-- Run lua unit tests -->
                     <execution>
-                        <id>unit-test</id>
+                        <id>lua-unit-test</id>
                         <phase>test</phase>
                         <goals>
                             <goal>exec</goal>
@@ -96,7 +127,21 @@
                             <executable>${project.basedir}/tools/runtests.sh</executable>
                             <useMavenLogger>true</useMavenLogger>
                             <arguments>
-                                <argument>${project.basedir}</argument>
+                                <argument>--run=utest</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <!-- Run all lua tests -->
+                    <execution>
+                        <id>lua-integration-test</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${project.basedir}/tools/runtests.sh</executable>
+                            <useMavenLogger>true</useMavenLogger>
+                            <arguments>
                             </arguments>
                         </configuration>
                     </execution>
@@ -130,6 +175,17 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.ossindex.maven</groupId>
+                <artifactId>ossindex-maven-plugin</artifactId>
+                <configuration>
+                    <excludeVulnerabilityIds>
+                        <!-- Transitive test dependency org.ini4j:ini4j:jar:0.5.4 via com.databricks:databricks-sdk-java:
+                             Uncontrolled Resource Consumption is acceptable -->
+                        <exclude>CVE-2022-41404</exclude>
+                    </excludeVulnerabilityIds>
+                </configuration>
             </plugin>
         </plugins>
     </build>

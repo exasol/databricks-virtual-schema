@@ -1,0 +1,5 @@
+---@meta common_types
+---Connection details for Databricks.
+---@class DatabricksConnectionDetails
+---@field url string HTTP URL of the Databricks workspace
+---@field token string? Token

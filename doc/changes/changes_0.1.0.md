@@ -12,6 +12,8 @@ Code name:
 
 ### Test Dependency Updates
 
+* Added `com.databricks:databricks-jdbc:2.6.40`
+* Added `com.databricks:databricks-sdk-java:0.30.0`
 * Added `com.exasol:exasol-testcontainers:7.1.1`
 * Added `com.exasol:hamcrest-resultset-matcher:1.6.5`
 * Added `com.exasol:maven-project-version-getter:1.2.0`
@@ -29,6 +31,7 @@ Code name:
 * Added `io.github.zlika:reproducible-build-maven-plugin:0.16`
 * Added `org.apache.maven.plugins:maven-clean-plugin:2.5`
 * Added `org.apache.maven.plugins:maven-compiler-plugin:3.13.0`
+* Added `org.apache.maven.plugins:maven-dependency-plugin:2.8`
 * Added `org.apache.maven.plugins:maven-deploy-plugin:2.7`
 * Added `org.apache.maven.plugins:maven-enforcer-plugin:3.5.0`
 * Added `org.apache.maven.plugins:maven-failsafe-plugin:3.2.5`
