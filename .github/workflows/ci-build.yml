@@ -111,6 +111,15 @@ jobs:
         id: generate-dummy-error-code-report,
         run: 'echo ''{"$schema":"https://schemas.exasol.com/error_code_report-1.0.0.json","errorCodes":[]}'' > target/error_code_report.json'
       }
+      - name: Archive lua type check report
+        id: archive-lua-type-check-report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with: {
+          name: 'lua-type-check-report-${{ matrix.exasol_db_version }}',
+          path: target/type-checker-logs/check.json,
+          if-no-files-found: error
+        }
       - name: Archive code coverage results
         id: archive-luacov-report
         uses: actions/upload-artifact@v4

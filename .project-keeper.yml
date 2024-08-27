@@ -79,6 +79,18 @@ build:
               path: target/luacov-reports/luacov.report.out
               if-no-files-found: error
 
+        - action: INSERT_AFTER
+          stepId: build-pk-verify
+          content:
+            name: Archive lua type check report
+            id: archive-lua-type-check-report
+            if: ${{ always() }}
+            uses: actions/upload-artifact@v4
+            with:
+              name: lua-type-check-report-${{ matrix.exasol_db_version }}
+              path: target/type-checker-logs/check.json
+              if-no-files-found: error
+
         # Replace Sonar
         - action: REPLACE
           stepId: cache-sonar
