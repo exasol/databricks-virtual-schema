@@ -10,6 +10,14 @@ luarocks install --local ldoc
 luarocks install --local --server=https://luarocks.org/dev luaformatter
 ```
 
+### Install Lua Type Definitions
+
+Run this script to download / update Lua type definitions for third party libraries. They will be stored in `target/lua-type-definitions/`.
+
+```sh
+./tools/fetch-lua-type-definitions.sh
+```
+
 ### VSCode
 
 1. Install recommended extensions (see [`.vscode/extensions.json`](../../.vscode/extensions.json))
@@ -34,4 +42,14 @@ The following script will run Lua tests and print test coverage:
 
 ```sh
 ./tools/format-lua.sh
+```
+
+## Lua Type Checking
+
+This project uses [type annotations](https://luals.github.io/wiki/annotations/) of the [Lua Language Server](https://luals.github.io/). You should get type hints and warnings in your IDE.
+
+You can run the type checker on the command line using
+
+```sh
+./tools/run-type-check.sh
 ```

@@ -1,4 +1,5 @@
 require("busted.runner")()
+local assert = require("luassert")
 local log = require("remotelog")
 local http_client = require("exasol.adapter.databricks.http_client")
 local cjson = require("cjson")
@@ -29,7 +30,7 @@ describe("http_client #utest", function()
                     verify_tls_certificate = test.verify_tls_certificate
                 })
                 if test.expect_custom_socket_factory then
-                    assert.is_function(actual_socket_factory)
+                    assert(actual_socket_factory ~= nil)
                     local socket = actual_socket_factory({})
                     assert.is_table(socket)
                 else

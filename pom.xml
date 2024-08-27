@@ -116,6 +116,18 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.4.1</version>
                 <executions>
+                    <!-- Run lua type check -->
+                    <execution>
+                        <id>lua-type-check</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${project.basedir}/tools/run-type-check.sh</executable>
+                            <useMavenLogger>true</useMavenLogger>
+                        </configuration>
+                    </execution>
                     <!-- Run lua unit tests -->
                     <execution>
                         <id>lua-unit-test</id>
