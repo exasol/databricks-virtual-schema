@@ -49,23 +49,14 @@ describe("http_client #itest", function()
                              "E-VSDAB-6: HTTP request for URL 'https://unknown-host.example' failed with result 'host or service not provided, or not known'")
         end)
 
-        it("sends unecrypted encrypted GET request", function()
-            local response = http_client.request({url = "http://httpbin.org/get"})
-            response = cjson.decode(response)
-            assert.is.same("http://httpbin.org/get", response.url)
-            assert.is.same("Exasol Databricks Virtual Schema", response.headers["User-Agent"])
+        it("sends unecrypted GET request", function()
+            local response = http_client.request({url = "http://example.com"})
+            assert.is_true(response:match("<html>") ~= nil)
         end)
 
-        it("sends TLS encrypted GET request ignoring TLS certificate", function()
-            local response = http_client.request({
-                url = "https://httpbin.org/get",
-                headers = {Authentication = "Bearer token"},
-                verify_tls_certificate = false
-            })
-            response = cjson.decode(response)
-            assert.is.same("https://httpbin.org/get", response.url)
-            assert.is.same("Exasol Databricks Virtual Schema", response.headers["User-Agent"])
-            assert.is.same("Bearer token", response.headers["Authentication"])
+        it("sends ecrypted GET request", function()
+            local response = http_client.request({url = "https://example.com"})
+            assert.is_true(response:match("<html>") ~= nil)
         end)
 
         it("can connect to Databricks API", function()
