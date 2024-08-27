@@ -40,7 +40,6 @@ fi
 if [ ! -f "$language_server_archive" ]; then
     echo "Downloading from $language_server_url"
     wget --output-document="$language_server_archive" "$language_server_url"
-    ls -lah "$language_server_archive"
 fi
 
 if ! echo "$language_server_version_sha256 $language_server_archive" | sha256sum --check --status; then
@@ -55,7 +54,7 @@ if [ ! -f "$language_server_executable" ]; then
     tar -xzf "$language_server_archive" --directory "$language_server_dir"
 fi
 
-echo "Running type check..."
+echo "Running type check using $language_server_executable..."
 type_check_result_json="$type_check_log_dir"/check.json
 
 if ! "$language_server_executable" --check="$base_dir" --loglevel=trace --logpath="$type_check_log_dir" --checklevel="$type_check_level" ; then
