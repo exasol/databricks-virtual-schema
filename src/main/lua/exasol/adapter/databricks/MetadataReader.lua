@@ -1,5 +1,6 @@
-require("exasol_types")
+local exasol = require("exasol_types")
 local ConnectionReader = require("exasol.adapter.databricks.ConnectionReader")
+local util = require("exasol.adapter.databricks.util")
 local log = require("remotelog")
 
 ---This class reads schema, table and column metadata from the source.
@@ -34,15 +35,28 @@ function MetadataReader:_create_databricks_client(properties)
     return self._databricks_client_factory(connection_details)
 end
 
+local function convert_column_metadata()
+
+end
+
+---@param databricks_table DatabricksTable
+---@return ExasolTableMetadata exasol_table_metadata
+local function convert_table_metadata(databricks_table)
+    return {
+        type = exasol.EXASOL_OBJECT_TYPES.TABLE,
+        name = databricks_table.name,
+        comment = databricks_table.comment,
+        columns = util.map(databricks_table.columns, convert_column_metadata)
+    }
+end
+
 ---Read the database metadata of the given schema (i.e. the internal structure of that schema)
 ---@param properties DatabricksAdapterProperties
----@return table schema_metadata
+---@return ExasolSchemaMetadata schema_metadata
 function MetadataReader:read(properties)
     local databricks_client = self:_create_databricks_client(properties)
-    databricks_client:list_catalogs()
-    local tables = {}
-    local config = {}
-    return {tables = tables, adapterNotes = "notes", config = config}
+    local tables = databricks_client:list_tables(properties:get_catalog_name(), properties:get_schema_name())
+    return {tables = util.map(tables, convert_table_metadata), adapterNotes = "notes"}
 end
 
 return MetadataReader
