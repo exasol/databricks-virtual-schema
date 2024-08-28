@@ -70,5 +70,12 @@ describe("DatabricksRestClient #itest", function()
             }
             assert.is.same(expected_max_length_column, columns_table.columns[10])
         end)
+
+        it("request fails for for unknown catalog/schema", function()
+            assert.error_matches(function()
+                testee():list_tables("no-such-catalog", "no-such-schema")
+                -- Error message will be improved in https://github.com/exasol/databricks-virtual-schema/issues/9
+            end, "E%-VSDAB%-5: HTTP request for URL '.*' failed with status 404 %('HTTP/1.1 404 Not Found'%)")
+        end)
     end)
 end)

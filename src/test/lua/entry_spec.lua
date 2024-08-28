@@ -6,7 +6,7 @@ local util = require("exasol.adapter.databricks.test_utils")
 log.set_level("TRACE")
 
 local function http_request_mock(args)
-    if args.url == "https://localhost:8888/api/2.1/unity-catalog/catalogs" then
+    if args.url == "https://localhost:8888/api/2.1/unity-catalog/catalogs?include_browse=true&max_results=1000" then
         return [[{"catalogs":[]}]]
     end
     error(string.format("Unknown URL: %s", args.url))
