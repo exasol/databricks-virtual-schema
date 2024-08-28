@@ -28,16 +28,27 @@ function DatabricksAdapterProperties:class()
 end
 
 local CONNECTION_NAME_PROPERTY<const> = "CONNECTION_NAME"
+local CATALOG_NAME_PROPERTY<const> = "CATALOG_NAME"
+local SCHEMA_NAME_PROPERTY<const> = "SCHEMA_NAME"
+
+local MANDATORY_PROPERTY_NAMES<const> = {CONNECTION_NAME_PROPERTY, CATALOG_NAME_PROPERTY, SCHEMA_NAME_PROPERTY}
 
 --- Validate the adapter properties.
--- @raise validation error
+---@raise validation error
 function DatabricksAdapterProperties:validate()
     AdapterProperties.validate(self) -- super call
+    for _, property_name in ipairs(MANDATORY_PROPERTY_NAMES) do
+        self:_validate_mandatory_property(property_name)
+    end
+end
+
+---Verify that a property with the given name is present.
+---@param property_name string
+function DatabricksAdapterProperties:_validate_mandatory_property(property_name)
     ---@diagnostic disable-next-line: undefined-field # Type annotations for library not available
-    if not self:has_value(CONNECTION_NAME_PROPERTY) then
-        ExaError:new("F-VSDAB-1", "Property '" .. CONNECTION_NAME_PROPERTY .. "' is missing"):add_mitigations(
-                "Specify the '" .. CONNECTION_NAME_PROPERTY .. ' property in the CREATE VIRTUAL SCHEMA statement.')
-                :raise(0)
+    if not self:has_value(property_name) then
+        local mitigation = "Specify the '" .. property_name .. "' property in the CREATE VIRTUAL SCHEMA statement."
+        ExaError:new("F-VSDAB-1", "Property '" .. property_name .. "' is missing"):add_mitigations(mitigation):raise(0)
     end
 end
 
