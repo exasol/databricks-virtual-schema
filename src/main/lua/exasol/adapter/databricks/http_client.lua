@@ -13,7 +13,7 @@ http.USERAGENT = "Exasol Databricks Virtual Schema"
 ---@field headers table<string, string> | nil
 ---@field verify_tls_certificate boolean | nil default: true
 
----@alias SocketFactory fun(args: table<string,any>): TCPSocket
+---@alias SocketFactory fun(args: table<string, any>): TCPSocket
 
 local M = {}
 
@@ -73,7 +73,7 @@ local function is_unencrypted(url)
 end
 
 ---@param verify_tls_certificate boolean
----@return table<string,any> args
+---@return table<string, any> args
 local function get_socket_params(verify_tls_certificate)
     local verify_mode = verify_tls_certificate and "peer" or "none"
     return {protocol = "tlsv1_2", mode = "client", verify = verify_mode, options = "all"}

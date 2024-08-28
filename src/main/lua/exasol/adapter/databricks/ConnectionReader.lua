@@ -24,7 +24,7 @@ end
 
 ---Parse the JDBC URL arguments into a table
 ---@param jdbc_url_args string JDBC URL arguments
----@return table<string,string> arguments
+---@return table<string, string> arguments
 local function parse_args(jdbc_url_args)
     local args = {}
     for k, v in jdbc_url_args:gmatch("([^;=]+)=([^;=]+)") do

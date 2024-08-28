@@ -51,7 +51,7 @@ function DatabricksRestClient:_get_request(path)
 end
 
 ---Get a list of all catalogs.
----@return table<DatabricksCatalog> catalogs
+---@return DatabricksCatalog[] catalogs
 function DatabricksRestClient:list_catalogs()
     local response = self:_get_request("/api/2.1/unity-catalog/catalogs?include_browse=true&max_results=1000")
     local catalogs = util.map(response.catalogs, function(raw)
@@ -83,7 +83,7 @@ end
 ---Get a list of all tables.
 ---@param catalog_name string name of the catalog
 ---@param schema_name string name of the schema
----@return table<DatabricksTable> tables
+---@return DatabricksTable[] tables
 function DatabricksRestClient:list_tables(catalog_name, schema_name)
     local response = self:_get_request(string.format(
             "/api/2.1/unity-catalog/tables?catalog_name=%s&schema_name=%s&max_results=50"

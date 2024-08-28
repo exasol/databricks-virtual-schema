@@ -13,7 +13,7 @@ local DatabricksCatalog = {}
 ---@field name string Name of the table
 ---@field full_name string Full name of the table incl. catalog and schema
 ---@field comment string Comment of the table
----@field columns table<DatabricksColumn> List of columns
+---@field columns DatabricksColumn[] Columns
 local DatabricksTable = {}
 
 ---Details for a Databricks column.
