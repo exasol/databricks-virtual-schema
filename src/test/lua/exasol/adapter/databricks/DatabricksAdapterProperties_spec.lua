@@ -2,12 +2,17 @@ require("busted.runner")()
 local assert = require("luassert")
 local DatabricksAdapterProperties = require("exasol.adapter.databricks.DatabricksAdapterProperties")
 
+---@param raw_properties table<string, any> 
+---@return DatabricksAdapterProperties properties
+local function testee(raw_properties)
+    return DatabricksAdapterProperties:new(raw_properties)
+end
+
 local function validate(raw_properties)
-    DatabricksAdapterProperties:new(raw_properties):validate()
+    testee(raw_properties):validate()
 end
 
 describe("DatabricksAdapterProperties", function()
-
     describe("validate()", function()
         it("validation succeeds", function()
             assert.has_no.errors(function()
@@ -40,6 +45,27 @@ Mitigations:
 * Specify the '%s' property in the CREATE VIRTUAL SCHEMA statement.]], test.property_name, test.property_name))
                 end)
             end
+        end)
+    end)
+
+    describe("get_connection_name()", function()
+        it("returns the connection name", function()
+            local properties = testee({CONNECTION_NAME = "connection"})
+            assert.is.same("connection", properties:get_connection_name())
+        end)
+    end)
+
+    describe("get_catalog_name()", function()
+        it("returns the catalog name", function()
+            local properties = testee({CATALOG_NAME = "catalog"})
+            assert.is.same("catalog", properties:get_catalog_name())
+        end)
+    end)
+
+    describe("get_schema_name()", function()
+        it("returns the schema name", function()
+            local properties = testee({SCHEMA_NAME = "schema"})
+            assert.is.same("schema", properties:get_schema_name())
         end)
     end)
 end)
