@@ -53,12 +53,45 @@ end
 ---Get a list of all catalogs.
 ---@return table<DatabricksCatalog> catalogs
 function DatabricksRestClient:list_catalogs()
-    local response = self:_get_request("/api/2.1/unity-catalog/catalogs") -- ?include_browse=true&max_results=1000")
+    local response = self:_get_request("/api/2.1/unity-catalog/catalogs?include_browse=true&max_results=1000")
     local catalogs = util.map(response.catalogs, function(raw)
         return {name = raw.name, browse_only = raw.browse_only, full_name = raw.full_name}
     end)
     log.debug("Received %d catalogs", #catalogs)
     return catalogs
+end
+
+---@param raw table<string,any> raw data
+---@return DatabricksColumn
+local function convert_column(raw)
+    return {
+        name = raw.name,
+        position = raw.position,
+        comment = raw.comment,
+        type = {name = raw.type_name, precision = raw.type_precision, scale = raw.type_scale},
+        nullable = raw.nullable
+    }
+end
+
+---@param raw table<string,any> raw data
+---@return DatabricksTable
+local function convert_table(raw)
+    local columns = util.map(raw.columns, convert_column)
+    return {name = raw.name, full_name = raw.full_name, comment = raw.comment, columns = columns}
+end
+
+---Get a list of all tables.
+---@param catalog_name string name of the catalog
+---@param schema_name string name of the schema
+---@return table<DatabricksTable> tables
+function DatabricksRestClient:list_tables(catalog_name, schema_name)
+    local response = self:_get_request(string.format(
+            "/api/2.1/unity-catalog/tables?catalog_name=%s&schema_name=%s&max_results=50"
+                    .. "&include_delta_metadata=false&omit_columns=false&omit_properties=true&include_browse=false",
+            catalog_name, schema_name))
+    local tables = util.map(response.tables, convert_table)
+    log.debug("Found %d tables in %s.%s", #tables, catalog_name, schema_name)
+    return tables
 end
 
 return DatabricksRestClient

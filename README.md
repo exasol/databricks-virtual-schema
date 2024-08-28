@@ -12,6 +12,11 @@ If you want to set up a Virtual Schema for a different database system, please h
 
 * Access a Databricks data source in read only mode from an Exasol database, using a Virtual Schema.
 
+## Known Limitations
+
+* Currently only supports token authentication, see [issue #3](https://github.com/exasol/databricks-virtual-schema/issues/3)
+* Currently supports at most 50 tables per virtual schema, see [issue #8](https://github.com/exasol/databricks-virtual-schema/issues/8)
+
 ## Table of Contents
 
 ### Information for Users
