@@ -31,3 +31,4 @@ Find all the documentation in the [Virtual Schemas project](https://github.com/e
 ### Information for Developers
 
 * [Developer Guide](doc/developer_guide/developer_guide.md)
+* [Design](doc/developer_guide/design.md)
