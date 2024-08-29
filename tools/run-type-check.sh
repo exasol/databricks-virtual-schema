@@ -61,10 +61,46 @@ if ! "$language_server_executable" --check="$base_dir" --loglevel=trace --logpat
     echo "Type check failed with return code $?"
 fi
 
-check_result=$(cat "$type_check_result_json")
-if [ "$check_result" != "[]" ]; then
-    echo "Type check failed. Please check findings at $type_check_result_json"
+function evaluate_json_report_github_actions() {
+    # Based on https://github.com/LuaLS/lua-language-server/issues/2830#issuecomment-2315627616
+    jq -r '
+        to_entries[] |
+          (.key | sub("^.*?\\./"; "")) as $file | 
+        .value[] |
+          .code as $title |
+          (.range.start.line + 1) as $line |
+          (.range.start.character + 1) as $col |
+          .message as $message |
+        "\($file):\($line):\($col)::\($message)\n" +
+        "::error file=\($file),line=\($line),col=\($col),title=\($title)::\($message)"
+    ' "${type_check_result_json}"
+}
+
+function evaluate_json_report_human_readable() {
+    jq -r '
+        to_entries[] |
+          (.key | sub("^.*?\\./"; "")) as $file | 
+        .value[] |
+          .code as $title |
+          (.range.start.line + 1) as $line |
+          (.range.start.character + 1) as $col |
+          .message as $message |
+        "\($file):\($line):\($col) \($title): \($message)"
+    ' "${type_check_result_json}"
+}
+
+if [ -n "${GITHUB_ACTIONS:-}" ]; then
+    echo "::group::Type check results"
+    evaluate_json_report_github_actions
+    echo "::endgroup::"
+else
+    evaluate_json_report_human_readable
+fi
+
+
+if [ "$(jq -r 'length' "${type_check_result_json}")" -gt 0 ]; then
+    echo "Type check failed, see messages above for details."
     exit 1
-elif [ "$check_result" == "[]" ]; then
+else
     echo "Type check passed"
 fi
