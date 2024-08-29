@@ -35,8 +35,16 @@ function MetadataReader:_create_databricks_client(properties)
     return self._databricks_client_factory(connection_details)
 end
 
-local function convert_column_metadata()
+---@param databricks_column DatabricksColumn
+---@return ExasolDataType exasol_data_type
+local function convert_data_type(databricks_column)
 
+end
+
+---@param databricks_colum DatabricksColumn
+---@return ExasolColumnMetadata exasol_column_metadata
+local function convert_column_metadata(databricks_colum)
+    return {name = databricks_colum.name, dataType = convert_data_type(databricks_colum)}
 end
 
 ---@param databricks_table DatabricksTable

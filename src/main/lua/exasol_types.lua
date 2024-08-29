@@ -43,7 +43,7 @@ local ExasolTableMetadata = {}
 local ExasolColumnMetadata = {}
 
 ---@class ExasolDatatypeMetadata
----@field type ExasolDatatype Data type name, e.g. `decimal` or `varchar`
+---@field type ExasolDataType Data type name, e.g. `decimal` or `varchar`
 ---@field precision integer? The precision of the data type for types DECIMAL and INTERVAL
 ---@field scale integer? The scale of the data type for DECIMAL types
 ---@field size integer? The size of the data type for CHAR and VARCHAR types
@@ -59,7 +59,7 @@ local ExasolDatatypeMetadata = {}
 ---@enum ExasolObjectType
 M.EXASOL_OBJECT_TYPES = {TABLE = "table"}
 
----@enum ExasolDatatype
+---@enum ExasolDataType
 M.EXASOL_DATA_TYPES = {
     UNSUPPORTED = "unsupported",
     DECIMAL = "decimal",
