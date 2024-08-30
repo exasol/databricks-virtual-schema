@@ -45,6 +45,7 @@ fi
 if ! echo "$language_server_version_sha256 $language_server_archive" | sha256sum --check --status; then
     echo "SHA256 checksum mismatch for $language_server_archive. Expected $language_server_version_sha256 but actual checksum is:"
     sha256sum "$language_server_archive"
+    ls -l "$language_server_archive"
     exit 1
 fi
 
@@ -90,9 +91,7 @@ function evaluate_json_report_human_readable() {
 }
 
 if [ -n "${GITHUB_ACTIONS:-}" ]; then
-    echo "::group::Type check results"
     evaluate_json_report_github_actions
-    echo "::endgroup::"
 else
     evaluate_json_report_human_readable
 fi
