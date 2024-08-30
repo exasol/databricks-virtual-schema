@@ -43,6 +43,7 @@ public class ExasolFixture implements AutoCloseable {
     private final UdfLogCapturer udfLogCapturer;
     private AdapterScript adapterScript;
     private final DatabricksFixture databricksFixture;
+    private ConnectionDefinition connectionDefinition;
 
     private ExasolFixture(final ExasolContainer<? extends ExasolContainer<?>> exasol, final Connection connection,
             final ExasolObjectFactory objectFactory, final UdfLogCapturer udfLogCapturer,
@@ -114,23 +115,31 @@ public class ExasolFixture implements AutoCloseable {
     }
 
     private VirtualSchema createVirtualSchema(final Map<String, String> properties) {
+        return createVirtualSchema("DATABRICKS_VS", properties);
+    }
+
+    private VirtualSchema createVirtualSchema(final String vsName, final Map<String, String> additionalProperties) {
+        final Map<String, String> properties = createVirtualSchemaProperties(getConnectionDefinition());
+        properties.putAll(additionalProperties);
+        return objectFactory.createVirtualSchemaBuilder(vsName) //
+                .adapterScript(getAdapterScript()) //
+                .properties(properties) //
+                .build();
+    }
+
+    private AdapterScript getAdapterScript() {
         if (this.adapterScript == null) {
             this.adapterScript = createAdapterScript();
         }
-        final String vsName = "DATABRICKS_VS";
-        final ConnectionDefinition connectionDefinition = objectFactory
-                .createConnectionDefinition(vsName + "_CONNECTION", databricksFixture.getJdbcUrl());
-        return createVirtualSchema(vsName, connectionDefinition, properties);
+        return this.adapterScript;
     }
 
-    private VirtualSchema createVirtualSchema(final String vsName, final ConnectionDefinition connectionDefinition,
-            final Map<String, String> additionalProperties) {
-        final Map<String, String> properties = createVirtualSchemaProperties(connectionDefinition);
-        properties.putAll(additionalProperties);
-        return objectFactory.createVirtualSchemaBuilder(vsName) //
-                .adapterScript(this.adapterScript) //
-                .properties(properties) //
-                .build();
+    private ConnectionDefinition getConnectionDefinition() {
+        if (this.connectionDefinition == null) {
+            this.connectionDefinition = objectFactory.createConnectionDefinition("DATABRICKS_CONNECTION",
+                    databricksFixture.getJdbcUrl());
+        }
+        return this.connectionDefinition;
     }
 
     private Map<String, String> createVirtualSchemaProperties(final ConnectionDefinition connectionDefinition) {
@@ -147,7 +156,7 @@ public class ExasolFixture implements AutoCloseable {
     }
 
     public DbAssertions assertions() {
-        return new DbAssertions(metadata());
+        return new DbAssertions(this, metadata());
     }
 
     private AdapterScript createAdapterScript() {

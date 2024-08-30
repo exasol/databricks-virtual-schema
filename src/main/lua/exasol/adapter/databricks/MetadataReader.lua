@@ -38,6 +38,34 @@ end
 
 local EXASOL_MAX_VARCHAR_SIZE = 2000000
 
+---Extract precision and scale from Databricks type text for DECIMAL type
+---@param type_text string Databricks type text, e.g. "decimal(10,2)"
+---@return integer precision
+---@return integer scale
+local function extract_precision_and_scale(type_text)
+    return 1, 2
+end
+
+---@param databricks_column DatabricksColumn
+---@return string error_message
+local function unsupported_interval_type_error(databricks_column)
+    local exa_error = tostring(ExaError:new("E-VSDAB-9",
+                                            "Unknown Databricks interval type {{interval_type}} for column {{column_name}} "
+                                                    .. "at position {{column_position}} (comment: {{column_comment}})",
+                                            {
+        interval_type = databricks_column.type.text,
+        column_name = databricks_column.name,
+        column_position = databricks_column.position,
+        column_comment = databricks_column.comment
+    }):add_ticket_mitigation())
+    log.error(exa_error)
+    return exa_error
+end
+
+local function unsupported_type()
+    return nil
+end
+
 -- Databricks types: https://docs.databricks.com/en/sql/language-manual/sql-ref-datatypes.html
 ---@type table<string, fun(databricks_column: DatabricksColumn): ExasolDatatypeMetadata?>
 local DATA_TYPE_FACTORIES = {
@@ -77,11 +105,9 @@ local DATA_TYPE_FACTORIES = {
     end,
     DECIMAL = function(databricks_column)
         -- https://docs.databricks.com/en/sql/language-manual/data-types/decimal-type.html
-        return {
-            type = exasol.DATA_TYPES.DECIMAL,
-            precision = databricks_column.type.precision,
-            scale = databricks_column.type.scale
-        }
+        -- TODO: extract precision and scale from databricks_column.type.text
+        local precision, scale = extract_precision_and_scale(databricks_column.type.text)
+        return {type = exasol.DATA_TYPES.DECIMAL, precision = precision, scale = scale}
     end,
     BOOLEAN = function()
         -- https://docs.databricks.com/en/sql/language-manual/data-types/boolean-type.html
@@ -104,69 +130,25 @@ local DATA_TYPE_FACTORIES = {
         elseif databricks_column.type.text == "interval hour to second" then
             return {type = exasol.DATA_TYPES.INTERVAL, fromTo = exasol.INTERVAL_TYPES.DAY_TO_SECONDS}
         else
-            local exa_error = tostring(ExaError:new("E-VSDAB-9",
-                                                    "Unknown Databricks interval type {{interval_type}} for column {{column_name}} "
-                                                            .. "at position {{column_position}} (comment: {{column_comment}})",
-                                                    {
-                interval_type = databricks_column.type.text,
-                column_name = databricks_column.name,
-                column_position = databricks_column.position,
-                column_comment = databricks_column.comment
-            }):add_ticket_mitigation())
-            log.error(exa_error)
-            error(exa_error)
+            error(unsupported_interval_type_error(databricks_column))
         end
     end,
-    BINARY = function()
-        -- https://docs.databricks.com/en/sql/language-manual/data-types/binary-type.html
-        return nil
-    end,
-    ARRAY = function()
-        -- https://docs.databricks.com/en/sql/language-manual/data-types/array-type.html
-        return nil
-    end,
-    MAP = function()
-        -- https://docs.databricks.com/en/sql/language-manual/data-types/map-type.html
-        return nil
-    end,
-    STRUCT = function()
-        -- https://docs.databricks.com/en/sql/language-manual/data-types/struct-type.html
-        return nil
-    end,
-    VARIANT = function()
-        -- https://docs.databricks.com/en/sql/language-manual/data-types/variant-type.html
-        return nil
-    end
+    BINARY = unsupported_type,
+    ARRAY = unsupported_type,
+    MAP = unsupported_type,
+    STRUCT = unsupported_type,
+    VARIANT = unsupported_type
 }
 
 ---@param databricks_column DatabricksColumn
----@return ExasolDatatypeMetadata? exasol_data_type
-local function convert_data_type(databricks_column)
-    local data_type = databricks_column.type
-    local factory = DATA_TYPE_FACTORIES[data_type.name]
-    if factory then
-        local mapped_type = factory(databricks_column)
-        if mapped_type then
-            return mapped_type
-        else
-            local message = tostring(ExaError:new("E-VSDAB-8",
-                                                  "Unsupported Databricks data type {{data_type}}: ignore column {{column_name}} at position {{column_position}}",
-                                                  {
-                {
-                    data_type = data_type,
-                    column_name = databricks_column.name,
-                    column_position = databricks_column.position
-                }
-            }))
-            log.warn(message)
-            return nil
-        end
-    end
+---@return string error_message
+local function unknown_databricks_type_error(databricks_column)
     local exa_error = tostring(ExaError:new("E-VSDAB-7",
-                                            "Unknown Databricks data type {{data_type}} for column {{column_name}} "
+                                            "Unknown Databricks data type {{data_type}} / {{data_type_text}} for column {{column_name}} "
                                                     .. "at position {{column_position}} (precision: {{data_type_precision}}, "
                                                     .. "scale: {{data_type_scale}}, comment: {{column_comment}})", {
         data_type = databricks_column.type.name,
+        data_type_text = databricks_column.type.text,
         data_type_precision = databricks_column.type.precision,
         data_type_scale = databricks_column.type.scale,
         column_name = databricks_column.name,
@@ -174,19 +156,46 @@ local function convert_data_type(databricks_column)
         column_comment = databricks_column.comment
     }):add_ticket_mitigation())
     log.error(exa_error)
-    error(exa_error)
+    return exa_error
+end
+
+---@param databricks_column DatabricksColumn
+---@return string error_message
+local function unsupported_databricks_type_error(databricks_column)
+    local message = tostring(ExaError:new("E-VSDAB-8",
+                                          "Exasol does not support Databricks data type {{data_type}} of column {{column_name}} "
+                                                  .. "at position {{column_position}} with comment {{column_comment}}",
+                                          {
+        data_type = databricks_column.type.name,
+        column_name = databricks_column.name,
+        column_position = databricks_column.position,
+        column_comment = databricks_column.comment
+    }):add_mitigations("Please remove the column or change the data type."))
+    log.warn(message)
+    return message
+end
+
+---@param databricks_column DatabricksColumn
+---@return ExasolDatatypeMetadata exasol_data_type
+local function convert_data_type(databricks_column)
+    local data_type = databricks_column.type
+    local factory = DATA_TYPE_FACTORIES[data_type.name]
+    if not factory then
+        error(unknown_databricks_type_error(databricks_column))
+    end
+    local mapped_type = factory(databricks_column)
+    if not mapped_type then
+        error(unsupported_databricks_type_error(databricks_column))
+    end
+    return mapped_type
 end
 
 ---@param databricks_colum DatabricksColumn
----@return ExasolColumnMetadata? exasol_column_metadata
+---@return ExasolColumnMetadata exasol_column_metadata
 local function convert_column_metadata(databricks_colum)
-    local exasol_data_type = convert_data_type(databricks_colum)
-    if exasol_data_type == nil then
-        return nil
-    end
     return {
         name = databricks_colum.name,
-        dataType = exasol_data_type,
+        dataType = convert_data_type(databricks_colum),
         isNullable = databricks_colum.nullable,
         isIdentity = nil, -- Databricks does not support identity columns
         default = nil, -- Databricks does not support default values
@@ -197,13 +206,11 @@ end
 ---@param databricks_table DatabricksTable
 ---@return ExasolTableMetadata exasol_table_metadata
 local function convert_table_metadata(databricks_table)
-    local exasol_columns = util.map(databricks_table.columns, convert_column_metadata)
-    exasol_columns = util.filter_nil_values(exasol_columns)
     return {
         type = exasol.OBJECT_TYPES.TABLE,
         name = databricks_table.name,
         comment = databricks_table.comment,
-        columns = exasol_columns
+        columns = util.map(databricks_table.columns, convert_column_metadata)
     }
 end
 

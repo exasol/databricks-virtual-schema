@@ -35,7 +35,11 @@ public class DatabricksFixture implements AutoCloseable {
         return new DatabricksFixture(client, testConfig);
     }
 
-    public DatabricksCatalog createCatalog() {
+    public DatabricksSchema createSchema() {
+        return createCatalog().createSchema("schema");
+    }
+
+    private DatabricksCatalog createCatalog() {
         final long timestamp = System.currentTimeMillis();
         return createCatalog("vs-test-cat-" + timestamp);
     }

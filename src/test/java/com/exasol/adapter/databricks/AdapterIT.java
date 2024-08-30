@@ -1,10 +1,12 @@
 package com.exasol.adapter.databricks;
 
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.*;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
+import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
 
 class AdapterIT extends AbstractIntegrationTestBase {
@@ -62,12 +64,23 @@ class AdapterIT extends AbstractIntegrationTestBase {
                 .add("TIMESTAMP_NTZ", "TIMESTAMP WITH LOCAL TIME ZONE", 0) //
                 .add("INTERVAL YEAR TO MONTH", "INTERVAL", 0) //
                 .add("INTERVAL HOUR TO SECOND", "INTERVAL", 0) //
-                .add("ARRAY<INT>", "INTERVAL", 0) //
-                .add("MAP<INT,STRING>", "INTERVAL", 0) //
-                .add("STRUCT<id:INT,name:STRING>", "INTERVAL", 0) //
-                .add("VARIANT", "INTERVAL", 0) //
-                // OJBECT is not supported
-                //
                 .verify();
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiterString = ";", value = { "ARRAY<INT>; ARRAY", "MAP<INT,STRING>; MAP",
+            "STRUCT<id:INT,name:STRING>; STRUCT", "VARIANT; VARIANT" })
+    void unsupportedDataTypes(final String databricksType, final String typeInErrorMessage) {
+        final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
+        databricksSchema.createTable("tab", "col", databricksType + " COMMENT 'my column'");
+        testSetup.exasol().assertions().assertVirtualSchemaFails(databricksSchema,
+                equalTo(String.format(
+                        """
+                                E-VSDAB-8: Exasol does not support Databricks data type '%s' of column 'col' at position 0 with comment 'my column'
+
+                                Mitigations:
+
+                                * Please remove the column or change the data type.""",
+                        typeInErrorMessage)));
     }
 }

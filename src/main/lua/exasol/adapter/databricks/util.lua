@@ -43,14 +43,4 @@ function M.filter_list(list, predicate)
     return result
 end
 
----Filter nil values in a list.
----@generic T
----@param list T[] list to filter
----@return T[] filtered_list
-function M.filter_nil_values(list)
-    return M.filter_list(list, function(v)
-        return v ~= nil
-    end)
-end
-
 return M

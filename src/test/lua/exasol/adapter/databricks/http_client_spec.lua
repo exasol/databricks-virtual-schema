@@ -31,6 +31,7 @@ describe("http_client #utest", function()
                 })
                 if test.expect_custom_socket_factory then
                     assert(actual_socket_factory ~= nil)
+                    assert.is_function(actual_socket_factory)
                     local socket = actual_socket_factory({})
                     assert.is_table(socket)
                 else

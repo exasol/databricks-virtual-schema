@@ -39,7 +39,7 @@ public class MultiTestSetup {
     }
 
     public void verify() {
-        final DatabricksSchema databricksSchema = this.testSetup.databricks().createCatalog().createSchema("schema");
+        final DatabricksSchema databricksSchema = this.testSetup.databricks().createSchema();
         final Table databricksTable = createDatabricksTable(databricksSchema);
         final VirtualSchema vs = this.testSetup.exasol().createVirtualSchema(databricksSchema);
         verifyColumnMetadata(databricksTable, vs);
