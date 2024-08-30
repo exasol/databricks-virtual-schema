@@ -132,7 +132,6 @@ function M.request(args)
         log.error(exa_error)
         error(exa_error)
     end
-    print("start: ", start_time)
     local duration = math.floor((socket.gettime() - start_time) * 1000)
     log.debug("Received response with status %d ('%s') and body size %d in %dms", status_code, status_line, #body,
               duration)

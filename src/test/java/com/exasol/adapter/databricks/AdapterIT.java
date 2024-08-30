@@ -28,7 +28,6 @@ class AdapterIT extends AbstractIntegrationTestBase {
         assertCreateVirtualSchemaFails("system", "no-such-schema",
                 allOf(containsString("E-VSDAB-5: HTTP request for URL 'https://"),
                         containsString("Schema 'system.no-such-schema' does not exist.")));
-
     }
 
     @Test
@@ -85,7 +84,6 @@ class AdapterIT extends AbstractIntegrationTestBase {
     @ParameterizedTest
     @CsvSource(delimiterString = ";", value = { "ARRAY<INT>; ARRAY", "MAP<INT,STRING>; MAP",
             "STRUCT<id:INT,name:STRING>; STRUCT", "VARIANT; VARIANT", "BINARY; BINARY" })
-
     void unsupportedDataTypes(final String databricksType, final String typeInErrorMessage) {
         final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
         databricksSchema.createTable("tab", "col", databricksType + " COMMENT 'my column'");

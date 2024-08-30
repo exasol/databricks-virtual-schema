@@ -52,7 +52,6 @@ public class MetadataDao {
     }
 
     public List<ExaColumn> getVirtualColumns(final VirtualSchema virtualSchema, final Table databricksTable) {
-        // COLUMN_IS_NULLABLE and COLUMN_IDENTITY is are not filled for virtual schemas, so we cannot check them
         return queryList("""
                 select COLUMN_NAME, COLUMN_TYPE, COLUMN_MAXSIZE, COLUMN_NUM_PREC, COLUMN_NUM_SCALE
                 from SYS.EXA_ALL_COLUMNS

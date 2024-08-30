@@ -14,6 +14,11 @@ import com.exasol.adapter.databricks.fixture.exasol.MetadataDao.ExaColumn;
 import com.exasol.dbbuilder.dialects.Table;
 import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
 
+/**
+ * This class provides a fluent API for setting up and verifying multiple column tests. The goal is to speed up tests by
+ * reducing the number of Databricks tables to create. This creates a single Databricks table with multiple columns and
+ * verifies the metadata of all columns at once.
+ */
 public class MultiTestSetup {
     private static final Logger LOG = Logger.getLogger(MultiTestSetup.class.getName());
 

@@ -43,6 +43,13 @@ public class DbAssertions {
                 .matches());
     }
 
+    public void assertVirtualSchemaFails(final DatabricksSchema databricksSchema,
+            final Matcher<String> errorMessageMatcher) {
+        final RuntimeException exception = assertThrows(DatabaseObjectException.class,
+                () -> exasolFixture.createVirtualSchema(databricksSchema));
+        assertThat(extractLuaError(exception.getMessage()), errorMessageMatcher);
+    }
+
     private String extractLuaError(final String errorMessage) {
         final Pattern pattern = Pattern.compile("Lua Error .*\\|(.*?)\" caught in script.*", Pattern.DOTALL);
         final java.util.regex.Matcher matcher = pattern.matcher(errorMessage);
@@ -51,12 +58,5 @@ public class DbAssertions {
         } else {
             throw new IllegalArgumentException("No Lua error message found in '" + errorMessage + "'");
         }
-    }
-
-    public void assertVirtualSchemaFails(final DatabricksSchema databricksSchema,
-            final Matcher<String> errorMessageMatcher) {
-        final RuntimeException exception = assertThrows(DatabaseObjectException.class,
-                () -> exasolFixture.createVirtualSchema(databricksSchema));
-        assertThat(extractLuaError(exception.getMessage()), errorMessageMatcher);
     }
 }
