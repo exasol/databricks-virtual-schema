@@ -37,4 +37,8 @@ public class TestSetup implements AutoCloseable {
         this.exasolFixture.close();
         this.databricksFixture.close();
     }
+
+    public MultiTestSetup datatypeMappingTest() {
+        return new MultiTestSetup(this);
+    }
 }

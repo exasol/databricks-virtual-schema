@@ -1,9 +1,9 @@
 package com.exasol.adapter.databricks.fixture.exasol;
 
 import static com.exasol.matcher.ResultSetStructureMatcher.table;
-import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.util.List;
 
 import org.hamcrest.Matcher;
 
@@ -11,19 +11,21 @@ import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
 
 public class DbAssertions {
 
-    private final Connection connection;
+    private final MetadataDao metadataDao;
 
-    DbAssertions(final Connection connection) {
-        this.connection = connection;
+    DbAssertions(final MetadataDao metadataDao) {
+        this.metadataDao = metadataDao;
     }
 
     public void query(final String query, final Matcher<ResultSet> matcher) {
-        try (final Statement statement = this.connection.createStatement();
-                final ResultSet resultSet = statement.executeQuery(query)) {
-            assertThat(resultSet, matcher);
-        } catch (final SQLException exception) {
-            throw new IllegalStateException("Unable to execute query: '" + query + "'", exception);
-        }
+        query(query, List.of(), matcher);
+    }
+
+    private void query(final String query, final List<Object> parameters, final Matcher<ResultSet> matcher) {
+        metadataDao.query(query, parameters, resultSet -> {
+            matcher.matches(resultSet);
+            return null;
+        });
     }
 
     public void virtualSchemaExists(final VirtualSchema virtualSchema) {

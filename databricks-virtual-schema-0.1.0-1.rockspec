@@ -78,7 +78,7 @@ end
 
 build = {
     type = "command",
-    build_command = "cd " .. src .. " && amalg.lua "
+    build_command = "./tools/run-type-check.sh && cd " .. src .. " && amalg.lua "
             .. "--output=../../../target/databricks-virtual-schema-dist-" .. tag .. ".lua "
             .. "--script=entry.lua"
             .. item_path_list

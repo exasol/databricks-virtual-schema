@@ -12,7 +12,6 @@
         <java.version>17</java.version>
     </properties>
     <dependencies>
-        <!--Unit test dependencies -->
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
@@ -53,6 +52,12 @@
             <groupId>com.exasol</groupId>
             <artifactId>hamcrest-resultset-matcher</artifactId>
             <version>1.7.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.itsallcode</groupId>
+            <artifactId>hamcrest-auto-matcher</artifactId>
+            <version>0.7.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -29,7 +29,8 @@ local DatabricksColumn = {}
 ---Details for a Databricks type.
 ---See example data https://docs.databricks.com/api/workspace/tables/list
 ---@class DatabricksType
----@field name string Type name (uppercase, e.g. STRING, TIMESTAMP, INT, LONG)
----@field precision integer Precision of the type (default: 0)
----@field scale integer Scale of the type (default: 0)
+---@field name string Type name (uppercase, e.g. STRING, TIMESTAMP, INT, LONG, DECIMAL, INTERVAL)
+---@field text string Detailed type text (e.g. string, timestamp, int, bigint, decimal(3,5), interval day to second)
+---@field precision integer Precision of the type, seems to be always 0
+---@field scale integer Scale of the type, seems to be always 0
 local DatabricksType = {}

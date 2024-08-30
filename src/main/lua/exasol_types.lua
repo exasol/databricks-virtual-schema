@@ -57,11 +57,10 @@ local ExasolColumnMetadata = {}
 local ExasolDatatypeMetadata = {}
 
 ---@enum ExasolObjectType
-M.EXASOL_OBJECT_TYPES = {TABLE = "table"}
+M.OBJECT_TYPES = {TABLE = "table"}
 
 ---@enum ExasolDataType
-M.EXASOL_DATA_TYPES = {
-    UNSUPPORTED = "unsupported",
+M.DATA_TYPES = {
     DECIMAL = "decimal",
     DOUBLE = "double",
     VARCHAR = "varchar",
@@ -71,11 +70,12 @@ M.EXASOL_DATA_TYPES = {
     BOOLEAN = "boolean",
     GEOMETRY = "geometry",
     INTERVAL = "interval",
-    HASHTYPE = "hashtype",
-    UNKNOWN = "unknown"
+    HASHTYPE = "hashtype"
+    -- UNKNOWN = "unknown" -- Causes Exasol error "Unsupported data type (UNKNOWN)"
+    -- UNSUPPORTED = "unsupported", -- Unsupported data type (UNSUPPORTED)
 }
 
 ---@enum ExasolIntervalType
-M.INTERVAL_TYPES = {DAY_TO_SECONDS_VALUE = "DAY TO SECONDS", YEAR_TO_MONTH_VALUE = "YEAR TO MONTH"}
+M.INTERVAL_TYPES = {DAY_TO_SECONDS = "DAY TO SECONDS", YEAR_TO_MONTH = "YEAR TO MONTH"}
 
 return M

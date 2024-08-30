@@ -41,7 +41,7 @@ function DatabricksRestClient:_get_request(path)
     })
     local data = cjson.decode(body)
     if data.next_page_token then
-        local exa_error = ExaError:new("E-VSDAB-6",
+        local exa_error = ExaError:new("E-VSDAB-8",
                                        "Pagination not implemented yet for request {{url}}, next page token: {{next_page_token}}",
                                        {url = url, next_page_token = data.next_page_token})
         log.error(exa_error)
@@ -68,7 +68,7 @@ local function convert_column(raw)
         name = raw.name,
         position = raw.position,
         comment = raw.comment,
-        type = {name = raw.type_name, precision = raw.type_precision, scale = raw.type_scale},
+        type = {name = raw.type_name, text = raw.type_text, precision = raw.type_precision, scale = raw.type_scale},
         nullable = raw.nullable
     }
 end
@@ -87,7 +87,7 @@ end
 function DatabricksRestClient:list_tables(catalog_name, schema_name)
     local response = self:_get_request(string.format(
             "/api/2.1/unity-catalog/tables?catalog_name=%s&schema_name=%s&max_results=50"
-                    .. "&include_delta_metadata=false&omit_columns=false&omit_properties=true&include_browse=false",
+                    .. "&include_delta_metadata=true&omit_columns=false&omit_properties=true&include_browse=false",
             catalog_name, schema_name))
     local tables = util.map(response.tables, convert_table)
     log.debug("Found %d tables in %s.%s", #tables, catalog_name, schema_name)

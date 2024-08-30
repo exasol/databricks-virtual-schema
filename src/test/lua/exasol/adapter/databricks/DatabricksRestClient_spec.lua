@@ -47,7 +47,7 @@ describe("DatabricksRestClient #itest", function()
                 name = "table_catalog",
                 comment = "Catalog that contains the relation.",
                 position = 0,
-                type = {name = "STRING", precision = 0, scale = 0},
+                type = {name = "STRING", text = "string", precision = 0, scale = 0},
                 nullable = false
             }
             assert.is.same(expected_catalog_column, columns_table.columns[1])
@@ -56,7 +56,7 @@ describe("DatabricksRestClient #itest", function()
                 name = "ordinal_position",
                 comment = "The position (numbered from 1) of the column within the relation.",
                 position = 4,
-                type = {name = "INT", precision = 0, scale = 0},
+                type = {name = "INT", text = "int", precision = 0, scale = 0},
                 nullable = false
             }
             assert.is.same(expected_position_column, columns_table.columns[5])
@@ -65,7 +65,7 @@ describe("DatabricksRestClient #itest", function()
                 name = "character_maximum_length",
                 comment = "Always NULL, reserved for future use.",
                 position = 9,
-                type = {name = "LONG", precision = 0, scale = 0},
+                type = {name = "LONG", text = "bigint", precision = 0, scale = 0},
                 nullable = true
             }
             assert.is.same(expected_max_length_column, columns_table.columns[10])
