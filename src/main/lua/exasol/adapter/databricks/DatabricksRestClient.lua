@@ -50,17 +50,6 @@ function DatabricksRestClient:_get_request(path)
     return data
 end
 
----Get a list of all catalogs.
----@return DatabricksCatalog[] catalogs
-function DatabricksRestClient:list_catalogs()
-    local response = self:_get_request("/api/2.1/unity-catalog/catalogs?include_browse=true&max_results=1000")
-    local catalogs = util.map(response.catalogs, function(raw)
-        return {name = raw.name, browse_only = raw.browse_only, full_name = raw.full_name}
-    end)
-    log.debug("Received %d catalogs", #catalogs)
-    return catalogs
-end
-
 ---@param raw table<string,any> raw data
 ---@return DatabricksColumn
 local function convert_column(raw)

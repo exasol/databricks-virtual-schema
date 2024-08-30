@@ -18,17 +18,6 @@ local function testee()
 end
 
 describe("DatabricksRestClient #itest", function()
-    describe("list_catalogs()", function()
-        it("should be able to list catalogs", function()
-            local catalogs = testee():list_catalogs()
-            assert.is_table(catalogs)
-            assert.is_true(#catalogs > 0)
-            local system_catalog = utils.find_first(catalogs, function(catalog)
-                return catalog.name == "system"
-            end)
-            assert.is.same({name = "system", browse_only = false, full_name = "system"}, system_catalog)
-        end)
-    end)
     describe("list_tables()", function()
         it("should be able to list tables", function()
             local tables = testee():list_tables("system", "information_schema")
