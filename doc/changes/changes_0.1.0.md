@@ -15,7 +15,7 @@ Code name:
 * Added `com.databricks:databricks-jdbc:2.6.40`
 * Added `com.databricks:databricks-sdk-java:0.30.0`
 * Added `com.exasol:exasol-testcontainers:7.1.1`
-* Added `com.exasol:hamcrest-resultset-matcher:1.6.5`
+* Added `com.exasol:hamcrest-resultset-matcher:1.7.0`
 * Added `com.exasol:maven-project-version-getter:1.2.0`
 * Added `com.exasol:test-db-builder-java:3.5.4`
 * Added `com.exasol:virtual-schema-shared-integration-tests:3.0.0`

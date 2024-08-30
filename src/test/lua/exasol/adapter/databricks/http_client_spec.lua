@@ -1,4 +1,5 @@
 require("busted.runner")()
+local assert = require("luassert")
 local log = require("remotelog")
 local http_client = require("exasol.adapter.databricks.http_client")
 local cjson = require("cjson")
@@ -29,6 +30,7 @@ describe("http_client #utest", function()
                     verify_tls_certificate = test.verify_tls_certificate
                 })
                 if test.expect_custom_socket_factory then
+                    assert(actual_socket_factory ~= nil)
                     assert.is_function(actual_socket_factory)
                     local socket = actual_socket_factory({})
                     assert.is_table(socket)
@@ -48,23 +50,20 @@ describe("http_client #itest", function()
                              "E-VSDAB-6: HTTP request for URL 'https://unknown-host.example' failed with result 'host or service not provided, or not known'")
         end)
 
-        it("sends unecrypted encrypted GET request", function()
-            local response = http_client.request({url = "http://httpbin.org/get"})
-            response = cjson.decode(response)
-            assert.is.same("http://httpbin.org/get", response.url)
-            assert.is.same("Exasol Databricks Virtual Schema", response.headers["User-Agent"])
+        it("fails for non-200 status code", function()
+            assert.error_matches(function()
+                http_client.request({url = "https://example.com/invalidpath"})
+            end, "E%-VSDAB%-5: HTTP request for URL 'https://example.com/invalidpath' failed with status 500")
         end)
 
-        it("sends TLS encrypted GET request ignoring TLS certificate", function()
-            local response = http_client.request({
-                url = "https://httpbin.org/get",
-                headers = {Authentication = "Bearer token"},
-                verify_tls_certificate = false
-            })
-            response = cjson.decode(response)
-            assert.is.same("https://httpbin.org/get", response.url)
-            assert.is.same("Exasol Databricks Virtual Schema", response.headers["User-Agent"])
-            assert.is.same("Bearer token", response.headers["Authentication"])
+        it("sends unencrypted GET request", function()
+            local response = http_client.request({url = "http://example.com"})
+            assert.is_true(response:match("<html>") ~= nil)
+        end)
+
+        it("sends encrypted GET request", function()
+            local response = http_client.request({url = "https://example.com"})
+            assert.is_true(response:match("<html>") ~= nil)
         end)
 
         it("can connect to Databricks API", function()

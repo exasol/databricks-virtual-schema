@@ -33,6 +33,7 @@ local CONNECTION_NAME_PROPERTY<const> = "CONNECTION_NAME"
 -- @raise validation error
 function DatabricksAdapterProperties:validate()
     AdapterProperties.validate(self) -- super call
+    ---@diagnostic disable-next-line: undefined-field # Type annotations for library not available
     if not self:has_value(CONNECTION_NAME_PROPERTY) then
         ExaError:new("F-VSDAB-1", "Property '" .. CONNECTION_NAME_PROPERTY .. "' is missing"):add_mitigations(
                 "Specify the '" .. CONNECTION_NAME_PROPERTY .. ' property in the CREATE VIRTUAL SCHEMA statement.')
@@ -43,6 +44,7 @@ end
 --- Get the name of the database object that defines the parameter of the connection to the remote data source.
 -- @return name of the connection object
 function DatabricksAdapterProperties:get_connection_name()
+    ---@diagnostic disable-next-line: undefined-field # Type annotations for library not available
     return self:get(CONNECTION_NAME_PROPERTY)
 end
 

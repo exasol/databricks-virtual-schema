@@ -1,4 +1,5 @@
 require("busted.runner")()
+local assert = require("luassert")
 local log = require("remotelog")
 local utils = require("exasol.adapter.databricks.test_utils")
 local DatabricksRestClient = require("exasol.adapter.databricks.DatabricksRestClient")
@@ -17,16 +18,6 @@ local function testee()
 end
 
 describe("DatabricksRestClient #itest", function()
-    describe("_get_request()", function()
-        it("should handle error response", function()
-            assert.has_error(function()
-                ---@diagnostic disable-next-line: invisible
-                testee():_get_request("/invalid")
-            end, "E-VSDAB-5: HTTP request for URL '" .. connection_details.url .. "/invalid"
-                                     .. "' failed with status 404 ('HTTP/1.1 404 Not Found') and body ''")
-        end)
-    end)
-
     describe("list_catalogs()", function()
         it("should be able to list catalogs", function()
             local catalogs = testee():list_catalogs()

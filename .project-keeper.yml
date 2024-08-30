@@ -12,7 +12,7 @@ excludes:
   - regex: "E-PK-CORE-62: The project's README\\.md does not contain a valid badges block\\. Please add or replace the following badges:.*"
 linkReplacements:
 build:
-  freeDiskSpace: true
+  freeDiskSpace: false
   exasolDbVersions:
     - "8.29.1"
   workflows:

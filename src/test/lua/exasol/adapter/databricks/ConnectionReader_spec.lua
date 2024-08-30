@@ -1,4 +1,5 @@
 require("busted.runner")()
+local assert = require("luassert")
 local ConnectionReader = require("exasol.adapter.databricks.ConnectionReader")
 
 ---@param connection Connection?
