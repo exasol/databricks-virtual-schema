@@ -41,7 +41,7 @@ function DatabricksRestClient:_get_request(path)
     })
     local data = cjson.decode(body)
     if data.next_page_token then
-        local exa_error = ExaError:new("E-VSDAB-8",
+        local exa_error = ExaError:new("E-VSDAB-12",
                                        "Pagination not implemented yet for request {{url}}, next page token: {{next_page_token}}",
                                        {url = url, next_page_token = data.next_page_token})
         log.error(exa_error)

@@ -31,6 +31,6 @@ local DatabricksColumn = {}
 ---@class DatabricksType
 ---@field name string Type name (uppercase, e.g. STRING, TIMESTAMP, INT, LONG, DECIMAL, INTERVAL)
 ---@field text string Detailed type text (e.g. string, timestamp, int, bigint, decimal(3,5), interval day to second)
----@field precision integer Precision of the type, seems to be always 0
----@field scale integer Scale of the type, seems to be always 0
+---@field precision? integer Precision of the type, seems to be always 0
+---@field scale? integer Scale of the type, seems to be always 0
 local DatabricksType = {}

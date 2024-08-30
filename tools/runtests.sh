@@ -19,6 +19,7 @@ readonly luacov_dir="$target_dir/luacov-reports"
 function print_coverage_summary {
     echo
     grep --after 500 'File\s*Hits' "$luacov_dir/luacov.report.out"
+    echo "Coverage report is available at: $luacov_dir/luacov.report.out"
 }
 
 rm -rf "$luacov_dir"
