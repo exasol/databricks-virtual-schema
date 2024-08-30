@@ -6,8 +6,7 @@ import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.hamcrest.Matcher;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
 
 import com.exasol.adapter.databricks.fixture.TestSetup;
 import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
@@ -20,6 +19,11 @@ class AbstractIntegrationTestBase {
     static void beforeAll() {
         testSetup = TestSetup.start();
         testSetup.exasol().buildAdapter();
+    }
+
+    @AfterEach
+    void cleanupAfterTest() {
+        testSetup.cleanupAfterTest();
     }
 
     @AfterAll

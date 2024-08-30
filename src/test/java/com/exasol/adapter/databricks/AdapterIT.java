@@ -58,7 +58,6 @@ class AdapterIT extends AbstractIntegrationTestBase {
                 .add("DECIMAL(38)", "DECIMAL(38)", 0) //
                 .add("DECIMAL(38,38)", "DECIMAL(38,38)", 0) //
 
-                .add("BINARY", "VARCHAR", 0) //
                 .add("BOOLEAN", "BOOLEAN", 0) //
                 .add("TIMESTAMP", "TIMESTAMP", 0) //
                 .add("TIMESTAMP_NTZ", "TIMESTAMP WITH LOCAL TIME ZONE", 0) //
@@ -69,7 +68,8 @@ class AdapterIT extends AbstractIntegrationTestBase {
 
     @ParameterizedTest
     @CsvSource(delimiterString = ";", value = { "ARRAY<INT>; ARRAY", "MAP<INT,STRING>; MAP",
-            "STRUCT<id:INT,name:STRING>; STRUCT", "VARIANT; VARIANT" })
+            "STRUCT<id:INT,name:STRING>; STRUCT", "VARIANT; VARIANT", "BINARY, BINARY" })
+
     void unsupportedDataTypes(final String databricksType, final String typeInErrorMessage) {
         final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
         databricksSchema.createTable("tab", "col", databricksType + " COMMENT 'my column'");

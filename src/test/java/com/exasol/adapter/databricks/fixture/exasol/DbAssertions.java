@@ -57,6 +57,6 @@ public class DbAssertions {
             final Matcher<String> errorMessageMatcher) {
         final RuntimeException exception = assertThrows(DatabaseObjectException.class,
                 () -> exasolFixture.createVirtualSchema(databricksSchema));
-        assertThat(extractLuaError(exception.getCause().getMessage()), errorMessageMatcher);
+        assertThat(extractLuaError(exception.getMessage()), errorMessageMatcher);
     }
 }

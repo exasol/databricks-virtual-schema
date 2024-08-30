@@ -41,8 +41,9 @@ public class ExasolFixture implements AutoCloseable {
     private final Connection connection;
     private final ExasolObjectFactory objectFactory;
     private final UdfLogCapturer udfLogCapturer;
-    private AdapterScript adapterScript;
     private final DatabricksFixture databricksFixture;
+    private final List<Runnable> cleanupTasks = new ArrayList<>();
+    private AdapterScript adapterScript;
     private ConnectionDefinition connectionDefinition;
 
     private ExasolFixture(final ExasolContainer<? extends ExasolContainer<?>> exasol, final Connection connection,
@@ -121,10 +122,12 @@ public class ExasolFixture implements AutoCloseable {
     private VirtualSchema createVirtualSchema(final String vsName, final Map<String, String> additionalProperties) {
         final Map<String, String> properties = createVirtualSchemaProperties(getConnectionDefinition());
         properties.putAll(additionalProperties);
-        return objectFactory.createVirtualSchemaBuilder(vsName) //
+        final VirtualSchema virtualSchema = objectFactory.createVirtualSchemaBuilder(vsName) //
                 .adapterScript(getAdapterScript()) //
                 .properties(properties) //
                 .build();
+        this.cleanupTasks.add(() -> virtualSchema.drop());
+        return virtualSchema;
     }
 
     private AdapterScript getAdapterScript() {
@@ -171,6 +174,11 @@ public class ExasolFixture implements AutoCloseable {
         } catch (final IOException exception) {
             throw new UncheckedIOException(exception);
         }
+    }
+
+    public void cleanupAfterTest() {
+        cleanupTasks.forEach(Runnable::run);
+        cleanupTasks.clear();
     }
 
     @Override
