@@ -48,15 +48,15 @@ public class MultiTestSetup {
     private MultiTestSetup add(final String databricksType, final String expectedExasolType, final Long expectedMaxSize,
             final Long expectedPrecision, final Long expectedScale) {
         final int colId = this.columnTests.size();
-        final String columnName = String.format("col%02d_%s", colId, removeSpecialChars(databricksType));
+        final String columnName = String.format("col%02d_%s", colId, sanitizeColumnName(databricksType));
         final ColumnTest columnTest = new ColumnTest(columnName, databricksType, expectedExasolType, expectedMaxSize,
                 expectedPrecision, expectedScale);
         this.columnTests.add(columnTest);
         return this;
     }
 
-    private String removeSpecialChars(String value) {
-        for (final String specialChar : List.of(" ", "'", "(", ")")) {
+    private String sanitizeColumnName(String value) {
+        for (final String specialChar : List.of(" ", ",", "'", "(", ")")) {
             value = value.replace(specialChar, "_");
         }
         return value;

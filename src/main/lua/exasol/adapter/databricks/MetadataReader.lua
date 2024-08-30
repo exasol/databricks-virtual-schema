@@ -38,12 +38,39 @@ end
 
 local EXASOL_MAX_VARCHAR_SIZE = 2000000
 
----Extract precision and scale from Databricks type text for DECIMAL type
----@param type_text string Databricks type text, e.g. "decimal(10,2)"
----@return integer precision
----@return integer scale
-local function extract_precision_and_scale(type_text)
-    return 1, 2
+---@param databricks_column DatabricksColumn
+---@return string error_message
+local function unsupported_decimal_type_error(databricks_column)
+    local exa_error = tostring(ExaError:new("E-VSDAB-10",
+                                            "Unknown Databricks decimal type {{decimal_type}} for column {{column_name}} "
+                                                    .. "at position {{column_position}} (comment: {{column_comment}})",
+                                            {
+        decimal_type = databricks_column.type.text,
+        column_name = databricks_column.name,
+        column_position = databricks_column.position,
+        column_comment = databricks_column.comment
+    }):add_ticket_mitigation())
+    log.error(exa_error)
+    return exa_error
+end
+
+local MAX_DECIMAL_PRECISION<const> = 36
+
+---@param databricks_column DatabricksColumn
+---@return string error_message
+local function unsupported_decimal_precision_error(databricks_column)
+    local exa_error = tostring(ExaError:new("E-VSDAB-11",
+                                            "Unsupported decimal precision {{decimal_type}} for column {{column_name}} "
+                                                    .. "at position {{column_position}} (comment: {{column_comment}}), "
+                                                    .. "Exasol supports a maximum precision of {{max_precision}}.", {
+        decimal_type = databricks_column.type.text,
+        column_name = databricks_column.name,
+        column_position = databricks_column.position,
+        column_comment = databricks_column.comment,
+        max_precision = MAX_DECIMAL_PRECISION
+    }):add_mitigations("Please remove the column or change the data type."))
+    log.error(exa_error)
+    return exa_error
 end
 
 ---@param databricks_column DatabricksColumn
@@ -105,8 +132,17 @@ local DATA_TYPE_FACTORIES = {
     end,
     DECIMAL = function(databricks_column)
         -- https://docs.databricks.com/en/sql/language-manual/data-types/decimal-type.html
-        -- TODO: extract precision and scale from databricks_column.type.text
-        local precision, scale = extract_precision_and_scale(databricks_column.type.text)
+        -- Remove all whitespace
+        local type_text_without_whitespace = databricks_column.type.text:gsub("%s+", "")
+        -- Extract precision and scale from `decimal(10,2)`
+        local precision_string, scale_string = type_text_without_whitespace:match("decimal%((%d+),(%d+)%)")
+        local precision, scale = math.tointeger(precision_string), math.tointeger(scale_string)
+        if precision == nil or scale == nil then
+            error(unsupported_decimal_type_error(databricks_column))
+        end
+        if precision > MAX_DECIMAL_PRECISION then
+            error(unsupported_decimal_precision_error(databricks_column))
+        end
         return {type = exasol.DATA_TYPES.DECIMAL, precision = precision, scale = scale}
     end,
     BOOLEAN = function()

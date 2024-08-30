@@ -17,9 +17,10 @@ public class DatabricksFixture implements AutoCloseable {
     private static final Logger LOG = Logger.getLogger(DatabricksFixture.class.getName());
     private final WorkspaceClient client;
     private final TestConfig config;
-    private final List<DatabricksCatalog> catalogs = new ArrayList<>();
+    private final List<Runnable> cleanupTasks = new ArrayList<>();
 
     private EndpointInfo endpoint;
+    private DatabricksCatalog catalog;
 
     private DatabricksFixture(final WorkspaceClient client, final TestConfig config) {
         this.client = client;
@@ -36,18 +37,21 @@ public class DatabricksFixture implements AutoCloseable {
     }
 
     public DatabricksSchema createSchema() {
-        return createCatalog().createSchema("schema");
+        return getCatalog().createSchema("schema-" + System.currentTimeMillis());
     }
 
-    private DatabricksCatalog createCatalog() {
-        final long timestamp = System.currentTimeMillis();
-        return createCatalog("vs-test-cat-" + timestamp);
+    private DatabricksCatalog getCatalog() {
+        if (this.catalog == null) {
+            final long timestamp = System.currentTimeMillis();
+            this.catalog = createCatalog("vs-test-cat-" + timestamp);
+        }
+        return this.catalog;
     }
 
-    public DatabricksCatalog createCatalog(final String name) {
+    private DatabricksCatalog createCatalog(final String name) {
         final DatabricksObjectWriter writer = new DatabricksObjectWriter(getJdbcConnection(), client, config);
         final DatabricksCatalog catalog = writer.createCatalog(name);
-        this.catalogs.add(catalog);
+        this.cleanupTasks.add(catalog::drop);
         return catalog;
     }
 
@@ -97,9 +101,7 @@ public class DatabricksFixture implements AutoCloseable {
 
     @Override
     public void close() {
-        for (final DatabricksCatalog catalog : this.catalogs) {
-            catalog.drop();
-        }
-        this.catalogs.clear();
+        cleanupTasks.forEach(Runnable::run);
+        cleanupTasks.clear();
     }
 }
