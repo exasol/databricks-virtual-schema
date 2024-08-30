@@ -12,7 +12,7 @@ luarocks install --local --server=https://luarocks.org/dev luaformatter
 
 ### Install Lua Type Definitions
 
-Run this script to download / update Lua type definitions for third party libraries. They will be stored in `target/lua-type-definitions/`.
+Run the following script to download / update Lua type definitions for third party libraries. They will be stored in `target/lua-type-definitions/`.
 
 ```sh
 ./tools/fetch-lua-type-definitions.sh
