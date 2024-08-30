@@ -125,10 +125,36 @@ local DATA_TYPE_FACTORIES = {
     end,
     INTERVAL = function(databricks_column)
         -- https://docs.databricks.com/en/sql/language-manual/data-types/interval-type.html
-        if databricks_column.type.text == "interval year to month" then
-            return {type = exasol.DATA_TYPES.INTERVAL, fromTo = exasol.INTERVAL_TYPES.YEAR_TO_MONTH}
-        elseif databricks_column.type.text == "interval hour to second" then
-            return {type = exasol.DATA_TYPES.INTERVAL, fromTo = exasol.INTERVAL_TYPES.DAY_TO_SECONDS}
+
+        local DAY_TO_SECONDS<const> = exasol.INTERVAL_TYPES.DAY_TO_SECONDS
+        local YEAR_TO_MONTH<const> = exasol.INTERVAL_TYPES.YEAR_TO_MONTH
+        -- Mapping of Databricks interval types to precision and fraction is not clear, using maximum values.
+        local MAX_PRECISION<const> = 9
+        local MAX_FRACTION<const> = 9
+        ---@type table<string, {fromTo: ExasolIntervalType, fraction: integer?}>
+        local interval_types = {
+            ["interval year"] = {fromTo = YEAR_TO_MONTH, fraction = nil},
+            ["interval year to month"] = {fromTo = YEAR_TO_MONTH, fraction = nil},
+            ["interval month"] = {fromTo = YEAR_TO_MONTH, fraction = nil},
+            ["interval day"] = {fromTo = DAY_TO_SECONDS, fraction = MAX_FRACTION},
+            ["interval day to hour"] = {fromTo = DAY_TO_SECONDS, fraction = MAX_FRACTION},
+            ["interval day to minute"] = {fromTo = DAY_TO_SECONDS, fraction = MAX_FRACTION},
+            ["interval day to second"] = {fromTo = DAY_TO_SECONDS, fraction = MAX_FRACTION},
+            ["interval hour"] = {fromTo = DAY_TO_SECONDS, fraction = MAX_FRACTION},
+            ["interval hour to minute"] = {fromTo = DAY_TO_SECONDS, fraction = MAX_FRACTION},
+            ["interval hour to second"] = {fromTo = DAY_TO_SECONDS, fraction = MAX_FRACTION},
+            ["interval minute"] = {fromTo = DAY_TO_SECONDS, fraction = MAX_FRACTION},
+            ["interval minute to second"] = {fromTo = DAY_TO_SECONDS, fraction = MAX_FRACTION},
+            ["interval second"] = {fromTo = DAY_TO_SECONDS, fraction = MAX_FRACTION}
+        }
+        local interval_type = interval_types[databricks_column.type.text]
+        if interval_type then
+            return {
+                type = exasol.DATA_TYPES.INTERVAL,
+                fromTo = interval_type.fromTo,
+                precision = MAX_PRECISION,
+                fraction = interval_type.fraction
+            }
         else
             error(unsupported_interval_type_error(databricks_column))
         end

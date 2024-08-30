@@ -53,7 +53,7 @@ local ExasolColumnMetadata = {}
 ---@field srid integer? The spatial reference identifier for data type GEOMETRY
 ---@field bytesize integer? The byte size of type HASHTYPE
 ---@field fromTo ExasolIntervalType? The range of type INTERVAL
----@field fraction integer? The fraction of type INTERVAL
+---@field fraction integer? The fraction of type INTERVAL DAY TO SECOND
 local ExasolDatatypeMetadata = {}
 
 ---@enum ExasolObjectType

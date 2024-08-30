@@ -29,13 +29,37 @@ public class MultiTestSetup {
         return add(databricksType, expectedExasolType, expectedMaxSize, null, null);
     }
 
+    public MultiTestSetup addIntervalYearToMonth(final String databricksType) {
+        // Mapping of Databricks interval types to precision is not clear, using maximum value.
+        return add(databricksType, "INTERVAL YEAR(9) TO MONTH", 13L, null, null);
+    }
+
+    public MultiTestSetup addIntervalDayToSecond(final String databricksType) {
+        // Mapping of Databricks interval types to precision and fraction is not clear, using maximum values.
+        return add(databricksType, "INTERVAL DAY(9) TO SECOND(9)", 29L, null, null);
+    }
+
+    public MultiTestSetup addDecimal(final String databricksType, final long expectedPrecision,
+            final long expectedScale) {
+        return add(databricksType, String.format("DECIMAL(%d,%d)", expectedPrecision, expectedScale), expectedPrecision,
+                expectedPrecision, expectedScale);
+    }
+
     private MultiTestSetup add(final String databricksType, final String expectedExasolType, final Long expectedMaxSize,
             final Long expectedPrecision, final Long expectedScale) {
         final int colId = this.columnTests.size();
-        final ColumnTest columnTest = new ColumnTest("col" + colId, databricksType, expectedExasolType, expectedMaxSize,
+        final String columnName = String.format("col%02d_%s", colId, removeSpecialChars(databricksType));
+        final ColumnTest columnTest = new ColumnTest(columnName, databricksType, expectedExasolType, expectedMaxSize,
                 expectedPrecision, expectedScale);
         this.columnTests.add(columnTest);
         return this;
+    }
+
+    private String removeSpecialChars(String value) {
+        for (final String specialChar : List.of(" ", "'", "(", ")")) {
+            value = value.replace(specialChar, "_");
+        }
+        return value;
     }
 
     public void verify() {

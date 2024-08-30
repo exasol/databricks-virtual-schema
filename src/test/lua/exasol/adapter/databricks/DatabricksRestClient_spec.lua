@@ -65,7 +65,7 @@ describe("DatabricksRestClient #itest", function()
                 name = "character_maximum_length",
                 comment = "Always NULL, reserved for future use.",
                 position = 9,
-                type = {name = "LONG", text = "bigint", precision = 0, scale = 0},
+                type = {name = "LONG", text = "long", precision = 0, scale = 0},
                 nullable = true
             }
             assert.is.same(expected_max_length_column, columns_table.columns[10])
