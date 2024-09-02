@@ -13,7 +13,7 @@ http.USERAGENT = "Exasol Databricks Virtual Schema"
 ---@field headers table<string, string> | nil
 ---@field verify_tls_certificate boolean | nil default: true
 
----@alias SocketFactory fun(args: table<string,any>): TCPSocket
+---@alias SocketFactory fun(args: table<string, any>): TCPSocket
 
 local M = {}
 
@@ -73,7 +73,7 @@ local function is_unencrypted(url)
 end
 
 ---@param verify_tls_certificate boolean
----@return table<string,any> args
+---@return table<string, any> args
 local function get_socket_params(verify_tls_certificate)
     local verify_mode = verify_tls_certificate and "peer" or "none"
     return {protocol = "tlsv1_2", mode = "client", verify = verify_mode, options = "all"}
@@ -103,7 +103,7 @@ function M.request(args)
 
     log.trace("Sending %s request to %s with %d headers", method, url, #headers)
     local sink, get_body = table_sink()
-
+    local start_time = socket.gettime()
     local result, status_code, _response_headers, status_line = http.request({
         url = url,
         method = method,
@@ -132,7 +132,9 @@ function M.request(args)
         log.error(exa_error)
         error(exa_error)
     end
-    log.debug("Received response with status %d ('%s') and body size %d", status_code, status_line, #body)
+    local duration = math.floor((socket.gettime() - start_time) * 1000)
+    log.debug("Received response with status %d ('%s') and body size %d in %dms", status_code, status_line, #body,
+              duration)
     log.trace("Received body %s", body)
     return body
 end

@@ -27,8 +27,8 @@ readonly language_server_version_sha256
 
 readonly language_server_url="https://github.com/LuaLS/lua-language-server/releases/download/${language_server_version}/lua-language-server-${language_server_version}-${architecture}.tar.gz"
 readonly target_dir="$base_dir/target"
-readonly language_server_archive="$target_dir/lua-language-server.tar.gz"
-readonly language_server_dir="$target_dir/lua-language-server"
+readonly language_server_archive="$target_dir/luals-$language_server_version-$architecture.tar.gz"
+readonly language_server_dir="$target_dir/lua-ls-$language_server_version-$architecture"
 readonly language_server_executable="$language_server_dir/bin/lua-language-server"
 readonly type_check_log_dir="$target_dir/type-checker-logs"
 
@@ -45,6 +45,7 @@ fi
 if ! echo "$language_server_version_sha256 $language_server_archive" | sha256sum --check --status; then
     echo "SHA256 checksum mismatch for $language_server_archive. Expected $language_server_version_sha256 but actual checksum is:"
     sha256sum "$language_server_archive"
+    ls -l "$language_server_archive"
     exit 1
 fi
 
@@ -90,9 +91,7 @@ function evaluate_json_report_human_readable() {
 }
 
 if [ -n "${GITHUB_ACTIONS:-}" ]; then
-    echo "::group::Type check results"
     evaluate_json_report_github_actions
-    echo "::endgroup::"
 else
     evaluate_json_report_human_readable
 fi

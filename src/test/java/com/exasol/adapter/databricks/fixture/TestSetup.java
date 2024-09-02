@@ -32,6 +32,14 @@ public class TestSetup implements AutoCloseable {
         return this.exasolFixture;
     }
 
+    public MultiTestSetup datatypeMappingTest() {
+        return new MultiTestSetup(this);
+    }
+
+    public void cleanupAfterTest() {
+        this.exasolFixture.cleanupAfterTest();
+    }
+
     @Override
     public void close() {
         this.exasolFixture.close();

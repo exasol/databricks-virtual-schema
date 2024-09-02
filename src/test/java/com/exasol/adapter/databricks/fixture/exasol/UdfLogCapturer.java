@@ -79,7 +79,7 @@ public class UdfLogCapturer implements AutoCloseable {
             throw new IllegalStateException("Server did not stop within " + timeout + ": " + exception.getMessage(),
                     exception);
         }
-        LOG.fine("Udf log capturer stopped after " + Duration.between(start, Instant.now()));
+        LOG.fine(() -> "Udf log capturer stopped after " + Duration.between(start, Instant.now()));
     }
 
     private static class TcpServer implements Runnable {

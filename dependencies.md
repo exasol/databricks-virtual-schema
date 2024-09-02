@@ -3,19 +3,19 @@
 
 ## Test Dependencies
 
-| Dependency                                    | License                              |
-| --------------------------------------------- | ------------------------------------ |
-| [Hamcrest][0]                                 | [BSD-3-Clause][1]                    |
-| [JUnit Jupiter (Aggregator)][2]               | [Eclipse Public License v2.0][3]     |
-| [mockito-junit-jupiter][4]                    | [MIT][5]                             |
-| [Maven Project Version Getter][6]             | [MIT License][7]                     |
-| [Test containers for Exasol on Docker][8]     | [MIT License][9]                     |
-| [Test Database Builder for Java][10]          | [MIT License][11]                    |
-| [Matcher for SQL Result Sets][12]             | [MIT License][13]                    |
-| [virtual-schema-shared-integration-tests][14] | [MIT License][15]                    |
-| [databricks-sdk-java][16]                     | [Apache License, Version 2.0][17]    |
-| [Databricks JDBC Driver][18]                  | [Databricks JDBC Driver License][19] |
-| [SLF4J JDK14 Provider][20]                    | [MIT License][21]                    |
+| Dependency                                    | License                                       |
+| --------------------------------------------- | --------------------------------------------- |
+| [Hamcrest][0]                                 | [BSD-3-Clause][1]                             |
+| [JUnit Jupiter (Aggregator)][2]               | [Eclipse Public License v2.0][3]              |
+| [Maven Project Version Getter][4]             | [MIT License][5]                              |
+| [Test containers for Exasol on Docker][6]     | [MIT License][7]                              |
+| [Test Database Builder for Java][8]           | [MIT License][9]                              |
+| [Matcher for SQL Result Sets][10]             | [MIT License][11]                             |
+| [Hamcrest auto-matcher][12]                   | [GNU General Public License, Version 3.0][13] |
+| [virtual-schema-shared-integration-tests][14] | [MIT License][15]                             |
+| [databricks-sdk-java][16]                     | [Apache License, Version 2.0][17]             |
+| [Databricks JDBC Driver][18]                  | [Databricks JDBC Driver License][19]          |
+| [SLF4J JDK14 Provider][20]                    | [MIT License][21]                             |
 
 ## Plugin Dependencies
 
@@ -42,16 +42,16 @@
 [1]: https://raw.githubusercontent.com/hamcrest/JavaHamcrest/master/LICENSE
 [2]: https://junit.org/junit5/
 [3]: https://www.eclipse.org/legal/epl-v20.html
-[4]: https://github.com/mockito/mockito
-[5]: https://opensource.org/licenses/MIT
-[6]: https://github.com/exasol/maven-project-version-getter/
-[7]: https://github.com/exasol/maven-project-version-getter/blob/main/LICENSE
-[8]: https://github.com/exasol/exasol-testcontainers/
-[9]: https://github.com/exasol/exasol-testcontainers/blob/main/LICENSE
-[10]: https://github.com/exasol/test-db-builder-java/
-[11]: https://github.com/exasol/test-db-builder-java/blob/main/LICENSE
-[12]: https://github.com/exasol/hamcrest-resultset-matcher/
-[13]: https://github.com/exasol/hamcrest-resultset-matcher/blob/main/LICENSE
+[4]: https://github.com/exasol/maven-project-version-getter/
+[5]: https://github.com/exasol/maven-project-version-getter/blob/main/LICENSE
+[6]: https://github.com/exasol/exasol-testcontainers/
+[7]: https://github.com/exasol/exasol-testcontainers/blob/main/LICENSE
+[8]: https://github.com/exasol/test-db-builder-java/
+[9]: https://github.com/exasol/test-db-builder-java/blob/main/LICENSE
+[10]: https://github.com/exasol/hamcrest-resultset-matcher/
+[11]: https://github.com/exasol/hamcrest-resultset-matcher/blob/main/LICENSE
+[12]: https://github.com/itsallcode/hamcrest-auto-matcher
+[13]: https://www.gnu.org/licenses/gpl-3.0.txt
 [14]: https://github.com/exasol/virtual-schema-shared-integration-tests/
 [15]: https://github.com/exasol/virtual-schema-shared-integration-tests/blob/main/LICENSE
 [16]: https://github.com/databricks/databricks-sdk-java/databricks-sdk-java

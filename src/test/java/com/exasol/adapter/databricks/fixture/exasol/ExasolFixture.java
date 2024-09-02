@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture;
+import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.TestConfig;
 import com.exasol.containers.ExasolContainer;
 import com.exasol.dbbuilder.dialects.exasol.*;
@@ -40,8 +41,10 @@ public class ExasolFixture implements AutoCloseable {
     private final Connection connection;
     private final ExasolObjectFactory objectFactory;
     private final UdfLogCapturer udfLogCapturer;
-    private AdapterScript adapterScript;
     private final DatabricksFixture databricksFixture;
+    private final List<Runnable> cleanupTasks = new ArrayList<>();
+    private AdapterScript adapterScript;
+    private ConnectionDefinition connectionDefinition;
 
     private ExasolFixture(final ExasolContainer<? extends ExasolContainer<?>> exasol, final Connection connection,
             final ExasolObjectFactory objectFactory, final UdfLogCapturer udfLogCapturer,
@@ -97,21 +100,49 @@ public class ExasolFixture implements AutoCloseable {
         }
     }
 
-    public VirtualSchema createVirtualSchema() {
+    public VirtualSchema createVirtualSchema(final DatabricksSchema databricksSchema) {
+        return createVirtualSchema(databricksSchema.getParent().getName(), databricksSchema.getName());
+    }
+
+    public VirtualSchema createVirtualSchema(final String databricksCatalog, final String databricksSchema) {
+        final Map<String, String> properties = new HashMap<>();
+        if (databricksCatalog != null) {
+            properties.put("CATALOG_NAME", databricksCatalog);
+        }
+        if (databricksSchema != null) {
+            properties.put("SCHEMA_NAME", databricksSchema);
+        }
+        return createVirtualSchema(properties);
+    }
+
+    private VirtualSchema createVirtualSchema(final Map<String, String> properties) {
+        return createVirtualSchema("DATABRICKS_VS", properties);
+    }
+
+    private VirtualSchema createVirtualSchema(final String vsName, final Map<String, String> additionalProperties) {
+        final Map<String, String> properties = createVirtualSchemaProperties(getConnectionDefinition());
+        properties.putAll(additionalProperties);
+        final VirtualSchema virtualSchema = objectFactory.createVirtualSchemaBuilder(vsName) //
+                .adapterScript(getAdapterScript()) //
+                .properties(properties) //
+                .build();
+        this.cleanupTasks.add(() -> virtualSchema.drop());
+        return virtualSchema;
+    }
+
+    private AdapterScript getAdapterScript() {
         if (this.adapterScript == null) {
             this.adapterScript = createAdapterScript();
         }
-        final String vsName = "DATABRICKS_VS";
-        final ConnectionDefinition connectionDefinition = objectFactory
-                .createConnectionDefinition(vsName + "_CONNECTION", databricksFixture.getJdbcUrl());
-        return createVirtualSchema(vsName, connectionDefinition);
+        return this.adapterScript;
     }
 
-    private VirtualSchema createVirtualSchema(final String vsName, final ConnectionDefinition connectionDefinition) {
-        return objectFactory.createVirtualSchemaBuilder(vsName) //
-                .adapterScript(this.adapterScript) //
-                .properties(createVirtualSchemaProperties(connectionDefinition)) //
-                .build();
+    private ConnectionDefinition getConnectionDefinition() {
+        if (this.connectionDefinition == null) {
+            this.connectionDefinition = objectFactory.createConnectionDefinition("DATABRICKS_CONNECTION",
+                    databricksFixture.getJdbcUrl());
+        }
+        return this.connectionDefinition;
     }
 
     private Map<String, String> createVirtualSchemaProperties(final ConnectionDefinition connectionDefinition) {
@@ -123,8 +154,12 @@ public class ExasolFixture implements AutoCloseable {
         return properties;
     }
 
+    public MetadataDao metadata() {
+        return new MetadataDao(this.connection);
+    }
+
     public DbAssertions assertions() {
-        return new DbAssertions(this.connection);
+        return new DbAssertions(this, metadata());
     }
 
     private AdapterScript createAdapterScript() {
@@ -139,6 +174,11 @@ public class ExasolFixture implements AutoCloseable {
         } catch (final IOException exception) {
             throw new UncheckedIOException(exception);
         }
+    }
+
+    public void cleanupAfterTest() {
+        cleanupTasks.forEach(Runnable::run);
+        cleanupTasks.clear();
     }
 
     @Override

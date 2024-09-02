@@ -55,7 +55,7 @@
             "target/lua-type-definitions/luasocket/library",
             "target/lua-type-definitions/busted/library"
         ],
-        "checkThirdParty": true,
+        "checkThirdParty": "Disable",
         "useGitIgnore": true
     },
     "format": {
