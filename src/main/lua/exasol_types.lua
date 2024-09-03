@@ -18,6 +18,39 @@ end
 local Connection = {}
 
 ---Response for a createVirtualSchema request
+---@class CreateVirtualSchemaResponse
+---@field type "createVirtualSchema"
+---@field schemaMetadata ExasolSchemaMetadata 
+
+---Response for a refresh request
+---@class RefreshVirtualSchemaResponse
+---@field type "refresh"
+---@field schemaMetadata ExasolSchemaMetadata 
+
+---Response for a set properties request
+---@class SetPropertiesResponse
+---@field type "setProperties"
+---@field schemaMetadata ExasolSchemaMetadata 
+
+---Pushdown request
+---@class PushdownRequest
+---@field type "pushdown"
+---@field involvedTables table[]
+---@field pushdownRequest table<string, any>
+---@field schemaMetadataInfo SchemaMetadataInfo
+
+---Schema metadata info in requests
+---@class SchemaMetadataInfo
+---@field name string virtual schema name
+---@field adapterNotes string?
+---@field properties table<string, string>
+
+---Response for a pushdown request
+---@class PushdownResponse
+---@field type "pushdown"
+---@field sql string The SQL statement to be executed in the remote system.
+
+---Response for a createVirtualSchema request
 ---Based on https://github.com/exasol/virtual-schema-common-java/blob/main/src/main/java/com/exasol/adapter/metadata/converter/SchemaMetadataJsonConverter.java
 ---@class ExasolSchemaMetadata
 ---@field tables ExasolTableMetadata[] The tables in the virtual schema.

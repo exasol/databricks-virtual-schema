@@ -72,7 +72,7 @@ public class DatabricksFixture implements AutoCloseable {
         final Properties properties = new Properties();
         properties.put("user", getJdbcUsername());
         properties.put("password", getJdbcPassword());
-        LOG.fine("Creating connection to '" + jdbcUrl + "'...");
+        LOG.fine("Creating JDBC connection to '" + jdbcUrl + "'...");
         try {
             return DriverManager.getConnection(jdbcUrl, properties);
         } catch (final SQLException exception) {

@@ -61,6 +61,7 @@ local package_items = {
     "exasol.vscl.RequestDispatcher",
     "exasol.vscl.Query",
     "exasol.vscl.QueryRenderer",
+    "exasol.vscl.ImportQueryBuilder",
     "exasol.vscl.queryrenderer.AbstractQueryAppender",
     "exasol.vscl.queryrenderer.AggregateFunctionAppender",
     "exasol.vscl.queryrenderer.ExpressionAppender",

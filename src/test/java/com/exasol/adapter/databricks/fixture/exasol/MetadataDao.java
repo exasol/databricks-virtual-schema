@@ -51,7 +51,8 @@ public class MetadataDao {
                 ResultSet resultSet = getResultSet(statement)) {
             return resultSetProcessor.apply(resultSet);
         } catch (final SQLException exception) {
-            throw new IllegalStateException("Unable to execute query: '" + query + "'", exception);
+            throw new IllegalStateException("Unable to execute query '" + query + "' with parameters " + parameters
+                    + ": " + exception.getMessage(), exception);
         }
     }
 
@@ -61,7 +62,8 @@ public class MetadataDao {
                 ResultSet resultSet = statement.executeQuery(query)) {
             return resultSetProcessor.apply(resultSet);
         } catch (final SQLException exception) {
-            throw new IllegalStateException("Unable to execute query: '" + query + "'", exception);
+            throw new IllegalStateException("Unable to execute query: '" + query + "': " + exception.getMessage(),
+                    exception);
         }
     }
 

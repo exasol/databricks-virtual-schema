@@ -1,5 +1,6 @@
 package com.exasol.adapter.databricks;
 
+import static com.exasol.matcher.ResultSetStructureMatcher.table;
 import static org.hamcrest.Matchers.*;
 
 import org.junit.jupiter.api.Test;
@@ -7,6 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
+import com.exasol.dbbuilder.dialects.Table;
 import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
 
 class AdapterIT extends AbstractIntegrationTestBase {
@@ -62,12 +64,14 @@ class AdapterIT extends AbstractIntegrationTestBase {
                 .add("DOUBLE", "DOUBLE", 64) //
 
                 .add("BOOLEAN", "BOOLEAN", 1) //
+
                 .add("TIMESTAMP", "TIMESTAMP(3) WITH LOCAL TIME ZONE", 29) //
                 .add("TIMESTAMP_NTZ", "TIMESTAMP(3)", 29) //
 
                 .addIntervalYearToMonth("INTERVAL YEAR") //
                 .addIntervalYearToMonth("INTERVAL YEAR TO MONTH") //
                 .addIntervalYearToMonth("INTERVAL MONTH") //
+
                 .addIntervalDayToSecond("INTERVAL DAY") //
                 .addIntervalDayToSecond("INTERVAL DAY TO HOUR") //
                 .addIntervalDayToSecond("INTERVAL DAY TO MINUTE") //
@@ -109,5 +113,19 @@ class AdapterIT extends AbstractIntegrationTestBase {
                         Mitigations:
 
                         * Please remove the column or change the data type."""));
+    }
+
+    @Test
+    void pushdownQuery() {
+        final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
+        final Table table = databricksSchema.createTable("tab", "ID", "INT", "NAME", "STRING").insert(1, "a")
+                .insert(2, "b").insert(3, "c");
+        final VirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema);
+        testSetup.exasol().assertions().query("SELECT * FROM " + virtualTableName(vs, table) + " ORDER BY ID",
+                table().row(1, "a").row(2, "b").row(3, "c").matches());
+    }
+
+    private String virtualTableName(final VirtualSchema virtualSchema, final Table databricksTable) {
+        return String.format("\"%s\".\"%s\"", virtualSchema.getName(), databricksTable.getName());
     }
 }
