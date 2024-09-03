@@ -61,7 +61,7 @@ public class ExasolFixture implements AutoCloseable {
                 .withReuse(true);
         exasol.start();
         exasol.getDriverManager()
-                .install(JdbcDriver.builder("DATABRICKS").enableSecurityManager(true)
+                .install(JdbcDriver.builder("DATABRICKS").enableSecurityManager(false)
                         .mainClass("com.databricks.client.jdbc.Driver").prefix("jdbc:databricks")
                         .sourceFile(JDBC_DRIVER_PATH).build());
         final Connection connection = exasol.createConnection();
@@ -137,10 +137,11 @@ public class ExasolFixture implements AutoCloseable {
         return this.adapterScript;
     }
 
-    private ConnectionDefinition getConnectionDefinition() {
+    public ConnectionDefinition getConnectionDefinition() {
         if (this.connectionDefinition == null) {
             this.connectionDefinition = objectFactory.createConnectionDefinition("DATABRICKS_CONNECTION",
-                    databricksFixture.getJdbcUrl());
+                    databricksFixture.getJdbcUrl(), databricksFixture.getJdbcUsername(),
+                    databricksFixture.getJdbcPassword());
         }
         return this.connectionDefinition;
     }

@@ -2,8 +2,7 @@ package com.exasol.adapter.databricks.databricksfixture;
 
 import java.net.URI;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.StreamSupport;
 
@@ -50,9 +49,9 @@ public class DatabricksFixture implements AutoCloseable {
 
     private DatabricksCatalog createCatalog(final String name) {
         final DatabricksObjectWriter writer = new DatabricksObjectWriter(getJdbcConnection(), client, config);
-        final DatabricksCatalog catalog = writer.createCatalog(name);
-        this.cleanupTasks.add(catalog::drop);
-        return catalog;
+        final DatabricksCatalog newCatalog = writer.createCatalog(name);
+        this.cleanupTasks.add(newCatalog::drop);
+        return newCatalog;
     }
 
     public void executeStatement(final String statement) {
@@ -70,8 +69,11 @@ public class DatabricksFixture implements AutoCloseable {
 
     private Connection getJdbcConnection() {
         final String jdbcUrl = getJdbcUrl();
+        final Properties properties = new Properties();
+        properties.put("user", getJdbcPassword());
+        properties.put("password", getJdbcPassword());
         try {
-            return DriverManager.getConnection(jdbcUrl);
+            return DriverManager.getConnection(jdbcUrl, properties);
         } catch (final SQLException exception) {
             throw new IllegalStateException(
                     "Failed connecting to JDBC URL '" + jdbcUrl + "': " + exception.getMessage(), exception);
@@ -83,8 +85,16 @@ public class DatabricksFixture implements AutoCloseable {
         final String hostName = databricksUri.getHost();
         final int port = databricksUri.getPort() < 0 ? 443 : databricksUri.getPort();
         final String httpPath = "/sql/1.0/warehouses/" + getEndpoint().getId();
-        return String.format("jdbc:databricks://%s:%d;transportMode=http;ssl=1;AuthMech=3;UID=token;PWD=%s;httpPath=%s",
-                hostName, port, config.getDatabricksToken(), httpPath);
+        return String.format("jdbc:databricks://%s:%d;transportMode=http;ssl=1;AuthMech=3;httpPath=%s", hostName, port,
+                httpPath);
+    }
+
+    public String getJdbcUsername() {
+        return "token";
+    }
+
+    public String getJdbcPassword() {
+        return config.getDatabricksToken();
     }
 
     private EndpointInfo getEndpoint() {
