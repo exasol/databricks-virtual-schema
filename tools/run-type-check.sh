@@ -39,7 +39,7 @@ fi
 
 if [ ! -f "$language_server_archive" ]; then
     echo "Downloading from $language_server_url"
-    wget --output-document="$language_server_archive" "$language_server_url"
+    wget --no-verbose --output-document="$language_server_archive" "$language_server_url"
 fi
 
 if ! echo "$language_server_version_sha256 $language_server_archive" | sha256sum --check --status; then
