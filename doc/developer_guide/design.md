@@ -1,5 +1,61 @@
 # Software Design
 
+## Architecture
+
+See the [Exasol documentation](https://docs.exasol.com/db/latest/database_concepts/virtual_schemas.htm) for details about virtual schemas.
+
+In short, the virtual schema adapter implemented in this repository is responsible for
+* Mapping tables, columns and data types from Databricks to Exasol
+* Converting SQL queries to the Databricks dialect ("pushdown") and create an `IMPORT FROM JDBC` statement.
+
+After the adapter created the pushdown query, the Exasol loader will start an ETL job that executes the pushdown query via the Databricks JDBC driver to import the data.
+
+### Databricks JDBC Driver
+
+In order to use a JDBC driver in an `IMPORT FROM JDBC` statement, users need to upload and configure the JDBC driver as described in the [Exasol documentation](https://docs.exasol.com/db/latest/administration/on-premise/manage_drivers/add_jdbc_driver.htm) using file `/buckets/bfsdefault/default/drivers/jdbc/settings.cfg`. Configuration option `NOSECURITY` allows to enable or disable the Java security manager.
+
+However when using the Databricks JDBC Driver we need to disable the security manager by setting `NOSECURITY=YES` in `settings.cfg`. Else the execution of `IMPORT FROM JDBC` statements will hang forever and the ETL JDBC log file (e.g. `/exa/logs/db/DB1/20240902_174802_EtlJdbc_13_-1.0`) will contain lines like these repeated forever:
+
+```
+2024-09-02 16:48:12.796 debu: poll finished - block=null
+2024-09-02 16:48:12.797 debu: trying to poll block
+2024-09-02 16:48:22.798 debu: poll finished - block=null
+2024-09-02 16:48:22.798 debu: trying to poll block
+2024-09-02 16:48:32.806 debu: poll finished - block=null
+```
+
+### Databricks `CONNECTION`
+
+The ETL job reads information required to connect to Databricks from a [`CONNECTION` definition](https://docs.exasol.com/db/latest/sql/create_connection.htm).
+
+#### Specifying Username and Password
+
+The [documentation for Databricks JDBC driver](https://docs.databricks.com/en/_extras/documents/Databricks-JDBC-Driver-Install-and-Configuration-Guide.pdf) recommends specifying the token in the JDBC URL like this:
+
+```
+jdbc:databricks://node1.example.com:443;AuthMech=3;UID=token;PWD=<databricks-token-content>
+```
+
+So all credentials are contained in the URL and specifying username and password is not necessary when connecting via the Databricks JDBC driver.
+
+However the Exasol ETL Job additionally passes properties `user` and `password` to the JDBC driver. When they are not specified in the `CONNECTION` it passes empty strings. Databricks JDBC driver can't accept these empty values and connection fails with an exception:
+
+```
+java.sql.SQLException: [Databricks][JDBCDriver](500593) Communication link failure. Failed to connect to server. Reason: HTTP Response code: 401, Error message: Unknown.
+...
+        at com.databricks.client.jdbc.common.AbstractDriver.connect(Unknown Source)
+        at java.sql/java.sql.DriverManager.getConnection(DriverManager.java:677)
+        at java.sql/java.sql.DriverManager.getConnection(DriverManager.java:189)
+Caused by: com.databricks.client.support.exceptions.ErrorException: [Databricks][JDBCDriver](500593) Communication link failure. Failed to connect to server. Reason: HTTP Response code: 401, Error message: Unknown.
+        ... 20 more
+Caused by: com.databricks.client.jdbc42.internal.apache.thrift.transport.TTransportException: HTTP Response code: 401, Error message: Unknown
+...
+```
+
+The workaround is to specify username `token` and the actual token as password in the `CONNECTION` definition. This deviates from the Databricks JDBC driver documentation but it works.
+
+An important advantage of this approach is that the JDBC URL which is often contained in logs or error messages does not contain secret credentials.
+
 ## Design Decisions
 
 ### Implementation Language

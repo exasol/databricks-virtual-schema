@@ -4,12 +4,13 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.logging.Logger;
 
 import com.exasol.dbbuilder.dialects.Table;
 import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
 
 public class MetadataDao {
-
+    private static final Logger LOG = Logger.getLogger(MetadataDao.class.getName());
     private final Connection connection;
 
     MetadataDao(final Connection connection) {
@@ -21,6 +22,7 @@ public class MetadataDao {
     }
 
     private <T> List<T> queryList(final String query, final List<Object> parameters, final RowMapper<T> rowMapper) {
+        LOG.info(() -> "Executing query '" + query + "' with " + parameters.size() + " parameters...");
         return query(query, parameters, resultSet -> {
             try {
                 final List<T> result = new ArrayList<>();
@@ -35,11 +37,44 @@ public class MetadataDao {
     }
 
     <T> T query(final String query, final List<Object> parameters, final Function<ResultSet, T> resultSetProcessor) {
+        if (parameters.isEmpty()) {
+            return queryWithoutParameters(query, resultSetProcessor);
+        } else {
+            return queryWithParameters(query, parameters, resultSetProcessor);
+        }
+    }
+
+    private <T> T queryWithParameters(final String query, final List<Object> parameters,
+            final Function<ResultSet, T> resultSetProcessor) {
+        LOG.info(() -> "Executing query '" + query + "' with " + parameters.size() + " parameters...");
         try (final PreparedStatement statement = this.prepareStatement(query, parameters);
-                final ResultSet resultSet = statement.executeQuery()) {
+                ResultSet resultSet = getResultSet(statement)) {
             return resultSetProcessor.apply(resultSet);
         } catch (final SQLException exception) {
             throw new IllegalStateException("Unable to execute query: '" + query + "'", exception);
+        }
+    }
+
+    private <T> T queryWithoutParameters(final String query, final Function<ResultSet, T> resultSetProcessor) {
+        LOG.info(() -> "Executing query '" + query + "'...");
+        try (final Statement statement = this.connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(query)) {
+            return resultSetProcessor.apply(resultSet);
+        } catch (final SQLException exception) {
+            throw new IllegalStateException("Unable to execute query: '" + query + "'", exception);
+        }
+    }
+
+    private ResultSet getResultSet(final PreparedStatement statement) throws SQLException {
+        if (statement.execute()) {
+            return statement.getResultSet();
+        } else {
+            LOG.fine("Got update count " + statement.getUpdateCount());
+            if (statement.getMoreResults()) {
+                return statement.getResultSet();
+            } else {
+                throw new IllegalStateException("No further result sets");
+            }
         }
     }
 
