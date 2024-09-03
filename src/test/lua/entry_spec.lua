@@ -17,7 +17,7 @@ local function create_exa_context_mock()
     return {
         get_connection = function(connection_name)
             if connection_name == "my_connection" then
-                return {address = "jdbc:databricks://localhost:8888;PWD=token"}
+                return {address = "jdbc:databricks://localhost:8888;arg=value", user = "token", password = "token"}
             end
             error(string.format("Unknown connection name: '%s'", connection_name))
         end
