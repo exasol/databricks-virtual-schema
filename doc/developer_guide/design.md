@@ -8,7 +8,7 @@ In short, the virtual schema adapter implemented in this repository is responsib
 * Mapping tables, columns and data types from Databricks to Exasol
 * Converting SQL queries to the Databricks dialect ("pushdown") and create an `IMPORT FROM JDBC` statement.
 
-After the adapter created the pushdown query, the Exasol DB will start an ETL job that imports the data using the Databricks JDBC driver and the pushdown query.
+After the adapter created the pushdown query, the Exasol loader will start an ETL job that executes the pushdown query via the Databricks JDBC driver to import the data.
 
 ### Databricks JDBC Driver
 
@@ -33,7 +33,7 @@ The ETL job reads information required to connect to Databricks from a [`CONNECT
 The [documentation for Databricks JDBC driver](https://docs.databricks.com/en/_extras/documents/Databricks-JDBC-Driver-Install-and-Configuration-Guide.pdf) recommends specifying the token in the JDBC URL like this:
 
 ```
-jdbc:databricks://node1.example.com:443;AuthMech=3;UID=token;PWD=databrickspassword
+jdbc:databricks://node1.example.com:443;AuthMech=3;UID=token;PWD=<databricks-token-content>
 ```
 
 So all credentials are contained in the URL and specifying username and password is not necessary when connecting via the Databricks JDBC driver.

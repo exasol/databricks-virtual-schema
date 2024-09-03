@@ -43,7 +43,7 @@ Mitigations:
 
 * Only token authentication is supported, please specify USER='token' and PASSWORD='<token>` in the connection.]])
     end)
-    it("fails for invalid user", function()
+    it("fails for any user that is not 'token'", function()
         assert.has_error(function()
             read_connection({address = "jdbc:databricks://example.com:123", user = "invalid"})
         end, [[E-VSDAB-13: Connection 'my_connection' contains invalid user 'invalid'.
