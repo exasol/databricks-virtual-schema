@@ -30,6 +30,10 @@ describe("DatabricksRestClient #itest", function()
             assert.is.same("columns", columns_table.name)
             assert.is.same("system.information_schema.columns", columns_table.full_name)
             assert.is.same("Describes columns of tables and views in the catalog.", columns_table.comment)
+            assert.is.same("system", columns_table.catalog_name)
+            assert.is.same("information_schema", columns_table.schema_name)
+            assert.is.same("tyüpe", columns_table.table_type)
+            assert.is.same("format", columns_table.data_source_format)
             assert.is.same(33, #columns_table.columns)
             ---@type DatabricksColumn
             local expected_catalog_column = {

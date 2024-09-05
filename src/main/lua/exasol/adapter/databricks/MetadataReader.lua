@@ -1,5 +1,6 @@
 local exasol = require("exasol_types")
 local ConnectionReader = require("exasol.adapter.databricks.ConnectionReader")
+local TableAdapterNotes = require("exasol.adapter.databricks.TableAdapterNotes")
 local util = require("exasol.adapter.databricks.util")
 local log = require("remotelog")
 local ExaError = require("ExaError")
@@ -268,11 +269,14 @@ end
 ---@param databricks_table DatabricksTable
 ---@return ExasolTableMetadata exasol_table_metadata
 local function convert_table_metadata(databricks_table)
+    local adapter_notes = TableAdapterNotes.create(databricks_table)
+    log.debug("Adding adapter notes %s", adapter_notes:to_json())
     return {
         type = exasol.OBJECT_TYPES.TABLE,
         name = databricks_table.name,
         comment = databricks_table.comment,
-        columns = util.map(databricks_table.columns, convert_column_metadata)
+        columns = util.map(databricks_table.columns, convert_column_metadata),
+        adapterNotes = adapter_notes:to_json()
     }
 end
 

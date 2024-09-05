@@ -11,7 +11,11 @@ local DatabricksCatalog = {}
 ---See example data https://docs.databricks.com/api/workspace/tables/list
 ---@class DatabricksTable
 ---@field name string Name of the table
+---@field catalog_name string Name of the catalog
+---@field schema_name string Name of the schema
 ---@field full_name string Full name of the table incl. catalog and schema
+---@field table_type string Type of the table, e.g. `MANAGED`
+---@field data_source_format string Data source format, e.g. `DELTA`
 ---@field comment string Comment of the table
 ---@field columns DatabricksColumn[] Columns
 local DatabricksTable = {}

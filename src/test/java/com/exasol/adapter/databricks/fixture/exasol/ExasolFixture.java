@@ -120,6 +120,7 @@ public class ExasolFixture implements AutoCloseable {
     }
 
     private VirtualSchema createVirtualSchema(final String vsName, final Map<String, String> additionalProperties) {
+        LOG.fine("Creating virtual schema '" + vsName + "'' with properties " + additionalProperties);
         final Map<String, String> properties = createVirtualSchemaProperties(getConnectionDefinition());
         properties.putAll(additionalProperties);
         final VirtualSchema virtualSchema = objectFactory.createVirtualSchemaBuilder(vsName) //

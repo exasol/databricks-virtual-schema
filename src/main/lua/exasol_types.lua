@@ -35,9 +35,18 @@ local Connection = {}
 ---Pushdown request
 ---@class PushdownRequest
 ---@field type "pushdown"
----@field involvedTables table[]
+---@field involvedTables PushdownInvolvedTable[]
 ---@field pushdownRequest table<string, any>
 ---@field schemaMetadataInfo SchemaMetadataInfo
+
+---@class PushdownInvolvedTable
+---@field name string
+---@field adapterNotes string?
+---@field columns PushdownInvolvedColumn[]
+
+---@class PushdownInvolvedColumn
+---@field name string
+---@field dataType ExasolDatatypeMetadata
 
 ---Schema metadata info in requests
 ---@class SchemaMetadataInfo

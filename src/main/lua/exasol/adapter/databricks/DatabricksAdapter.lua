@@ -1,5 +1,5 @@
 local log = require("remotelog")
-local ConnectionReader = require("exasol.adapter.databricks.ConnectionReader")
+local PushdownMetadata = require("exasol.adapter.databricks.PushdownMetadata")
 
 ---@class DatabricksAdapter
 ---@field _metadata_reader MetadataReader
@@ -93,8 +93,9 @@ end
 ---@return PushdownResponse response
 function DatabricksAdapter:push_down(request, properties)
     properties:validate()
-    local rewriter = DatabricksQueryRewriter:new()
-    local rewritten_query = rewriter:rewrite(request.pushdownRequest, properties:get_schema_name(), nil, nil)
+    local pushdown_metadata = PushdownMetadata.create(request)
+    local rewriter = DatabricksQueryRewriter:new(properties:get_connection_name(), pushdown_metadata)
+    local rewritten_query = rewriter:rewrite(request.pushdownRequest)
     return {type = "pushdown", sql = rewritten_query}
 end
 
