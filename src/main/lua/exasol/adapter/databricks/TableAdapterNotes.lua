@@ -30,9 +30,14 @@ function TableAdapterNotes.decode(adapter_notes)
     return TableAdapterNotes:new(properties.catalog_name, properties.schema_name)
 end
 
----@return string qualified_databricks_schema_name fully qualified Databricks schema name including catalog, e.g. `catalog.schema`.
-function TableAdapterNotes:get_qualified_databricks_schema_name()
-    return string.format("%s.%s", self._databricks_catalog, self._databricks_schema)
+---@return string databricks_catalog_name Databricks catalog name including catalog
+function TableAdapterNotes:get_databricks_catalog_name()
+    return self._databricks_catalog
+end
+
+---@return string databricks_schema_name Databricks schema name including catalog
+function TableAdapterNotes:get_databricks_schema_name()
+    return self._databricks_schema
 end
 
 ---@return string json_representation

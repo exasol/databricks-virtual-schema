@@ -152,7 +152,6 @@ public class ExasolFixture implements AutoCloseable {
         properties.put("CONNECTION_NAME", connectionDefinition.getName());
         properties.put("DEBUG_ADDRESS", this.udfLogCapturer.getServerHost() + ":" + this.udfLogCapturer.getPort());
         properties.put("LOG_LEVEL", "TRACE");
-        LOG.fine(() -> "Creating virtual schema with properties: " + properties);
         return properties;
     }
 

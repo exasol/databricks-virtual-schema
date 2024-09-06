@@ -61,7 +61,11 @@ local function map_data_type(databricks_type)
     local tables = read_table_metadata({
         {
             name = "table1",
+            catalog_name = "catalog",
+            schema_name = "schema",
             full_name = "schema.table1",
+            table_type = "MANAGED",
+            data_source_format = "DELTA",
             comment = "table comment",
             columns = {{name = "col1", comment = "col comment", position = 1, nullable = true, type = databricks_type}}
         }
@@ -71,11 +75,11 @@ local function map_data_type(databricks_type)
     return tables[1].columns[1]
 end
 
----@return ExasolDatatypeMetadata
+---@return ExasolTypeDefinition
 ---@param precision integer
 ---@param scale integer?
 local function decimal_type(precision, scale)
-    return {type = "decimal", precision = precision, scale = scale or 0}
+    return {type = "DECIMAL", precision = precision, scale = scale or 0}
 end
 
 describe("MetadataReader", function()

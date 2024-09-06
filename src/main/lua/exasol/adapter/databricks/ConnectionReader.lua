@@ -1,4 +1,3 @@
-require("exasol_types")
 require("exasol.adapter.databricks.common_types")
 local log = require("remotelog")
 local ExaError = require("ExaError")

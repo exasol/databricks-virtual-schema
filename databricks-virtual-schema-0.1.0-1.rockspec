@@ -34,24 +34,43 @@ test_dependencies = {
 
 test = {type = "busted"}
 
+-- LuaFormatter off
 local package_items = {
-    "exasol.adapter.databricks.adapter_capabilities", "exasol.adapter.databricks.DatabricksAdapter",
-    "exasol.adapter.databricks.DatabricksAdapterProperties", "exasol.adapter.databricks.DatabricksQueryRewriter",
-    "exasol.adapter.databricks.MetadataReader", "exasol.adapter.databricks.ConnectionReader",
-    "exasol.adapter.databricks.TableAdapterNotes", "exasol.adapter.databricks.PushdownMetadata",
-    "exasol.adapter.databricks.DatabricksRestClient", "exasol.adapter.databricks.http_client",
-    "exasol.adapter.databricks.util", "exasol.adapter.databricks.common_types",
-    "exasol.adapter.databricks.databricks_types", "exasol_types", --
+    "exasol.adapter.databricks.adapter_capabilities",
+    "exasol.adapter.databricks.DatabricksAdapter",
+    "exasol.adapter.databricks.DatabricksAdapterProperties",
+    "exasol.adapter.databricks.DatabricksQueryRewriter",
+    "exasol.adapter.databricks.MetadataReader",
+    "exasol.adapter.databricks.ConnectionReader",
+    "exasol.adapter.databricks.TableAdapterNotes",
+    "exasol.adapter.databricks.PushdownMetadata",
+    "exasol.adapter.databricks.DatabricksRestClient",
+    "exasol.adapter.databricks.http_client",
+    "exasol.adapter.databricks.util",
+    "exasol.adapter.databricks.common_types",
+    "exasol.adapter.databricks.databricks_types",
     -- from remotelog
-    "remotelog", "ExaError", "MessageExpander", --
+    "remotelog",
+    "ExaError",
+    "MessageExpander",
     -- from virtual-schema-common-lua"
-    "exasol.vscl.AbstractVirtualSchemaAdapter", "exasol.vscl.AdapterProperties", "exasol.vscl.RequestDispatcher",
-    "exasol.vscl.Query", "exasol.vscl.QueryRenderer", "exasol.vscl.ImportQueryBuilder",
-    "exasol.vscl.queryrenderer.AbstractQueryAppender", "exasol.vscl.queryrenderer.AggregateFunctionAppender",
-    "exasol.vscl.queryrenderer.ExpressionAppender", "exasol.vscl.queryrenderer.ImportAppender",
-    "exasol.vscl.queryrenderer.ScalarFunctionAppender", "exasol.vscl.queryrenderer.SelectAppender", "exasol.vscl.text",
-    "exasol.vscl.validator"
+    "exasol.vscl.AbstractVirtualSchemaAdapter",
+    "exasol.vscl.AdapterProperties",
+    "exasol.vscl.RequestDispatcher",
+    "exasol.vscl.Query",
+    "exasol.vscl.QueryRenderer",
+    "exasol.vscl.ImportQueryBuilder",
+    "exasol.vscl.queryrenderer.AbstractQueryAppender",
+    "exasol.vscl.queryrenderer.AggregateFunctionAppender",
+    "exasol.vscl.queryrenderer.ExpressionAppender",
+    "exasol.vscl.queryrenderer.ImportAppender",
+    "exasol.vscl.queryrenderer.ScalarFunctionAppender",
+    "exasol.vscl.queryrenderer.SelectAppender",
+    "exasol.vscl.text",
+    "exasol.vscl.validator",
+    "exasol.vscl.types.type_definition",
 }
+-- LuaFormatter on
 
 local item_path_list = ""
 for i = 1, #package_items do
