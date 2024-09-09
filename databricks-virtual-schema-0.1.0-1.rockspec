@@ -1,4 +1,5 @@
 ---@diagnostic disable: lowercase-global
+-- LuaFormatter off
 rockspec_format = "3.0"
 
 local tag = "0.1.0"
@@ -18,23 +19,27 @@ description = {
     maintainer = 'Exasol <opensource@exasol.com>'
 }
 
+
 dependencies = {
-    "virtual-schema-common-lua = 4.1.0-1", --
+    "virtual-schema-common-lua = 5.0.0-1",
     "luasocket >= 3.1.0-1", -- Exasol uses 3.0rc1-2 but this causes test failures
     "luasec >= 1.0.2-1" -- Required for configuring TLS, same version as in Exasol
 }
 
-build_dependencies = {"amalg >= 0.8-1"}
+build_dependencies = {
+    "amalg >= 0.8-1"
+}
 
 test_dependencies = {
-    "busted >= 2.2.0-1", --
-    "luacheck >= 1.2.0-1", --
+    "busted >= 2.2.0-1",
+    "luacheck >= 1.2.0-1",
     "luacov >= 0.15.0-1"
 }
 
-test = {type = "busted"}
+test = {
+    type = "busted"
+}
 
--- LuaFormatter off
 local package_items = {
     "exasol.adapter.databricks.adapter_capabilities",
     "exasol.adapter.databricks.DatabricksAdapter",
