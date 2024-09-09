@@ -1,4 +1,5 @@
 require("busted.runner")()
+local assert = require("luassert")
 local DatabricksAdapter = require("exasol.adapter.databricks.DatabricksAdapter")
 
 describe("Build setup", function()
@@ -10,17 +11,36 @@ describe("Build setup", function()
     end
 
     local function get_current_version()
-        return DatabricksAdapter:new().get_version()
+        -- Metadatareader not required for this test, using nil instead
+        ---@diagnostic disable-next-line: missing-parameter
+        return DatabricksAdapter:new(nil).get_version()
     end
 
     local function get_rockspec_filename()
         return string.format("databricks-virtual-schema-%s-1.rockspec", get_current_version())
     end
 
+    local function read_version_from_pom()
+        local file = io.open("pom.xml", "r")
+        assert(file, "Expected pom.xml to exist")
+        finally(function()
+            file:close()
+        end)
+        local pattern = "<version>(.*)</version>"
+        for line in file:lines() do
+            local version = string.match(line, pattern)
+            if version then
+                return version
+            end
+        end
+        error("Version not found in pom.xml, expected pattern: " .. pattern)
+    end
+
     describe("Rockspec file", function()
         it("has correct filename", function()
             local filename = get_rockspec_filename()
             local file = io.open(filename, "r")
+            assert(file, "Expected rockspec " .. filename .. " to exist")
             finally(function()
                 file:close()
             end)
@@ -36,8 +56,16 @@ describe("Build setup", function()
             it("is equal to constants.VERSION", function()
                 local rockspec = load_rockspec(get_rockspec_filename())
                 assert.is_same(get_current_version() .. "-1", rockspec.version,
-                               "Rockspec version must be equal to version in constants.lua")
+                               "Rockspec version must be equal to version from DatabricksAdapter:get_version()")
             end)
+        end)
+    end)
+
+    describe("pom.xml file", function()
+        it("contains correct version", function()
+            assert.is_same(get_current_version(), read_version_from_pom(),
+                           "Version in pom.xml must be equal to version from DatabricksAdapter:get_version()")
+
         end)
     end)
 end)
