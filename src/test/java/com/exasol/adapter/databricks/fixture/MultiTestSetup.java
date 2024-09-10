@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import java.util.*;
 import java.util.logging.Logger;
 
+import org.itsallcode.matcher.auto.AutoMatcher;
 import org.junit.jupiter.api.function.Executable;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
@@ -104,7 +105,7 @@ public class MultiTestSetup {
             return () -> {
                 final String reason = String.format("Column %s: databricks type %s - exasol type %s", this.columnName,
                         this.databricksType, this.exasolType);
-                assertThat(reason, actual, equalTo(getExpected()));
+                assertThat(reason, actual, AutoMatcher.equalTo(getExpected()));
             };
         }
     }

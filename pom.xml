@@ -51,7 +51,7 @@
         <dependency>
             <groupId>org.itsallcode</groupId>
             <artifactId>hamcrest-auto-matcher</artifactId>
-            <version>0.7.0</version>
+            <version>0.8.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -63,7 +63,7 @@
         <dependency>
             <groupId>com.databricks</groupId>
             <artifactId>databricks-sdk-java</artifactId>
-            <version>0.30.0</version>
+            <version>0.31.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -124,7 +124,7 @@
                         </goals>
                         <configuration>
                             <executable>${project.basedir}/tools/run-type-check.sh</executable>
-                            <useMavenLogger>true</useMavenLogger>
+                            <useMavenLogger>false</useMavenLogger>
                         </configuration>
                     </execution>
                     <!-- Run lua unit tests -->
@@ -136,7 +136,7 @@
                         </goals>
                         <configuration>
                             <executable>${project.basedir}/tools/runtests.sh</executable>
-                            <useMavenLogger>true</useMavenLogger>
+                            <useMavenLogger>false</useMavenLogger>
                             <arguments>
                                 <argument>--run=utest</argument>
                             </arguments>
@@ -151,7 +151,7 @@
                         </goals>
                         <configuration>
                             <executable>${project.basedir}/tools/runtests.sh</executable>
-                            <useMavenLogger>true</useMavenLogger>
+                            <useMavenLogger>false</useMavenLogger>
                             <arguments>
                             </arguments>
                         </configuration>
@@ -165,7 +165,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <useMavenLogger>true</useMavenLogger>
+                            <useMavenLogger>false</useMavenLogger>
                             <executable>luarocks</executable>
                             <arguments>
                                 <argument>--local</argument>
