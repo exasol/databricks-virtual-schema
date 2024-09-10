@@ -5,7 +5,8 @@ local http_client = require("exasol.adapter.databricks.http_client")
 local cjson = require("cjson")
 local utils = require("exasol.adapter.databricks.test_utils")
 
-log.set_level("TRACE")
+log.set_level("INFO")
+
 local function read_databricks_test_config()
     local config = utils.read_test_config()
     return {url = config["databricks.host"], token = config["databricks.token"]}

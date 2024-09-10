@@ -4,7 +4,7 @@ local log = require("remotelog")
 local utils = require("exasol.adapter.databricks.test_utils")
 local MetadataReader = require("exasol.adapter.databricks.MetadataReader")
 
-log.set_level("DEBUG")
+log.set_level("INFO")
 
 ---@return ExasolUdfContext
 local function context_mock()
