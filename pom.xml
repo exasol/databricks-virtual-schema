@@ -115,6 +115,25 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.4.1</version>
                 <executions>
+                    <!-- Install Lua dependencies (required for type-checking) -->
+                    <execution>
+                        <id>install-lua-dependencies</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>luarocks</executable>
+                            <arguments>
+                                <argument>--local</argument>
+                                <argument>install</argument>
+                                <argument>--only-deps</argument>
+                                <argument>--force</argument>
+                                <argument>databricks-virtual-schema-${project.version}-1.rockspec</argument>
+                            </arguments>
+                            <useMavenLogger>false</useMavenLogger>
+                        </configuration>
+                    </execution>
                     <!-- Run lua type check -->
                     <execution>
                         <id>lua-type-check</id>
