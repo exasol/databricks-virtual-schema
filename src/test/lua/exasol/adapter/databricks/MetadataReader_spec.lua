@@ -90,21 +90,21 @@ describe("MetadataReader", function()
         end)
         describe("maps data type", function()
             local tests = {
-                {type_name = "STRING", expected = {type = "varchar", size = 2000000}},
+                {type_name = "STRING", expected = {type = "VARCHAR", size = 2000000}},
                 {type_name = "BYTE", expected = decimal_type(3)}, --
                 {type_name = "SHORT", expected = decimal_type(5)}, --
                 {type_name = "INT", expected = decimal_type(10)}, --
                 {type_name = "LONG", expected = decimal_type(19)}, --
                 {type_name = "DECIMAL", type_text = "decimal(4,2)", expected = decimal_type(4, 2)}, --
-                {type_name = "FLOAT", expected = {type = "double"}}, --
-                {type_name = "DOUBLE", expected = {type = "double"}}, --
-                {type_name = "BOOLEAN", expected = {type = "boolean"}}, --
-                {type_name = "TIMESTAMP", expected = {type = "timestamp", withLocalTimeZone = true}},
-                {type_name = "TIMESTAMP_NTZ", expected = {type = "timestamp", withLocalTimeZone = false}}, --
+                {type_name = "FLOAT", expected = {type = "DOUBLE"}}, --
+                {type_name = "DOUBLE", expected = {type = "DOUBLE"}}, --
+                {type_name = "BOOLEAN", expected = {type = "BOOLEAN"}}, --
+                {type_name = "TIMESTAMP", expected = {type = "TIMESTAMP", withLocalTimeZone = true}},
+                {type_name = "TIMESTAMP_NTZ", expected = {type = "TIMESTAMP", withLocalTimeZone = false}}, --
                 {
                     type_name = "INTERVAL",
                     type_text = "interval year",
-                    expected = {type = "interval", fromTo = "YEAR TO MONTH", precision = 9}
+                    expected = {type = "INTERVAL", fromTo = "YEAR TO MONTH", precision = 9}
                 }
             }
             for _, test in ipairs(tests) do
@@ -157,7 +157,7 @@ describe("MetadataReader", function()
             for _, test in ipairs(tests) do
                 it(string.format("%q", test.type_text), function()
                     local actual = map_data_type({name = "INTERVAL", text = test.type_text})
-                    local expected = {type = "interval", fromTo = test.fromTo, precision = 9, fraction = test.fraction}
+                    local expected = {type = "INTERVAL", fromTo = test.fromTo, precision = 9, fraction = test.fraction}
                     assert.is.same(expected, actual.dataType)
                 end)
             end
