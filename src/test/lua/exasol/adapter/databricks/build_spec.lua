@@ -53,7 +53,7 @@ describe("Build setup", function()
                 assert.is_same("string", type(rockspec.version), "Rockspec version must be string")
             end)
 
-            it("is equal to constants.VERSION", function()
+            it("is equal to adapter version", function()
                 local rockspec = load_rockspec(get_rockspec_filename())
                 assert.is_same(get_current_version() .. "-1", rockspec.version,
                                "Rockspec version must be equal to version from DatabricksAdapter:get_version()")
@@ -62,7 +62,7 @@ describe("Build setup", function()
     end)
 
     describe("pom.xml file", function()
-        it("contains correct version", function()
+        it("has same version as adapter", function()
             assert.is_same(get_current_version(), read_version_from_pom(),
                            "Version in pom.xml must be equal to version from DatabricksAdapter:get_version()")
 

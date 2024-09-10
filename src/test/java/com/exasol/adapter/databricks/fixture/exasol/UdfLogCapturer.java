@@ -178,7 +178,6 @@ public class UdfLogCapturer implements AutoCloseable {
         }
 
         private void processInput(final String inputLine) {
-            // LOG.fine(() -> "Client#" + clientId + "> " + inputLine);
             collectedLines.add(inputLine);
         }
 
