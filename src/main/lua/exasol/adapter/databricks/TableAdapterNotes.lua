@@ -42,9 +42,7 @@ end
 
 ---@return string json_representation
 function TableAdapterNotes:to_json()
-    return
-            cjson.encode(
-                    {catalog_name = self._databricks_catalog, schema_name = self._databricks_schema, blah = "blubb"})
+    return cjson.encode({catalog_name = self._databricks_catalog, schema_name = self._databricks_schema})
 end
 
 return TableAdapterNotes
