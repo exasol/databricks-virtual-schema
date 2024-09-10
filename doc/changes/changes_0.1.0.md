@@ -1,12 +1,12 @@
 # Virtual Schema for Databricks 0.1.0, released 2024-??-??
 
-Code name:
+Code name: Initial implementation
 
 ## Summary
 
 ## Features
 
-* ISSUE_NUMBER: description
+* #11: Added query pushdown
 
 ## Dependency Updates
 
