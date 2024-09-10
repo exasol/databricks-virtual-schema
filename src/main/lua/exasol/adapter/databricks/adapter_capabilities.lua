@@ -77,7 +77,7 @@ local other_capabilities = {
 ---Get capabilities supported by this adapter.
 ---@return string[] supported_capabilities
 function M.get_capabilities()
-    return {"SELECTLIST_PROJECTION"}
+    return {"SELECTLIST_PROJECTION", "SELECTLIST_EXPRESSIONS", "ORDER_BY_COLUMN"}
 end
 
 return M
