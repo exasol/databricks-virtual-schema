@@ -8,6 +8,10 @@ Code name:
 
 * ISSUE_NUMBER: description
 
+## Refactoring
+
+* #16: Added shellcheck to CI build
+
 ## Dependency Updates
 
 ### Test Dependency Updates
