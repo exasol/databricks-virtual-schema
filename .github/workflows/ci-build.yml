@@ -120,6 +120,11 @@ jobs:
           if-no-files-found: error
         }
       - {
+        name: Run shellcheck,
+        id: run-shellcheck,
+        run: ./tools/shellcheck.sh
+      }
+      - {
         name: Skip SonarCloud analysis,
         id: sonar-analysis,
         run: echo "SonarCloud analysis is skipped because the project is written in Lua."

@@ -8,6 +8,10 @@ Code name: Initial implementation
 
 * #11: Added query pushdown
 
+## Refactoring
+
+* #16: Added shellcheck to CI build
+
 ## Dependency Updates
 
 ### Test Dependency Updates

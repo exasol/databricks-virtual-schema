@@ -78,6 +78,13 @@ build:
               path: target/luacov-reports/luacov.report.out
               if-no-files-found: error
 
+        - action: INSERT_AFTER
+          stepId: archive-luacov-report
+          content:
+            name: Run shellcheck
+            id: run-shellcheck
+            run: ./tools/shellcheck.sh
+
         # Replace Sonar
         - action: REPLACE
           stepId: cache-sonar
