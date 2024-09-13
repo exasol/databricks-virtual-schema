@@ -10,7 +10,6 @@ import com.exasol.dbbuilder.dialects.Table;
 import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
 
 public class PushdownTestFactory {
-
     private final TestSetup testSetup;
     private final VirtualSchema virtualSchema;
     private final List<Table> virtualTables;

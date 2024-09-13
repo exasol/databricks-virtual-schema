@@ -57,8 +57,8 @@ function DatabricksQueryRewriter:_create_import(query)
     return renderer:render()
 end
 
----@param original_query SelectSqlStatement
----@return string rewritten_query
+---@param original_query SelectSqlStatement original query as specified by VS user
+---@return string rewritten_query rewritten query to be fed into the ExaLoader for import
 function DatabricksQueryRewriter:rewrite(original_query)
     local remote_query = self:_replace_source_table_name(original_query)
     return self:_create_import(remote_query)
