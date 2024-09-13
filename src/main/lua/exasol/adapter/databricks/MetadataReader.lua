@@ -291,7 +291,6 @@ end
 ---@return ExasolTableMetadata exasol_table_metadata
 local function convert_table_metadata(databricks_table)
     local adapter_notes = TableAdapterNotes.create(databricks_table)
-    log.debug("Adding adapter notes %s", adapter_notes:to_json())
     return {
         type = exasol.OBJECT_TYPES.TABLE,
         name = databricks_table.name,

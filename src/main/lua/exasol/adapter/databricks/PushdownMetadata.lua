@@ -2,8 +2,10 @@ local log = require("remotelog")
 local ExaError = require("ExaError")
 local TableAdapterNotes = require("exasol.adapter.databricks.TableAdapterNotes")
 
+---This class holds metadata about the virtual schema that is required for rendering the pushdown query.
+---It allows convenient access to adapter notes of tables.
 ---@class PushdownMetadata
----@field _table_notes table<string, TableAdapterNotes>
+---@field _table_notes table<string, TableAdapterNotes> metadata describing databricks tables
 local PushdownMetadata = {}
 PushdownMetadata.__index = PushdownMetadata
 
@@ -15,8 +17,8 @@ function PushdownMetadata:new(table_notes)
     return instance
 end
 
----@param table PushdownInvolvedTable
----@return TableAdapterNotes
+---@param table PushdownInvolvedTable databricks table for which the adapter notes should be decoded
+---@return TableAdapterNotes adapter notes as Lua table
 local function decode_adapter_notes(table)
     local success, result = pcall(TableAdapterNotes.decode, table.adapterNotes)
     if not success then
@@ -30,8 +32,8 @@ local function decode_adapter_notes(table)
     return result
 end
 
----@param pushdown_request PushdownRequest
----@return PushdownMetadata
+---@param pushdown_request PushdownRequest virtual schema push-down request
+---@return PushdownMetadata metadata to be attached to the push-down request
 function PushdownMetadata.create(pushdown_request)
     ---@type table<string, TableAdapterNotes>
     local table_notes = {}
@@ -48,7 +50,8 @@ function PushdownMetadata.create(pushdown_request)
     return PushdownMetadata:new(table_notes)
 end
 
----@param table_name string
+---Get adapter notes for the table with the given name.
+---@param table_name string table for which to get the adapter notes
 ---@return TableAdapterNotes
 function PushdownMetadata:get_table_notes(table_name)
     local notes = self._table_notes[table_name]
