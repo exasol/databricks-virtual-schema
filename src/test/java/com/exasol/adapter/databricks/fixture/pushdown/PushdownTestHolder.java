@@ -7,19 +7,20 @@ import org.hamcrest.Matcher;
 import org.junit.jupiter.api.DynamicTest;
 
 import com.exasol.adapter.databricks.fixture.TestSetup;
+import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
 import com.exasol.dbbuilder.dialects.Table;
-import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
 
 public class PushdownTestHolder {
     private final TestSetup testSetup;
-    private final VirtualSchema virtualSchema;
+    private final ExasolVirtualSchema virtualSchema;
     private final List<Table> virtualTables;
     private final String testName;
     private final String query;
     private final Matcher<ResultSet> expectedResultMatcher;
 
-    PushdownTestHolder(final TestSetup testSetup, final VirtualSchema virtualSchema, final List<Table> virtualTables,
-            final String testName, final String query, final Matcher<ResultSet> expectedResultMatcher) {
+    PushdownTestHolder(final TestSetup testSetup, final ExasolVirtualSchema virtualSchema,
+            final List<Table> virtualTables, final String testName, final String query,
+            final Matcher<ResultSet> expectedResultMatcher) {
         this.testSetup = testSetup;
         this.virtualSchema = virtualSchema;
         this.virtualTables = virtualTables;
@@ -57,7 +58,7 @@ public class PushdownTestHolder {
     }
 
     private String virtualTableName(final Table databricksTable) {
-        return String.format("\"%s\".\"%s\"", virtualSchema.getName(), databricksTable.getName());
+        return virtualSchema.qualifyTableName(databricksTable);
     }
 
     private void runTest() {

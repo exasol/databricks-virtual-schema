@@ -102,11 +102,11 @@ public class ExasolFixture implements AutoCloseable {
         }
     }
 
-    public VirtualSchema createVirtualSchema(final DatabricksSchema databricksSchema) {
+    public ExasolVirtualSchema createVirtualSchema(final DatabricksSchema databricksSchema) {
         return createVirtualSchema(databricksSchema.getParent().getName(), databricksSchema.getName());
     }
 
-    public VirtualSchema createVirtualSchema(final String databricksCatalog, final String databricksSchema) {
+    public ExasolVirtualSchema createVirtualSchema(final String databricksCatalog, final String databricksSchema) {
         final Map<String, String> properties = new HashMap<>();
         if (databricksCatalog != null) {
             properties.put("CATALOG_NAME", databricksCatalog);
@@ -117,11 +117,12 @@ public class ExasolFixture implements AutoCloseable {
         return createVirtualSchema(properties);
     }
 
-    private VirtualSchema createVirtualSchema(final Map<String, String> properties) {
+    private ExasolVirtualSchema createVirtualSchema(final Map<String, String> properties) {
         return createVirtualSchema("DATABRICKS_VS", properties);
     }
 
-    private VirtualSchema createVirtualSchema(final String vsName, final Map<String, String> additionalProperties) {
+    private ExasolVirtualSchema createVirtualSchema(final String vsName,
+            final Map<String, String> additionalProperties) {
         LOG.fine("Creating virtual schema '" + vsName + "'' with properties " + additionalProperties);
         final Map<String, String> properties = createVirtualSchemaProperties(getConnectionDefinition());
         properties.putAll(additionalProperties);
@@ -130,7 +131,7 @@ public class ExasolFixture implements AutoCloseable {
                 .properties(properties) //
                 .build();
         this.cleanupAfterTest.add("Drop virtual schema " + virtualSchema.getName(), () -> virtualSchema.drop());
-        return virtualSchema;
+        return new ExasolVirtualSchema(virtualSchema);
     }
 
     private AdapterScript getAdapterScript() {

@@ -2,9 +2,11 @@ package com.exasol.adapter.databricks.fixture.exasol;
 
 import static com.exasol.matcher.ResultSetStructureMatcher.table;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -12,7 +14,6 @@ import org.hamcrest.Matcher;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.dbbuilder.dialects.DatabaseObjectException;
-import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
 
 public class DbAssertions {
 
@@ -35,12 +36,18 @@ public class DbAssertions {
         });
     }
 
-    public void virtualSchemaExists(final VirtualSchema virtualSchema) {
+    public void virtualSchemaExists(final ExasolVirtualSchema virtualSchema) {
         query("""
                 select SCHEMA_NAME, ADAPTER_SCRIPT_SCHEMA, ADAPTER_SCRIPT_NAME, ADAPTER_NOTES
                 from EXA_ALL_VIRTUAL_SCHEMAS
                 """, table().row(virtualSchema.getName(), "ADAPTER_SCRIPT_SCHEMA", "DATABRICKS_VS_ADAPTER", "notes")
                 .matches());
+    }
+
+    public void assertQueryFails(final String query, final Matcher<String> errorMessageMatcher) {
+        final RuntimeException exception = assertThrows(RuntimeException.class, () -> metadataDao.getTableData(query));
+        assertThat(exception.getCause(), instanceOf(SQLException.class));
+        assertThat(exception.getCause().getMessage(), errorMessageMatcher);
     }
 
     public void assertVirtualSchemaFails(final DatabricksSchema databricksSchema,

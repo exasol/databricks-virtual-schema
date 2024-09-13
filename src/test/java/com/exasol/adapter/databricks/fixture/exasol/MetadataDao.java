@@ -1,14 +1,14 @@
 package com.exasol.adapter.databricks.fixture.exasol;
 
 import static java.util.Collections.emptyList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 import com.exasol.dbbuilder.dialects.Table;
-import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
 
 public class MetadataDao {
     private static final Logger LOG = Logger.getLogger(MetadataDao.class.getName());
@@ -94,7 +94,7 @@ public class MetadataDao {
         return statement;
     }
 
-    public List<ExaColumn> getVirtualColumns(final VirtualSchema virtualSchema, final Table databricksTable) {
+    public List<ExaColumn> getVirtualColumns(final ExasolVirtualSchema virtualSchema, final Table databricksTable) {
         return queryList("""
                 select COLUMN_NAME, COLUMN_TYPE, COLUMN_MAXSIZE, COLUMN_NUM_PREC, COLUMN_NUM_SCALE
                 from SYS.EXA_ALL_COLUMNS
@@ -110,20 +110,91 @@ public class MetadataDao {
         }
     }
 
-    public List<List<Object>> getVirtualColumnValues(final VirtualSchema virtualSchema, final Table databricksTable) {
-        final String query = "select * from \"" + virtualSchema.getName() + "\".\"" + databricksTable.getName() + "\"";
-        return query(query, emptyList(), resultSet -> {
+    public TableData getTableData(final String query) {
+        return query(query, emptyList(), TableData::create);
+    }
+
+    public static class TableData {
+        private final List<TableRow> rows;
+        private final List<String> columnNames;
+
+        private TableData(final List<TableRow> rows, final List<String> columnNames) {
+            this.rows = rows;
+            this.columnNames = columnNames;
+        }
+
+        static TableData create(final ResultSet resultSet) throws SQLException {
             final int columnCount = resultSet.getMetaData().getColumnCount();
-            final List<List<Object>> columnValues = new ArrayList<>(columnCount);
-            for (int i = 0; i < columnCount; i++) {
-                columnValues.add(new ArrayList<>());
-            }
+            final List<TableRow> columnValues = new ArrayList<>(columnCount);
+            final List<String> columnNames = getColumnNames(resultSet);
             while (resultSet.next()) {
-                for (int i = 0; i < columnCount; i++) {
-                    columnValues.get(i).add(resultSet.getObject(i + 1));
-                }
+                columnValues.add(TableRow.create(resultSet, columnNames));
             }
-            return columnValues;
-        });
+            return new TableData(columnValues, columnNames);
+        }
+
+        private static List<String> getColumnNames(final ResultSet resultSet) throws SQLException {
+            final int columnCount = resultSet.getMetaData().getColumnCount();
+            final List<String> columnNames = new ArrayList<>(columnCount);
+            for (int i = 1; i <= columnCount; i++) {
+                columnNames.add(resultSet.getMetaData().getColumnName(i));
+            }
+            assertThat(columnNames, hasSize(columnCount));
+            return columnNames;
+        }
+
+        public List<Object> getColumnData(final String columnName, final int maxRowCount) {
+            return this.rows.stream() //
+                    .map(row -> row.getColumnValue(columnName)) //
+                    .limit(maxRowCount) //
+                    .toList();
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder();
+            for (final String column : columnNames) {
+                sb.append(column).append(" ");
+            }
+            sb.append("\n");
+            for (final TableRow row : rows) {
+                sb.append(row.toString()).append("\n");
+            }
+            return sb.toString();
+        }
+    }
+
+    public static class TableRow {
+        private final List<String> columnNames;
+        private final Map<String, Object> valuesByColumnName;
+
+        private TableRow(final Map<String, Object> valuesByColumnName, final List<String> columnNames) {
+            this.valuesByColumnName = valuesByColumnName;
+            this.columnNames = columnNames;
+        }
+
+        public static TableRow create(final ResultSet resultSet, final List<String> columnNames) throws SQLException {
+            final int columnCount = resultSet.getMetaData().getColumnCount();
+            final Map<String, Object> values = new HashMap<>(columnCount);
+            for (int i = 1; i <= columnCount; i++) {
+                final Object value = resultSet.getObject(i);
+                final String columnName = columnNames.get(i - 1);
+                values.put(columnName, value);
+            }
+            return new TableRow(values, columnNames);
+        }
+
+        public Object getColumnValue(final String columnName) {
+            return valuesByColumnName.get(columnName);
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder();
+            for (final String column : columnNames) {
+                sb.append(getColumnValue(column)).append(" ");
+            }
+            return sb.toString();
+        }
     }
 }

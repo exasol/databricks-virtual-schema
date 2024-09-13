@@ -9,7 +9,7 @@ import org.hamcrest.Matcher;
 import org.junit.jupiter.api.*;
 
 import com.exasol.adapter.databricks.fixture.TestSetup;
-import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
+import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
 
 class AbstractIntegrationTestBase {
 
@@ -34,7 +34,7 @@ class AbstractIntegrationTestBase {
         }
     }
 
-    protected VirtualSchema createVirtualSchema(final String databricksCatalog, final String databricksSchema) {
+    protected ExasolVirtualSchema createVirtualSchema(final String databricksCatalog, final String databricksSchema) {
         return testSetup.exasol().createVirtualSchema(databricksCatalog, databricksSchema);
     }
 

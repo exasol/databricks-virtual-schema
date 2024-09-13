@@ -2,12 +2,15 @@ package com.exasol.adapter.databricks;
 
 import static org.hamcrest.Matchers.*;
 
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
-import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
+import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
+import com.exasol.dbbuilder.dialects.Table;
 
 class AdapterIT extends AbstractIntegrationTestBase {
 
@@ -32,14 +35,14 @@ class AdapterIT extends AbstractIntegrationTestBase {
 
     @Test
     void schemaMetadataAvailable() {
-        final VirtualSchema vs = testSetup.exasol().createVirtualSchema("system", "information_schema");
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema("system", "information_schema");
         testSetup.exasol().assertions().virtualSchemaExists(vs);
     }
 
-    @Test
-    void dataTypeMapping() {
+    @TestFactory
+    Stream<DynamicNode> dataTypeMapping() {
         // https://docs.databricks.com/en/sql/language-manual/sql-ref-datatypes.html
-        testSetup.datatypeTest() //
+        return testSetup.datatypeTest() //
                 .add("CHAR(10)", "CHAR(10) UTF8", 10L) //
                 .add("VARCHAR(10)", "VARCHAR(10) UTF8", 10L) //
                 .add("string", "VARCHAR(2000000) UTF8", 2000000L)
@@ -82,19 +85,37 @@ class AdapterIT extends AbstractIntegrationTestBase {
                 .addIntervalDayToSecond("INTERVAL MINUTE") //
                 .addIntervalDayToSecond("INTERVAL MINUTE TO SECOND") //
                 .addIntervalDayToSecond("INTERVAL SECOND") //
-                .verify();
+                .buildTests();
+    }
+
+    @TestFactory
+    Stream<DynamicNode> varcharValueConverted() {
+        return testSetup.datatypeTest().addValueTest("STRING") //
+                .value(null).value("", null).value("a").value("ABCxyz").value("öäüß").done() //
+                .addValueTest("VARCHAR(10)") //
+                .value(null).value("", null).value("a").value("1234567890").value("öäüß").done() //
+                .addValueTest("VARCHAR(3000000)") //
+                .value("abc").done() //
+                .buildTests();
+    }
+
+    @TestFactory
+    Stream<DynamicNode> charValueConverted() {
+        final String longestExasolCharValue = "a".repeat(2000);
+        return testSetup.datatypeTest().addValueTest("CHAR(10)") //
+                .value(null).value("", null).value("a", "a         ").value("1234567890").value("öäüß      ").done() //
+                .addValueTest("CHAR(3000000)").value(longestExasolCharValue).done() //
+                .buildTests();
     }
 
     @Test
-    void varcharValueConverted() {
-
-        testSetup.datatypeTest().addValueTest("STRING").valueMapped(null, null).valueMapped("", "")
-                .valueMapped("a", "a").valueMapped("ABCxyz", "ABCxyz").valueMapped("öäüß", "öäüß").done() //
-                .addValueTest("VARCHAR(10)").valueMapped(null, null).valueMapped("", "").valueMapped("a", "a")
-                .valueMapped("ABCxyz", "ABCxyz").valueMapped("öäüß", "öäüß").done() //
-                .addValueTest("VARCHAR(3000000)").valueMapped(null, null).valueMapped("", "").valueMapped("a", "a")
-                .valueMapped("ABCxyz", "ABC").valueMapped("öäüß", "öäü").done() //
-                .verify();
+    void readingTooLongCharFails() {
+        final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
+        final String tooLongExasolCharValue = "a".repeat(2001);
+        final Table table = databricksSchema.createTable("tab", "col", "char(3000)").insert(tooLongExasolCharValue);
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema);
+        testSetup.exasol().assertions().assertQueryFails("select * from " + vs.qualifyTableName(table), startsWith(
+                "ETL-3003: [Column=0 Row=0] [String data right truncation. String length exceeds limit of 2000 characters]"));
     }
 
     @ParameterizedTest

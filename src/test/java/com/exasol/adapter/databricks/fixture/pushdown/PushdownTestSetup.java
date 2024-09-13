@@ -7,8 +7,8 @@ import org.junit.jupiter.api.*;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.TestSetup;
+import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
 import com.exasol.dbbuilder.dialects.Table;
-import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
 
 public class PushdownTestSetup {
     private final TestSetup testSetup;
@@ -26,7 +26,7 @@ public class PushdownTestSetup {
     private PushdownTestFactory createTestFactory() {
         final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
         final List<Table> databricksTables = createDatabricksTables(databricksSchema);
-        final VirtualSchema virtualSchema = testSetup.exasol().createVirtualSchema(databricksSchema);
+        final ExasolVirtualSchema virtualSchema = testSetup.exasol().createVirtualSchema(databricksSchema);
         return new PushdownTestFactory(testSetup, virtualSchema, databricksTables);
     }
 
