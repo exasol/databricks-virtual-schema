@@ -37,8 +37,6 @@ function MetadataReader:_create_databricks_client(properties)
     return self._databricks_client_factory(connection_details)
 end
 
-local EXASOL_MAX_VARCHAR_SIZE = 2000000
-
 ---@param databricks_column DatabricksColumn
 ---@return string error_message
 local function unsupported_decimal_type_error(databricks_column)
@@ -96,31 +94,38 @@ end
 
 ---@param type "char"|"varchar"
 ---@param text string
+---@param max_size integer
 ---@return integer
-local function extract_length(type, text)
+local function extract_length(type, text, max_size)
     if text == nil then
-        return EXASOL_MAX_VARCHAR_SIZE
+        return max_size
     end
     local type_text_without_whitespace = string.lower(text):gsub("%s+", "")
     -- Extract length from `VARCHAR(10)` or `CHAR(5)`
     local length = math.tointeger(type_text_without_whitespace:match(type .. "%((%d+)%)"))
-    length = length or EXASOL_MAX_VARCHAR_SIZE
-    if length <= 0 or length > EXASOL_MAX_VARCHAR_SIZE then
-        length = EXASOL_MAX_VARCHAR_SIZE
+    length = length or max_size
+    if length <= 0 or length > max_size then
+        length = max_size
     end
     return length
 end
+
+local EXASOL_MAX_VARCHAR_SIZE = 2000000
+local EXASOL_MAX_CHAR_SIZE = 2000
 
 -- Databricks types: https://docs.databricks.com/en/sql/language-manual/sql-ref-datatypes.html
 ---@type table<string, fun(databricks_column: DatabricksColumn): ExasolTypeDefinition?>
 local DATA_TYPE_FACTORIES = {
     CHAR = function(databricks_column)
         ---@diagnostic disable-next-line: return-type-mismatch # CHAR not yet supported by VSCL
-        return {type = "CHAR", size = extract_length("char", databricks_column.type.text)}
+        return {type = "CHAR", size = extract_length("char", databricks_column.type.text, EXASOL_MAX_CHAR_SIZE)}
     end,
     STRING = function(databricks_column)
         -- https://docs.databricks.com/en/sql/language-manual/data-types/string-type.html
-        return {type = exasol.DATA_TYPES.VARCHAR, size = extract_length("varchar", databricks_column.type.text)}
+        return {
+            type = exasol.DATA_TYPES.VARCHAR,
+            size = extract_length("varchar", databricks_column.type.text, EXASOL_MAX_VARCHAR_SIZE)
+        }
     end,
     BYTE = function()
         -- https://docs.databricks.com/en/sql/language-manual/data-types/tinyint-type.html

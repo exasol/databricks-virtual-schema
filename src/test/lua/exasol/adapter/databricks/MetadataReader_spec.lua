@@ -121,11 +121,17 @@ describe("MetadataReader", function()
 
         describe("maps char", function()
             local tests = {
-                {type_text = "CHAR(4)", expected_length = 4}, {type_text = "varchar(5)", expected_length = 5},
+                {type_text = nil, expected_length = 2000}, --
+                {type_text = "unknown", expected_length = 2000}, --
+                {type_text = "unknown(3)", expected_length = 2000}, --
+                {type_text = "CHAR(4)", expected_length = 4}, --
+                {type_text = "varchar(5)", expected_length = 5}, --
                 {type_text = " char ( 7 ) ", expected_length = 7},
-                {type_text = "\tchar\t(\t8\t)\t", expected_length = 8},
-                {type_text = "char(0)", expected_length = 2000000}, {type_text = "char(-1)", expected_length = 2000000},
-                {type_text = "char(2000001)", expected_length = 2000000}
+                {type_text = "\tchar\t(\t8\t)\t", expected_length = 8}, --
+                {type_text = "char(0)", expected_length = 2000}, --
+                {type_text = "char(-1)", expected_length = 2000}, -- 
+                {type_text = "char(2000)", expected_length = 2000}, --
+                {type_text = "char(2001)", expected_length = 2000}
             }
             for _, test in ipairs(tests) do
                 it(string.format("%q", test.type_text), function()
@@ -138,11 +144,16 @@ describe("MetadataReader", function()
 
         describe("maps varchar", function()
             local tests = {
-                {type_text = "VARCHAR(4)", expected_length = 4}, {type_text = "varchar(5)", expected_length = 5},
+                {type_text = nil, expected_length = 2000000}, --
+                {type_text = "unknown", expected_length = 2000000}, --
+                {type_text = "unknown(3)", expected_length = 2000000}, --
+                {type_text = "VARCHAR(4)", expected_length = 4}, --
+                {type_text = "varchar(5)", expected_length = 5}, --
                 {type_text = " varchar ( 7 ) ", expected_length = 7},
                 {type_text = "\tvarchar\t(\t8\t)\t", expected_length = 8},
                 {type_text = "varchar(0)", expected_length = 2000000},
                 {type_text = "varchar(-1)", expected_length = 2000000},
+                {type_text = "varchar(2000000)", expected_length = 2000000},
                 {type_text = "varchar(2000001)", expected_length = 2000000}
             }
             for _, test in ipairs(tests) do
