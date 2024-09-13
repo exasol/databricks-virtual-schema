@@ -7,16 +7,16 @@ set -o pipefail
 base_dir="$( cd "$(dirname "$0")/.." >/dev/null 2>&1 ; pwd -P )"
 readonly base_dir
 
-readonly language_server_version="3.10.5"
+readonly language_server_version="3.10.6"
 readonly type_check_level="Information" # Error, Warning, Information, Hint
 
 # Check if os is mac or linux
 if [[ "$OSTYPE" == "darwin"* ]]; then
     architecture="darwin-x64"
-    language_server_version_sha256="a1986521f9a2e1998d37341ece89cabcb9a7d8c8d4a837123f424519366452a7"
+    language_server_version_sha256="bd3165050a1394b47eaa55d36bbc4e1b07b3f84a07385f8c1640f35bc8329362"
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     architecture="linux-x64"
-    language_server_version_sha256="7ed04e25d83d89217f8acd4e0ff657e4d5a66550322555721bf5195f223b7f96"
+    language_server_version_sha256="f8b6806ece9a4e06d569bbfbff8625c8560880b5d1e3e410ec7b1376b7f37401"
 else
     echo "Unsupported OS: $OSTYPE"
     exit 1
@@ -38,6 +38,7 @@ if [ ! -d "$base_dir/target/lua-type-definitions" ]; then
 fi
 
 if [ ! -f "$language_server_archive" ]; then
+    rm -rf "$language_server_dir"
     echo "Downloading from $language_server_url"
     wget --no-verbose --output-document="$language_server_archive" "$language_server_url"
 fi

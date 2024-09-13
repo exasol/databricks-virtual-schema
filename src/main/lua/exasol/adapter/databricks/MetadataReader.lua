@@ -1,5 +1,6 @@
-local exasol = require("exasol_types")
+local exasol = require("exasol.vscl.types.type_definition")
 local ConnectionReader = require("exasol.adapter.databricks.ConnectionReader")
+local TableAdapterNotes = require("exasol.adapter.databricks.TableAdapterNotes")
 local util = require("exasol.adapter.databricks.util")
 local log = require("remotelog")
 local ExaError = require("ExaError")
@@ -94,7 +95,7 @@ local function unsupported_type()
 end
 
 -- Databricks types: https://docs.databricks.com/en/sql/language-manual/sql-ref-datatypes.html
----@type table<string, fun(databricks_column: DatabricksColumn): ExasolDatatypeMetadata?>
+---@type table<string, fun(databricks_column: DatabricksColumn): ExasolTypeDefinition?>
 local DATA_TYPE_FACTORIES = {
     STRING = function()
         -- https://docs.databricks.com/en/sql/language-manual/data-types/string-type.html
@@ -238,7 +239,7 @@ local function unsupported_databricks_type_error(databricks_column)
 end
 
 ---@param databricks_column DatabricksColumn
----@return ExasolDatatypeMetadata exasol_data_type
+---@return ExasolTypeDefinition exasol_data_type
 local function convert_data_type(databricks_column)
     local data_type = databricks_column.type
     local factory = DATA_TYPE_FACTORIES[data_type.name]
@@ -268,11 +269,13 @@ end
 ---@param databricks_table DatabricksTable
 ---@return ExasolTableMetadata exasol_table_metadata
 local function convert_table_metadata(databricks_table)
+    local adapter_notes = TableAdapterNotes.create(databricks_table)
     return {
         type = exasol.OBJECT_TYPES.TABLE,
         name = databricks_table.name,
         comment = databricks_table.comment,
-        columns = util.map(databricks_table.columns, convert_column_metadata)
+        columns = util.map(databricks_table.columns, convert_column_metadata),
+        adapterNotes = adapter_notes:to_json()
     }
 end
 

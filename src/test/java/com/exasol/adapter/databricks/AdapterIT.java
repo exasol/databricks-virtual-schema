@@ -62,12 +62,14 @@ class AdapterIT extends AbstractIntegrationTestBase {
                 .add("DOUBLE", "DOUBLE", 64) //
 
                 .add("BOOLEAN", "BOOLEAN", 1) //
+
                 .add("TIMESTAMP", "TIMESTAMP(3) WITH LOCAL TIME ZONE", 29) //
                 .add("TIMESTAMP_NTZ", "TIMESTAMP(3)", 29) //
 
                 .addIntervalYearToMonth("INTERVAL YEAR") //
                 .addIntervalYearToMonth("INTERVAL YEAR TO MONTH") //
                 .addIntervalYearToMonth("INTERVAL MONTH") //
+
                 .addIntervalDayToSecond("INTERVAL DAY") //
                 .addIntervalDayToSecond("INTERVAL DAY TO HOUR") //
                 .addIntervalDayToSecond("INTERVAL DAY TO MINUTE") //

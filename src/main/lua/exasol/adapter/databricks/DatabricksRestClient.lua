@@ -66,7 +66,16 @@ end
 ---@return DatabricksTable
 local function convert_table(raw)
     local columns = util.map(raw.columns, convert_column)
-    return {name = raw.name, full_name = raw.full_name, comment = raw.comment, columns = columns}
+    return {
+        name = raw.name,
+        catalog_name = raw.catalog_name,
+        schema_name = raw.schema_name,
+        full_name = raw.full_name,
+        table_type = raw.table_type,
+        data_source_format = raw.data_source_format,
+        comment = raw.comment,
+        columns = columns
+    }
 end
 
 ---Get a list of all tables.

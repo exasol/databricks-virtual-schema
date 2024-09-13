@@ -4,7 +4,7 @@ local log = require("remotelog")
 local utils = require("exasol.adapter.databricks.test_utils")
 local DatabricksRestClient = require("exasol.adapter.databricks.DatabricksRestClient")
 
-log.set_level("DEBUG")
+log.set_level("INFO")
 
 local function read_databricks_test_config()
     local config = utils.read_test_config()
@@ -30,6 +30,10 @@ describe("DatabricksRestClient #itest", function()
             assert.is.same("columns", columns_table.name)
             assert.is.same("system.information_schema.columns", columns_table.full_name)
             assert.is.same("Describes columns of tables and views in the catalog.", columns_table.comment)
+            assert.is.same("system", columns_table.catalog_name)
+            assert.is.same("information_schema", columns_table.schema_name)
+            assert.is.same("EXTERNAL", columns_table.table_type)
+            assert.is.same("UNITY_CATALOG", columns_table.data_source_format)
             assert.is.same(33, #columns_table.columns)
             ---@type DatabricksColumn
             local expected_catalog_column = {

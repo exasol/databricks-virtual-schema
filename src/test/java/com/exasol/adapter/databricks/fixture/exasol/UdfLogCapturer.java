@@ -1,5 +1,7 @@
 package com.exasol.adapter.databricks.fixture.exasol;
 
+import static java.util.stream.Collectors.joining;
+
 import java.io.*;
 import java.net.*;
 import java.time.Duration;
@@ -146,7 +148,8 @@ public class UdfLogCapturer implements AutoCloseable {
         public void run() {
             LOG.fine(() -> "Client#" + clientId + ": connected from " + clientSocket.getRemoteSocketAddress());
             processClientInput();
-            LOG.fine(() -> "Client#" + clientId + ": disconnected");
+            LOG.fine(() -> "Client#" + clientId + ": disconnected after logging " + collectedLines.size() + " lines:\n"
+                    + getCollectedLines().collect(joining("\nClient#" + clientId + ">")));
         }
 
         private void processClientInput() {
@@ -175,7 +178,6 @@ public class UdfLogCapturer implements AutoCloseable {
         }
 
         private void processInput(final String inputLine) {
-            LOG.fine(() -> "Client#" + clientId + "> " + inputLine);
             collectedLines.add(inputLine);
         }
 

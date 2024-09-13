@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture;
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
+import com.exasol.adapter.databricks.fixture.CleanupActions;
 import com.exasol.adapter.databricks.fixture.TestConfig;
 import com.exasol.containers.ExasolContainer;
 import com.exasol.dbbuilder.dialects.exasol.*;
@@ -42,7 +43,8 @@ public class ExasolFixture implements AutoCloseable {
     private final ExasolObjectFactory objectFactory;
     private final UdfLogCapturer udfLogCapturer;
     private final DatabricksFixture databricksFixture;
-    private final List<Runnable> cleanupTasks = new ArrayList<>();
+    private final CleanupActions cleanupAfterTest = new CleanupActions();
+    private final CleanupActions cleanupAfterAll = new CleanupActions();
     private AdapterScript adapterScript;
     private ConnectionDefinition connectionDefinition;
 
@@ -120,13 +122,14 @@ public class ExasolFixture implements AutoCloseable {
     }
 
     private VirtualSchema createVirtualSchema(final String vsName, final Map<String, String> additionalProperties) {
+        LOG.fine("Creating virtual schema '" + vsName + "'' with properties " + additionalProperties);
         final Map<String, String> properties = createVirtualSchemaProperties(getConnectionDefinition());
         properties.putAll(additionalProperties);
         final VirtualSchema virtualSchema = objectFactory.createVirtualSchemaBuilder(vsName) //
                 .adapterScript(getAdapterScript()) //
                 .properties(properties) //
                 .build();
-        this.cleanupTasks.add(() -> virtualSchema.drop());
+        this.cleanupAfterTest.add("Drop virtual schema " + virtualSchema.getName(), () -> virtualSchema.drop());
         return virtualSchema;
     }
 
@@ -142,6 +145,8 @@ public class ExasolFixture implements AutoCloseable {
             this.connectionDefinition = objectFactory.createConnectionDefinition("DATABRICKS_CONNECTION",
                     databricksFixture.getJdbcUrl(), databricksFixture.getJdbcUsername(),
                     databricksFixture.getJdbcPassword());
+            this.cleanupAfterAll.add("Drop connection " + this.connectionDefinition.getName(),
+                    () -> this.connectionDefinition.drop());
         }
         return this.connectionDefinition;
     }
@@ -151,7 +156,6 @@ public class ExasolFixture implements AutoCloseable {
         properties.put("CONNECTION_NAME", connectionDefinition.getName());
         properties.put("DEBUG_ADDRESS", this.udfLogCapturer.getServerHost() + ":" + this.udfLogCapturer.getPort());
         properties.put("LOG_LEVEL", "TRACE");
-        LOG.fine(() -> "Creating virtual schema with properties: " + properties);
         return properties;
     }
 
@@ -178,12 +182,16 @@ public class ExasolFixture implements AutoCloseable {
     }
 
     public void cleanupAfterTest() {
-        cleanupTasks.forEach(Runnable::run);
-        cleanupTasks.clear();
+        this.cleanupAfterTest.cleanup();
+    }
+
+    public void cleanupAfterAllTest() {
+        this.cleanupAfterAll.cleanup();
     }
 
     @Override
     public void close() {
+        this.cleanupAfterTest();
         this.udfLogCapturer.close();
         try {
             this.connection.close();

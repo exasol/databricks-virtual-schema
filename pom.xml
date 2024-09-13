@@ -51,7 +51,7 @@
         <dependency>
             <groupId>org.itsallcode</groupId>
             <artifactId>hamcrest-auto-matcher</artifactId>
-            <version>0.7.0</version>
+            <version>0.8.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -63,7 +63,7 @@
         <dependency>
             <groupId>com.databricks</groupId>
             <artifactId>databricks-sdk-java</artifactId>
-            <version>0.30.0</version>
+            <version>0.31.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -115,6 +115,24 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.4.1</version>
                 <executions>
+                    <!-- Install Lua dependencies (required for type-checking) -->
+                    <execution>
+                        <id>install-lua-dependencies</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>luarocks</executable>
+                            <arguments>
+                                <argument>--local</argument>
+                                <argument>install</argument>
+                                <argument>--only-deps</argument>
+                                <argument>databricks-virtual-schema-${project.version}-1.rockspec</argument>
+                            </arguments>
+                            <useMavenLogger>false</useMavenLogger>
+                        </configuration>
+                    </execution>
                     <!-- Run lua type check -->
                     <execution>
                         <id>lua-type-check</id>
@@ -124,7 +142,7 @@
                         </goals>
                         <configuration>
                             <executable>${project.basedir}/tools/run-type-check.sh</executable>
-                            <useMavenLogger>true</useMavenLogger>
+                            <useMavenLogger>false</useMavenLogger>
                         </configuration>
                     </execution>
                     <!-- Run lua unit tests -->
@@ -136,7 +154,7 @@
                         </goals>
                         <configuration>
                             <executable>${project.basedir}/tools/runtests.sh</executable>
-                            <useMavenLogger>true</useMavenLogger>
+                            <useMavenLogger>false</useMavenLogger>
                             <arguments>
                                 <argument>--run=utest</argument>
                             </arguments>
@@ -151,7 +169,7 @@
                         </goals>
                         <configuration>
                             <executable>${project.basedir}/tools/runtests.sh</executable>
-                            <useMavenLogger>true</useMavenLogger>
+                            <useMavenLogger>false</useMavenLogger>
                             <arguments>
                             </arguments>
                         </configuration>
@@ -165,7 +183,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <useMavenLogger>true</useMavenLogger>
+                            <useMavenLogger>false</useMavenLogger>
                             <executable>luarocks</executable>
                             <arguments>
                                 <argument>--local</argument>

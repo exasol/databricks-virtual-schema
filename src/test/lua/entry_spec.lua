@@ -3,7 +3,7 @@ require("entry")
 local http_client = require("exasol.adapter.databricks.http_client")
 local log = require("remotelog")
 local util = require("exasol.adapter.databricks.test_utils")
-log.set_level("TRACE")
+log.set_level("INFO")
 
 local function http_request_mock(args)
     if args.url

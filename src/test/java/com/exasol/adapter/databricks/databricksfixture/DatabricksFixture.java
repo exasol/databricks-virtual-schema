@@ -2,13 +2,15 @@ package com.exasol.adapter.databricks.databricksfixture;
 
 import java.net.URI;
 import java.sql.*;
-import java.util.*;
+import java.util.List;
+import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.stream.StreamSupport;
 
 import com.databricks.sdk.WorkspaceClient;
 import com.databricks.sdk.core.DatabricksConfig;
 import com.databricks.sdk.service.sql.*;
+import com.exasol.adapter.databricks.fixture.CleanupActions;
 import com.exasol.adapter.databricks.fixture.TestConfig;
 
 public class DatabricksFixture implements AutoCloseable {
@@ -16,7 +18,7 @@ public class DatabricksFixture implements AutoCloseable {
     private static final Logger LOG = Logger.getLogger(DatabricksFixture.class.getName());
     private final WorkspaceClient client;
     private final TestConfig config;
-    private final List<Runnable> cleanupTasks = new ArrayList<>();
+    private final CleanupActions cleanupTasks = new CleanupActions();
 
     private EndpointInfo endpoint;
     private DatabricksCatalog catalog;
@@ -36,7 +38,9 @@ public class DatabricksFixture implements AutoCloseable {
     }
 
     public DatabricksSchema createSchema() {
-        return getCatalog().createSchema("schema-" + System.currentTimeMillis());
+        final DatabricksSchema schema = getCatalog().createSchema("schema-" + System.currentTimeMillis());
+        LOG.fine(() -> "Created Databricks schema " + schema.getFullyQualifiedName());
+        return schema;
     }
 
     private DatabricksCatalog getCatalog() {
@@ -50,7 +54,7 @@ public class DatabricksFixture implements AutoCloseable {
     private DatabricksCatalog createCatalog(final String name) {
         final DatabricksObjectWriter writer = new DatabricksObjectWriter(getJdbcConnection(), client, config);
         final DatabricksCatalog newCatalog = writer.createCatalog(name);
-        this.cleanupTasks.add(newCatalog::drop);
+        this.cleanupTasks.add("Drop Databricks catalog " + newCatalog.getName(), newCatalog::drop);
         return newCatalog;
     }
 
@@ -72,7 +76,7 @@ public class DatabricksFixture implements AutoCloseable {
         final Properties properties = new Properties();
         properties.put("user", getJdbcUsername());
         properties.put("password", getJdbcPassword());
-        LOG.fine("Creating connection to '" + jdbcUrl + "'...");
+        LOG.fine("Connecting to '" + jdbcUrl + "'...");
         try {
             return DriverManager.getConnection(jdbcUrl, properties);
         } catch (final SQLException exception) {
@@ -112,7 +116,6 @@ public class DatabricksFixture implements AutoCloseable {
 
     @Override
     public void close() {
-        cleanupTasks.forEach(Runnable::run);
-        cleanupTasks.clear();
+        cleanupTasks.cleanup();
     }
 }

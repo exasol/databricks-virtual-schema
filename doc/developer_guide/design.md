@@ -107,9 +107,7 @@ We decided to use [Lua Language Server](https://luals.github.io/) (LuaLS) type a
 * `+` Provides plugins for VSCode, IntelliJ and Neovim
 * `+` Allows running the type checker standalone in the CI build using flag `--check`
 * `+` Generates documentation as JSON or Markdown using flag `--doc`
-* `-` Standalone mode is not CLI friendly (see [LuaLS issue #2830](https://github.com/LuaLS/lua-language-server/issues/2830)):
-  * Always exists with code `0` even when type checking fails.
-  * Only generates report in hard-to-read JSON format.
+* `-` Standalone mode is not CLI friendly (see [LuaLS issue #2830](https://github.com/LuaLS/lua-language-server/issues/2830)), but there are workarounds
 
 Considered alternatives:
 * [EmmyLua](https://github.com/EmmyLua) provides similar but incompatible type annotations

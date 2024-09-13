@@ -53,7 +53,8 @@
         ],
         "library": [
             "target/lua-type-definitions/luasocket/library",
-            "target/lua-type-definitions/busted/library"
+            "target/lua-type-definitions/busted/library",
+            "$HOME/.luarocks/share/lua/5.4/exasol/vscl/types"
         ],
         "checkThirdParty": "Disable",
         "useGitIgnore": true

@@ -4,7 +4,7 @@ local log = require("remotelog")
 local utils = require("exasol.adapter.databricks.test_utils")
 local MetadataReader = require("exasol.adapter.databricks.MetadataReader")
 
-log.set_level("DEBUG")
+log.set_level("INFO")
 
 ---@return ExasolUdfContext
 local function context_mock()
@@ -61,7 +61,11 @@ local function map_data_type(databricks_type)
     local tables = read_table_metadata({
         {
             name = "table1",
+            catalog_name = "catalog",
+            schema_name = "schema",
             full_name = "schema.table1",
+            table_type = "MANAGED",
+            data_source_format = "DELTA",
             comment = "table comment",
             columns = {{name = "col1", comment = "col comment", position = 1, nullable = true, type = databricks_type}}
         }
@@ -71,11 +75,11 @@ local function map_data_type(databricks_type)
     return tables[1].columns[1]
 end
 
----@return ExasolDatatypeMetadata
+---@return ExasolTypeDefinition
 ---@param precision integer
 ---@param scale integer?
 local function decimal_type(precision, scale)
-    return {type = "decimal", precision = precision, scale = scale or 0}
+    return {type = "DECIMAL", precision = precision, scale = scale or 0}
 end
 
 describe("MetadataReader", function()
@@ -86,21 +90,21 @@ describe("MetadataReader", function()
         end)
         describe("maps data type", function()
             local tests = {
-                {type_name = "STRING", expected = {type = "varchar", size = 2000000}},
+                {type_name = "STRING", expected = {type = "VARCHAR", size = 2000000}},
                 {type_name = "BYTE", expected = decimal_type(3)}, --
                 {type_name = "SHORT", expected = decimal_type(5)}, --
                 {type_name = "INT", expected = decimal_type(10)}, --
                 {type_name = "LONG", expected = decimal_type(19)}, --
                 {type_name = "DECIMAL", type_text = "decimal(4,2)", expected = decimal_type(4, 2)}, --
-                {type_name = "FLOAT", expected = {type = "double"}}, --
-                {type_name = "DOUBLE", expected = {type = "double"}}, --
-                {type_name = "BOOLEAN", expected = {type = "boolean"}}, --
-                {type_name = "TIMESTAMP", expected = {type = "timestamp", withLocalTimeZone = true}},
-                {type_name = "TIMESTAMP_NTZ", expected = {type = "timestamp", withLocalTimeZone = false}}, --
+                {type_name = "FLOAT", expected = {type = "DOUBLE"}}, --
+                {type_name = "DOUBLE", expected = {type = "DOUBLE"}}, --
+                {type_name = "BOOLEAN", expected = {type = "BOOLEAN"}}, --
+                {type_name = "TIMESTAMP", expected = {type = "TIMESTAMP", withLocalTimeZone = true}},
+                {type_name = "TIMESTAMP_NTZ", expected = {type = "TIMESTAMP", withLocalTimeZone = false}}, --
                 {
                     type_name = "INTERVAL",
                     type_text = "interval year",
-                    expected = {type = "interval", fromTo = "YEAR TO MONTH", precision = 9}
+                    expected = {type = "INTERVAL", fromTo = "YEAR TO MONTH", precision = 9}
                 }
             }
             for _, test in ipairs(tests) do
@@ -153,7 +157,7 @@ describe("MetadataReader", function()
             for _, test in ipairs(tests) do
                 it(string.format("%q", test.type_text), function()
                     local actual = map_data_type({name = "INTERVAL", text = test.type_text})
-                    local expected = {type = "interval", fromTo = test.fromTo, precision = 9, fraction = test.fraction}
+                    local expected = {type = "INTERVAL", fromTo = test.fromTo, precision = 9, fraction = test.fraction}
                     assert.is.same(expected, actual.dataType)
                 end)
             end
