@@ -119,9 +119,45 @@ describe("MetadataReader", function()
             end
         end)
 
+        describe("maps char", function()
+            local tests = {
+                {type_text = "CHAR(4)", expected_length = 4}, {type_text = "varchar(5)", expected_length = 5},
+                {type_text = " char ( 7 ) ", expected_length = 7},
+                {type_text = "\tchar\t(\t8\t)\t", expected_length = 8},
+                {type_text = "char(0)", expected_length = 2000000}, {type_text = "char(-1)", expected_length = 2000000},
+                {type_text = "char(2000001)", expected_length = 2000000}
+            }
+            for _, test in ipairs(tests) do
+                it(string.format("%q", test.type_text), function()
+                    local actual = map_data_type({name = "CHAR", text = test.type_text})
+                    local expected = {type = "CHAR", size = test.expected_length}
+                    assert.is.same(expected, actual.dataType)
+                end)
+            end
+        end)
+
+        describe("maps varchar", function()
+            local tests = {
+                {type_text = "VARCHAR(4)", expected_length = 4}, {type_text = "varchar(5)", expected_length = 5},
+                {type_text = " varchar ( 7 ) ", expected_length = 7},
+                {type_text = "\tvarchar\t(\t8\t)\t", expected_length = 8},
+                {type_text = "varchar(0)", expected_length = 2000000},
+                {type_text = "varchar(-1)", expected_length = 2000000},
+                {type_text = "varchar(2000001)", expected_length = 2000000}
+            }
+            for _, test in ipairs(tests) do
+                it(string.format("%q", test.type_text), function()
+                    local actual = map_data_type({name = "STRING", text = test.type_text})
+                    local expected = {type = "VARCHAR", size = test.expected_length}
+                    assert.is.same(expected, actual.dataType)
+                end)
+            end
+        end)
+
         describe("maps decimal type text", function()
             local tests = {
                 {type_text = "decimal(4,2)", expected_precision = 4, expected_scale = 2},
+                {type_text = "DECIMAL(4,2)", expected_precision = 4, expected_scale = 2},
                 {type_text = "decimal(2,5)", expected_precision = 2, expected_scale = 5},
                 {type_text = " decimal ( 4 , 2 ) ", expected_precision = 4, expected_scale = 2},
                 {type_text = "\tdecimal\t(\t4\t,\t2\t)\t", expected_precision = 4, expected_scale = 2},

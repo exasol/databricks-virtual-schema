@@ -1,9 +1,10 @@
 package com.exasol.adapter.databricks.fixture.exasol;
 
+import static java.util.Collections.emptyList;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.logging.Logger;
 
 import com.exasol.dbbuilder.dialects.Table;
@@ -36,7 +37,7 @@ public class MetadataDao {
         });
     }
 
-    <T> T query(final String query, final List<Object> parameters, final Function<ResultSet, T> resultSetProcessor) {
+    <T> T query(final String query, final List<Object> parameters, final ResultSetProcessor<T> resultSetProcessor) {
         if (parameters.isEmpty()) {
             return queryWithoutParameters(query, resultSetProcessor);
         } else {
@@ -44,23 +45,28 @@ public class MetadataDao {
         }
     }
 
+    @FunctionalInterface
+    interface ResultSetProcessor<T> {
+        T process(ResultSet resultSet) throws SQLException;
+    }
+
     private <T> T queryWithParameters(final String query, final List<Object> parameters,
-            final Function<ResultSet, T> resultSetProcessor) {
+            final ResultSetProcessor<T> resultSetProcessor) {
         LOG.info(() -> "Executing query '" + query + "' with " + parameters.size() + " parameters...");
         try (final PreparedStatement statement = this.prepareStatement(query, parameters);
                 ResultSet resultSet = getResultSet(statement)) {
-            return resultSetProcessor.apply(resultSet);
+            return resultSetProcessor.process(resultSet);
         } catch (final SQLException exception) {
             throw new IllegalStateException(String.format("Unable to execute query '%s' with parameters %s: %s", query,
                     parameters, exception.getMessage()), exception);
         }
     }
 
-    private <T> T queryWithoutParameters(final String query, final Function<ResultSet, T> resultSetProcessor) {
+    private <T> T queryWithoutParameters(final String query, final ResultSetProcessor<T> resultSetProcessor) {
         LOG.info(() -> "Executing query '" + query + "'...");
         try (final Statement statement = this.connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(query)) {
-            return resultSetProcessor.apply(resultSet);
+            return resultSetProcessor.process(resultSet);
         } catch (final SQLException exception) {
             throw new IllegalStateException(
                     String.format("Unable to execute query '%s': %s", query, exception.getMessage()), exception);
@@ -102,5 +108,22 @@ public class MetadataDao {
             return new ExaColumn(resultSet.getString(1), resultSet.getString(2), (Long) resultSet.getObject(3),
                     (Long) resultSet.getObject(4), (Long) resultSet.getObject(5));
         }
+    }
+
+    public List<List<Object>> getVirtualColumnValues(final VirtualSchema virtualSchema, final Table databricksTable) {
+        final String query = "select * from \"" + virtualSchema.getName() + "\".\"" + databricksTable.getName() + "\"";
+        return query(query, emptyList(), resultSet -> {
+            final int columnCount = resultSet.getMetaData().getColumnCount();
+            final List<List<Object>> columnValues = new ArrayList<>(columnCount);
+            for (int i = 0; i < columnCount; i++) {
+                columnValues.add(new ArrayList<>());
+            }
+            while (resultSet.next()) {
+                for (int i = 0; i < columnCount; i++) {
+                    columnValues.get(i).add(resultSet.getObject(i + 1));
+                }
+            }
+            return columnValues;
+        });
     }
 }

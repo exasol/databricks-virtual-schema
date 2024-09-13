@@ -32,7 +32,7 @@ public class TestSetup implements AutoCloseable {
         return this.exasolFixture;
     }
 
-    public MultiTestSetup datatypeMappingTest() {
+    public MultiTestSetup datatypeTest() {
         return new MultiTestSetup(this);
     }
 

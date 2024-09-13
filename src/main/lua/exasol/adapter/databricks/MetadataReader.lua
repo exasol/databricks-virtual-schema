@@ -94,13 +94,33 @@ local function unsupported_type()
     return nil
 end
 
+---@param type "char"|"varchar"
+---@param text string
+---@return integer
+local function extract_length(type, text)
+    if text == nil then
+        return EXASOL_MAX_VARCHAR_SIZE
+    end
+    local type_text_without_whitespace = string.lower(text):gsub("%s+", "")
+    -- Extract length from `VARCHAR(10)` or `CHAR(5)`
+    local length = math.tointeger(type_text_without_whitespace:match(type .. "%((%d+)%)"))
+    length = length or EXASOL_MAX_VARCHAR_SIZE
+    if length <= 0 or length > EXASOL_MAX_VARCHAR_SIZE then
+        length = EXASOL_MAX_VARCHAR_SIZE
+    end
+    return length
+end
+
 -- Databricks types: https://docs.databricks.com/en/sql/language-manual/sql-ref-datatypes.html
 ---@type table<string, fun(databricks_column: DatabricksColumn): ExasolTypeDefinition?>
 local DATA_TYPE_FACTORIES = {
-    STRING = function()
+    CHAR = function(databricks_column)
+        ---@diagnostic disable-next-line: return-type-mismatch # CHAR not yet supported by VSCL
+        return {type = "CHAR", size = extract_length("char", databricks_column.type.text)}
+    end,
+    STRING = function(databricks_column)
         -- https://docs.databricks.com/en/sql/language-manual/data-types/string-type.html
-        -- Databricks does not report columns size, so we use the maximum size for VARCHAR
-        return {type = exasol.DATA_TYPES.VARCHAR, size = EXASOL_MAX_VARCHAR_SIZE}
+        return {type = exasol.DATA_TYPES.VARCHAR, size = extract_length("varchar", databricks_column.type.text)}
     end,
     BYTE = function()
         -- https://docs.databricks.com/en/sql/language-manual/data-types/tinyint-type.html
@@ -136,7 +156,8 @@ local DATA_TYPE_FACTORIES = {
         -- Remove all whitespace
         local type_text_without_whitespace = databricks_column.type.text:gsub("%s+", "")
         -- Extract precision and scale from `decimal(10,2)`
-        local precision_string, scale_string = type_text_without_whitespace:match("decimal%((%d+),(%d+)%)")
+        local precision_string, scale_string =
+                string.lower(type_text_without_whitespace):match("decimal%((%d+),(%d+)%)")
         local precision, scale = math.tointeger(precision_string), math.tointeger(scale_string)
         if precision == nil or scale == nil then
             error(unsupported_decimal_type_error(databricks_column))
