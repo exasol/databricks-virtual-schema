@@ -177,11 +177,22 @@ public class MetadataDao {
             final int columnCount = resultSet.getMetaData().getColumnCount();
             final Map<String, Object> values = new HashMap<>(columnCount);
             for (int i = 1; i <= columnCount; i++) {
-                final Object value = resultSet.getObject(i);
                 final String columnName = columnNames.get(i - 1);
-                values.put(columnName, value);
+                final Object columnValue = getColumnValue(resultSet, i);
+                final JDBCType columnType = JDBCType.valueOf(resultSet.getMetaData().getColumnType(i));
+                LOG.fine("Got value " + columnValue + " for column " + i + " of type " + columnType);
+                values.put(columnName, columnValue);
             }
             return new TableRow(values, columnNames);
+        }
+
+        private static Object getColumnValue(final ResultSet resultSet, final int columnIndex) throws SQLException {
+            final JDBCType columnType = JDBCType.valueOf(resultSet.getMetaData().getColumnType(columnIndex));
+            if (columnType == JDBCType.TIMESTAMP) {
+                final Calendar utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+                return resultSet.getTimestamp(columnIndex, utcCalendar);
+            }
+            return resultSet.getObject(columnIndex);
         }
 
         public Object getColumnValue(final String columnName) {

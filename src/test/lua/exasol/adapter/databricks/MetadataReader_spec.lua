@@ -99,7 +99,7 @@ describe("MetadataReader", function()
                 {type_name = "FLOAT", expected = {type = "DOUBLE"}}, --
                 {type_name = "DOUBLE", expected = {type = "DOUBLE"}}, --
                 {type_name = "BOOLEAN", expected = {type = "BOOLEAN"}}, --
-                {type_name = "TIMESTAMP", expected = {type = "TIMESTAMP", withLocalTimeZone = true}},
+                {type_name = "TIMESTAMP", expected = {type = "TIMESTAMP", withLocalTimeZone = false}},
                 {type_name = "TIMESTAMP_NTZ", expected = {type = "TIMESTAMP", withLocalTimeZone = false}}, --
                 {
                     type_name = "INTERVAL",

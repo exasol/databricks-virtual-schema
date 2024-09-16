@@ -138,3 +138,20 @@ We write integration tests for the VS in Java:
 * `+` `exec-maven-plugin` allows integrating the Lua build into the Maven build
 * `+` Using Maven allows generating build scripts etc. with `project-keeper`
 * `-` Mixing of two languages in a single project
+
+### Integration Tests Using Dynamic Junit Jupiter Tests
+
+We use [dynamic tests](https://junit.org/junit5/docs/current/user-guide/#writing-tests-dynamic-tests) using `@TestFactory` for verifying that a virtual schema returns the expected data types and maps values as expected.
+
+* `-` More complicated, requires additional test framework
+* `+` Minimal overhead for test setup (create Databricks table and virtual schema)
+* `+` Readable tests cases, technical setup hidden in test framework
+* `+` Flexible for future changes
+* `+` Test failures directly show column type and mis-matched value
+
+Considered alternatives:
+
+* `@ParameterizedTest`
+  * `-` Less flexible with test setup and teardown
+  * `-` Would require `@Nested` test classes or only a single `@Test` per class
+  * `-` Test failures harder to read, need to read assertion stack traces
