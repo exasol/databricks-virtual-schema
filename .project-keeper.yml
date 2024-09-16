@@ -53,7 +53,7 @@ build:
           content:
             name: Install Lua dependencies
             id: install-lua-dependencies
-            run: luarocks --local install *.rockspec --deps-only
+            run: luarocks --local install *.rockspec --deps-only --force
 
         - action: INSERT_AFTER
           stepId: enable-testcontainer-reuse
@@ -149,7 +149,7 @@ build:
           content:
             name: Install Lua dependencies
             id: install-lua-dependencies
-            run: luarocks --local install *.rockspec --deps-only
+            run: luarocks --local install *.rockspec --deps-only --force
         # Generate dummy error code reports. Error code crawler does not support Lua projects yet.
         - action: INSERT_AFTER
           stepId: build
