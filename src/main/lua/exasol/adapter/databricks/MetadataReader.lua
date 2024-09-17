@@ -176,6 +176,9 @@ local DATA_TYPE_FACTORIES = {
         -- https://docs.databricks.com/en/sql/language-manual/data-types/boolean-type.html
         return {type = exasol.DATA_TYPES.BOOLEAN}
     end,
+    DATE = function(databricks_column)
+        return {type = exasol.DATA_TYPES.DATE}
+    end,
     TIMESTAMP = function(databricks_column)
         -- https://docs.databricks.com/en/sql/language-manual/data-types/timestamp-type.html
         -- Range: -290308-12-21 BCE 19:59:06 GMT to +294247-01-10 CE 04:00:54 GMT

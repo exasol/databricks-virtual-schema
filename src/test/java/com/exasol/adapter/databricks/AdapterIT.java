@@ -39,7 +39,8 @@ class AdapterIT extends AbstractIntegrationTestBase {
 
     @Test
     void schemaMetadataAvailable() {
-        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema("system", "information_schema", emptyMap());
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema("system", "information_schema",
+                emptyMap());
         testSetup.exasol().assertions().virtualSchemaExists(vs);
     }
 
@@ -120,6 +121,8 @@ class AdapterIT extends AbstractIntegrationTestBase {
 
                 // Inserting true/false into databricks fails, so we insert 1/0
                 .addValueTest("BOOLEAN").expectType("BOOLEAN", 1).nullValue().value(1, true).value(0, false).done() //
+
+                .addValueTest("DATE").expectType("DATE", 10).nullValue().date("2021-7-1", "2021-07-01").done()
 
                 .addValueTest("TIMESTAMP").expectType("TIMESTAMP(3)", 29).nullValue()
                 .timestamp("2021-7-1T8:43:28UTC+3" /* = 2021-07-01T05:43:28.000+00:00 */, "2021-7-1 05:43:28").done()

@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -124,6 +125,10 @@ public class MultiTestSetup {
 
         public ValueMappingBuilder timestamp(final String databricksValue, final String expectedExasolValue) {
             return value(databricksValue, Timestamp.valueOf(expectedExasolValue));
+        }
+
+        public ValueMappingBuilder date(final String databricksValue, final String expectedExasolValue) {
+            return value(databricksValue, Date.valueOf(expectedExasolValue));
         }
 
         public ValueMappingBuilder value(final Object databricksValue, final Object expectedExasolValue) {
