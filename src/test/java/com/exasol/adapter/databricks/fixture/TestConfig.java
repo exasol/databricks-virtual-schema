@@ -4,7 +4,6 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.*;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -34,10 +33,6 @@ public class TestConfig {
         } catch (final IOException exception) {
             throw new UncheckedIOException("Error reading config file " + configFile, exception);
         }
-    }
-
-    private Optional<String> getOptionalValue(final String param) {
-        return Optional.ofNullable(this.properties.getProperty(param));
     }
 
     private String getMandatoryValue(final String param) {

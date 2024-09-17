@@ -10,7 +10,7 @@ import com.exasol.adapter.databricks.fixture.TestSetup;
 import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
 import com.exasol.dbbuilder.dialects.Table;
 
-public class PushdownTestHolder {
+class PushdownTestHolder {
     private final TestSetup testSetup;
     private final ExasolVirtualSchema virtualSchema;
     private final List<Table> virtualTables;

@@ -14,18 +14,16 @@ import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
 import com.exasol.dbbuilder.dialects.Table;
 
 public class PushdownTestSetup {
-    private final TestSetup testSetup;
     private final PushdownTestFactory testFactory;
     private final List<PushdownTestHolder> tests = new ArrayList<>();
 
-    private PushdownTestSetup(final TestSetup testSetup, final PushdownTestFactory testFactory) {
-        this.testSetup = testSetup;
+    private PushdownTestSetup(final PushdownTestFactory testFactory) {
         this.testFactory = testFactory;
     }
 
     public static PushdownTestSetup create(final TestSetup testSetup, final List<TableFactory> tableFactories) {
         final PushdownTestFactory testFactory = createTestFactory(testSetup, tableFactories);
-        return new PushdownTestSetup(testSetup, testFactory);
+        return new PushdownTestSetup(testFactory);
     }
 
     private static PushdownTestFactory createTestFactory(final TestSetup testSetup,

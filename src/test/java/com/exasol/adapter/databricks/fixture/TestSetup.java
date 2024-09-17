@@ -2,16 +2,12 @@ package com.exasol.adapter.databricks.fixture;
 
 import static java.util.Arrays.asList;
 
-import java.util.logging.Logger;
-
 import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture;
 import com.exasol.adapter.databricks.fixture.exasol.ExasolFixture;
 import com.exasol.adapter.databricks.fixture.pushdown.PushdownTestSetup;
 import com.exasol.adapter.databricks.fixture.pushdown.PushdownTestSetup.TableFactory;
 
 public class TestSetup implements AutoCloseable {
-
-    private static final Logger LOG = Logger.getLogger(TestSetup.class.getName());
 
     private final ExasolFixture exasolFixture;
     private final DatabricksFixture databricksFixture;
