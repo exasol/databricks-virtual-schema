@@ -25,7 +25,6 @@ local function table_sink()
             return 0
         end
         if chunk then
-            log.trace("Received chunk #%d of size %d", #result, #chunk)
             table.insert(result, chunk)
         end
         return 1
@@ -44,7 +43,6 @@ local function new_socket_factory(params)
     return function()
         local t = {c = socket.try(socket.tcp())}
         function t:connect(host, port)
-            log.trace("Creating socket to %s:%d", host, port)
             ---@diagnostic disable-next-line: undefined-field
             socket.try(self.c:connect(host, port))
             self.c = socket.try(ssl.wrap(self.c, params))
