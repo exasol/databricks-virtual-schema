@@ -51,7 +51,7 @@
         <dependency>
             <groupId>org.itsallcode</groupId>
             <artifactId>hamcrest-auto-matcher</artifactId>
-            <version>0.8.0</version>
+            <version>0.8.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -63,13 +63,19 @@
         <dependency>
             <groupId>com.databricks</groupId>
             <artifactId>databricks-sdk-java</artifactId>
-            <version>0.31.0</version>
+            <version>0.31.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.databricks</groupId>
             <artifactId>databricks-jdbc</artifactId>
-            <version>2.6.40</version>
+            <version>2.6.40-patch-1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit-pioneer</groupId>
+            <artifactId>junit-pioneer</artifactId>
+            <version>2.2.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -115,24 +121,6 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.4.1</version>
                 <executions>
-                    <!-- Install Lua dependencies (required for type-checking) -->
-                    <execution>
-                        <id>install-lua-dependencies</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>luarocks</executable>
-                            <arguments>
-                                <argument>--local</argument>
-                                <argument>install</argument>
-                                <argument>--only-deps</argument>
-                                <argument>databricks-virtual-schema-${project.version}-1.rockspec</argument>
-                            </arguments>
-                            <useMavenLogger>false</useMavenLogger>
-                        </configuration>
-                    </execution>
                     <!-- Run lua type check -->
                     <execution>
                         <id>lua-type-check</id>

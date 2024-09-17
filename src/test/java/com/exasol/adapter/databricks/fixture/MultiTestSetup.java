@@ -1,19 +1,25 @@
 package com.exasol.adapter.databricks.fixture;
 
+import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-import java.util.*;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.itsallcode.matcher.auto.AutoMatcher;
-import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.api.*;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
+import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
 import com.exasol.adapter.databricks.fixture.exasol.MetadataDao.ExaColumn;
+import com.exasol.adapter.databricks.fixture.exasol.MetadataDao.TableData;
 import com.exasol.dbbuilder.dialects.Table;
-import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
 
 /**
  * This class provides a fluent API for setting up and verifying multiple column tests. The goal is to speed up tests by
@@ -21,42 +27,121 @@ import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
  * verifies the metadata of all columns at once.
  */
 public class MultiTestSetup {
+    private static final String ROW_ORDER_COLUMN_NAME = "row_num";
     private static final Logger LOG = Logger.getLogger(MultiTestSetup.class.getName());
 
     private final TestSetup testSetup;
-    private final List<ColumnTest> columnTests = new ArrayList<>();
+    private final List<ColumnTypeTest> columnTests = new ArrayList<>();
 
     MultiTestSetup(final TestSetup testSetup) {
         this.testSetup = testSetup;
     }
 
+    @Deprecated
     public MultiTestSetup add(final String databricksType, final String expectedExasolType,
             final long expectedMaxSize) {
-        return add(databricksType, expectedExasolType, expectedMaxSize, null, null);
+        return addTypeTest(databricksType, expectedExasolType, expectedMaxSize, null, null);
     }
 
+    @Deprecated
     public MultiTestSetup addIntervalYearToMonth(final String databricksType) {
         // Mapping of Databricks interval types to precision is not clear, using maximum value.
-        return add(databricksType, "INTERVAL YEAR(9) TO MONTH", 13L, null, null);
+        return addTypeTest(databricksType, "INTERVAL YEAR(9) TO MONTH", 13L, null, null);
     }
 
+    @Deprecated
     public MultiTestSetup addIntervalDayToSecond(final String databricksType) {
         // Mapping of Databricks interval types to precision and fraction is not clear, using maximum values.
-        return add(databricksType, "INTERVAL DAY(9) TO SECOND(9)", 29L, null, null);
+        return addTypeTest(databricksType, "INTERVAL DAY(9) TO SECOND(9)", 29L, null, null);
     }
 
+    @Deprecated
     public MultiTestSetup addDecimal(final String databricksType, final long expectedPrecision,
             final long expectedScale) {
-        return add(databricksType, String.format("DECIMAL(%d,%d)", expectedPrecision, expectedScale), expectedPrecision,
-                expectedPrecision, expectedScale);
+        return addTypeTest(databricksType, String.format("DECIMAL(%d,%d)", expectedPrecision, expectedScale),
+                expectedPrecision, expectedPrecision, expectedScale);
     }
 
-    private MultiTestSetup add(final String databricksType, final String expectedExasolType, final Long expectedMaxSize,
-            final Long expectedPrecision, final Long expectedScale) {
+    private MultiTestSetup addTypeTest(final String databricksType, final String expectedExasolType,
+            final Long expectedMaxSize, final Long expectedPrecision, final Long expectedScale) {
         final int colId = this.columnTests.size();
         final String columnName = String.format("col%02d_%s", colId, sanitizeColumnName(databricksType));
-        final ColumnTest columnTest = new ColumnTest(columnName, databricksType, expectedExasolType, expectedMaxSize,
-                expectedPrecision, expectedScale);
+        final ColumnTypeTest columnTest = new ColumnTypeTest(columnName, databricksType,
+                new ExpectedExasolType(expectedExasolType, expectedMaxSize, expectedPrecision, expectedScale),
+                emptyList(), emptyList());
+        this.columnTests.add(columnTest);
+        return this;
+    }
+
+    public ValueMappingBuilder addValueTest(final String databricksType) {
+        return new ValueMappingBuilder(this, databricksType);
+    }
+
+    public static class ValueMappingBuilder {
+        private final MultiTestSetup multiTestSetup;
+        private final String databricksType;
+        private final List<Object> databricksValues = new ArrayList<>();
+        private final List<Object> expectedExasolValues = new ArrayList<>();
+        private ExpectedExasolType expectedExasolType;
+
+        private ValueMappingBuilder(final MultiTestSetup multiTestSetup, final String databricksType) {
+            this.multiTestSetup = multiTestSetup;
+            this.databricksType = databricksType;
+        }
+
+        public ValueMappingBuilder expectType(final String expectedExasolType, final long expectedMaxSize) {
+            return expectedExasolType(new ExpectedExasolType(expectedExasolType, expectedMaxSize, null, null));
+        }
+
+        public ValueMappingBuilder expectIntervalYearToMonth() {
+            // Mapping of Databricks interval types to precision is not clear, using maximum value.
+            return expectedExasolType(new ExpectedExasolType("INTERVAL YEAR(9) TO MONTH", 13L, null, null));
+        }
+
+        public ValueMappingBuilder expectIntervalDayToSecond() {
+            // Mapping of Databricks interval types to precision and fraction is not clear, using maximum values.
+            return expectedExasolType(new ExpectedExasolType("INTERVAL DAY(9) TO SECOND(9)", 29L, null, null));
+        }
+
+        public ValueMappingBuilder expectDecimal(final long expectedPrecision, final long expectedScale) {
+            return expectedExasolType(
+                    new ExpectedExasolType(String.format("DECIMAL(%d,%d)", expectedPrecision, expectedScale),
+                            expectedPrecision, expectedPrecision, expectedScale));
+        }
+
+        private ValueMappingBuilder expectedExasolType(final ExpectedExasolType type) {
+            this.expectedExasolType = type;
+            return this;
+        }
+
+        public ValueMappingBuilder nullValue() {
+            return value(null);
+        }
+
+        public ValueMappingBuilder value(final Object value) {
+            return value(value, value);
+        }
+
+        public ValueMappingBuilder timestamp(final String databricksValue, final String expectedExasolValue) {
+            return value(databricksValue, Timestamp.valueOf(expectedExasolValue));
+        }
+
+        public ValueMappingBuilder value(final Object databricksValue, final Object expectedExasolValue) {
+            this.databricksValues.add(databricksValue);
+            this.expectedExasolValues.add(expectedExasolValue);
+            return this;
+        }
+
+        public MultiTestSetup done() {
+            return multiTestSetup.addValueTest(this);
+        }
+    }
+
+    private MultiTestSetup addValueTest(final ValueMappingBuilder builder) {
+        final int colId = this.columnTests.size();
+        final String columnName = String.format("col%02d_%s", colId, sanitizeColumnName(builder.databricksType));
+        final ColumnTypeTest columnTest = new ColumnTypeTest(columnName, builder.databricksType,
+                builder.expectedExasolType, builder.databricksValues, builder.expectedExasolValues);
         this.columnTests.add(columnTest);
         return this;
     }
@@ -68,45 +153,94 @@ public class MultiTestSetup {
         return value;
     }
 
-    public void verify() {
+    public Stream<DynamicNode> buildTests() {
         final DatabricksSchema databricksSchema = this.testSetup.databricks().createSchema();
         final Table databricksTable = createDatabricksTable(databricksSchema);
-        final VirtualSchema vs = this.testSetup.exasol().createVirtualSchema(databricksSchema);
-        verifyColumnMetadata(databricksTable, vs);
+        final ExasolVirtualSchema vs = this.testSetup.exasol().createVirtualSchema(databricksSchema);
+        return verifyColumnMetadata(databricksTable, vs);
     }
 
-    private void verifyColumnMetadata(final Table databricksTable, final VirtualSchema vs) {
+    private Stream<DynamicNode> verifyColumnMetadata(final Table databricksTable, final ExasolVirtualSchema vs) {
         final List<ExaColumn> actualColumns = testSetup.exasol().metadata().getVirtualColumns(vs, databricksTable);
         assertThat("column count - probably some column types are not supported", actualColumns.size(),
-                equalTo(this.columnTests.size()));
-        final Collection<Executable> columnAssertions = new ArrayList<>();
+                equalTo(this.columnTests.size() + 1));
+        final String query = "select * from " + vs.qualifyTableName(databricksTable) + " order by \""
+                + ROW_ORDER_COLUMN_NAME + "\" asc";
+        final TableData actualData = testSetup.exasol().metadata().getTableData(query);
+        LOG.fine("Got table data\n" + actualData);
+        final List<DynamicNode> tests = new ArrayList<>();
         for (int i = 0; i < this.columnTests.size(); i++) {
-            final ExaColumn actual = actualColumns.get(i);
-            columnAssertions.add(this.columnTests.get(i).assertion(actual));
+            final ExaColumn actualType = actualColumns.get(i + 1);
+            tests.add(this.columnTests.get(i).createTest(actualType, actualData));
         }
-        assertAll(columnAssertions);
+        return tests.stream();
     }
 
     private Table createDatabricksTable(final DatabricksSchema databricksSchema) {
-        final List<String> columnNames = this.columnTests.stream().map(ColumnTest::columnName).toList();
-        final List<String> columnTypes = this.columnTests.stream().map(ColumnTest::databricksType).toList();
+        final List<String> columnNames = Stream
+                .concat(Stream.of(ROW_ORDER_COLUMN_NAME), this.columnTests.stream().map(ColumnTypeTest::columnName))
+                .toList();
+        final List<String> columnTypes = Stream
+                .concat(Stream.of("INTEGER"), this.columnTests.stream().map(ColumnTypeTest::databricksType)).toList();
         LOG.fine("Creating Databricks table with columns " + columnNames + " and types " + columnTypes);
-        return databricksSchema.createTable("tab", columnNames, columnTypes);
+        return databricksSchema.createTable("tab", columnNames, columnTypes) //
+                .bulkInsert(getDatabricksRowValues());
     }
 
-    private static record ColumnTest(String columnName, String databricksType, String exasolType, Long maxSize,
-            Long precision, Long scale) {
+    private Stream<List<Object>> getDatabricksRowValues() {
+        final int rowCount = this.columnTests.stream() //
+                .map(ColumnTypeTest::databricksValues) //
+                .mapToInt(List::size).max().orElseThrow();
+        return IntStream.range(0, rowCount).mapToObj(this::collectRow);
+    }
 
-        private ExaColumn getExpected() {
-            return new ExaColumn(columnName, exasolType, maxSize, precision, scale);
+    private List<Object> collectRow(final int rowIndex) {
+        return Stream.concat(Stream.of(rowIndex), this.columnTests.stream() //
+                .map(ColumnTypeTest::databricksValues) //
+                .map(values -> values.size() > rowIndex ? values.get(rowIndex) : null)) //
+                .toList();
+    }
+
+    private static record ExpectedExasolType(String exasolType, Long maxSize, Long precision, Long scale) {
+    }
+
+    private static record ColumnTypeTest(String columnName, String databricksType, ExpectedExasolType expectedType,
+            List<Object> databricksValues, List<Object> expectedValues) {
+
+        DynamicNode createTest(final ExaColumn actualType, final TableData actualData) {
+            return DynamicContainer.dynamicContainer("Databricks Type " + databricksType,
+                    Stream.concat(testExasolColumnType(actualType), testExpectedValues(actualData)));
         }
 
-        Executable assertion(final ExaColumn actual) {
-            return () -> {
-                final String reason = String.format("Column %s: databricks type %s - exasol type %s", this.columnName,
-                        this.databricksType, this.exasolType);
-                assertThat(reason, actual, AutoMatcher.equalTo(getExpected()));
-            };
+        private Stream<DynamicNode> testExasolColumnType(final ExaColumn actual) {
+            if (expectedType == null) {
+                return Stream.empty();
+            }
+            final ExaColumn expected = new ExaColumn(columnName, expectedType.exasolType, expectedType.maxSize,
+                    expectedType.precision, expectedType.scale);
+            return Stream.of(DynamicTest.dynamicTest("Exasol type " + expected.type(),
+                    () -> assertThat(actual, AutoMatcher.equalTo(expected))));
+        }
+
+        private Stream<DynamicNode> testExpectedValues(final TableData actualData) {
+            if (expectedValues.isEmpty()) {
+                return Stream.empty();
+            }
+            final List<Object> actualColumnData = actualData.getColumnData(columnName, expectedValues.size());
+            final List<DynamicNode> tests = new ArrayList<>(expectedValues.size());
+            for (int i = 0; i < expectedValues.size(); i++) {
+                final Object expectedValue = expectedValues.get(i);
+                final Object actualValue = actualColumnData.get(i);
+                tests.add(DynamicTest.dynamicTest("Value " + expectedValue, () -> {
+                    if (expectedValue != null) {
+                        assertAll(() -> assertThat("value type", actualValue, instanceOf(expectedValue.getClass())),
+                                () -> assertThat("value", actualValue, equalTo(expectedValue)));
+                    } else {
+                        assertThat(actualValue, nullValue());
+                    }
+                }));
+            }
+            return tests.stream();
         }
     }
 }

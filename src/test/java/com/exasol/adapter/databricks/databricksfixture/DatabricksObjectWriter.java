@@ -2,6 +2,8 @@ package com.exasol.adapter.databricks.databricksfixture;
 
 import java.sql.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import com.databricks.sdk.WorkspaceClient;
@@ -10,7 +12,7 @@ import com.exasol.adapter.databricks.fixture.TestConfig;
 import com.exasol.dbbuilder.dialects.*;
 
 class DatabricksObjectWriter extends AbstractImmediateDatabaseObjectWriter {
-
+    private static final Logger LOG = Logger.getLogger(DatabricksObjectWriter.class.getName());
     private final WorkspaceClient client;
     private final TestConfig config;
 
@@ -66,7 +68,8 @@ class DatabricksObjectWriter extends AbstractImmediateDatabaseObjectWriter {
         final String valuePlaceholders = "?" + ", ?".repeat(table.getColumnCount() - 1);
         final String sql = "INSERT INTO " + table.getFullyQualifiedName() + " VALUES(" + valuePlaceholders + ")";
         try (final PreparedStatement preparedStatement = this.connection.prepareStatement(sql)) {
-            rows.forEach(row -> writeRow(table, sql, preparedStatement, row));
+            final AtomicInteger rowIndex = new AtomicInteger();
+            rows.forEach(row -> writeRow(table, sql, preparedStatement, rowIndex.incrementAndGet(), row));
         } catch (final SQLException exception) {
             throw new DatabaseObjectException(table,
                     "Failed to create or execute prepared statement '" + sql + "' for insert.", exception);
@@ -74,14 +77,22 @@ class DatabricksObjectWriter extends AbstractImmediateDatabaseObjectWriter {
     }
 
     private void writeRow(final Table table, final String sql, final PreparedStatement preparedStatement,
-            final List<Object> row) {
+            final int rowIndex, final List<Object> row) {
         try {
+            LOG.finest("Inserting row " + rowIndex + " into table '" + table.getName() + "'...");
             for (int i = 0; i < row.size(); ++i) {
                 preparedStatement.setObject(i + 1, row.get(i));
             }
             preparedStatement.execute();
         } catch (final SQLException exception) {
-            throw new DatabaseObjectException(table, "Failed to execute insert query: '" + sql + "'", exception);
+            if (exception.getMessage().contains(
+                    "HTTP Response code: 400, Error message: BAD_REQUEST: Parameters too large: the combined size of parameters is")) {
+                throw new DatabaseObjectException(table, "Size of row " + rowIndex + " with " + row.size()
+                        + " columns is too large. Consider moving test values to other rows", exception);
+            } else {
+                throw new DatabaseObjectException(table, "Failed to execute insert query '" + sql + "' for row "
+                        + rowIndex + " with " + row.size() + " columns: "+exception.getMessage(), exception);
+            }
         }
     }
 }

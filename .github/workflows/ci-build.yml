@@ -76,7 +76,7 @@ jobs:
       - {
         name: Install Lua dependencies,
         id: install-lua-dependencies,
-        run: luarocks --local install *.rockspec --deps-only
+        run: luarocks --local install *.rockspec --deps-only --force
       }
       - {
         name: Skip SonarCloud cache,
