@@ -143,8 +143,8 @@ We write integration tests for the VS in Java:
 
 We use [dynamic tests](https://junit.org/junit5/docs/current/user-guide/#writing-tests-dynamic-tests) using `@TestFactory` for verifying that a virtual schema returns the expected data types and maps values as expected.
 
-* `-` More complicated, requires additional test framework
-* `+` Minimal overhead for test setup (create Databricks table and virtual schema)
+* `-` More complicated, higher initial effort
+* `+` Efficient: reduce time for setup, reuse test data for multiple test cases
 * `+` Readable tests cases, technical setup hidden in test framework
 * `+` Flexible for future changes
 * `+` Test failures directly show column type and mis-matched value
