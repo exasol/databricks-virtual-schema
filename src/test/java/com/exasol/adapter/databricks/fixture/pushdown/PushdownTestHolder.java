@@ -30,22 +30,15 @@ public class PushdownTestHolder {
     }
 
     private String getQuery() {
-        if (this.virtualTables.size() == 1) {
-            return replaceTableName(query, "$VIRTUAL_TABLE", virtualTables.get(0));
-        }
-        return replaceAllTableNames();
-    }
-
-    private String replaceAllTableNames() {
         String modifiedQuery = query;
-        for (int i = 0; i < virtualTables.size(); i++) {
-            modifiedQuery = replaceTableName(modifiedQuery, i);
+        for (final Table virtualTable : virtualTables) {
+            modifiedQuery = replaceTableName(modifiedQuery, virtualTable);
         }
         return modifiedQuery;
     }
 
-    private String replaceTableName(final String query, final int tableIndex) {
-        return replaceTableName(query, "$VIRTUAL_TABLE" + tableIndex, virtualTables.get(tableIndex));
+    private String replaceTableName(final String query, final Table virtualTable) {
+        return replaceTableName(query, "$" + virtualTable.getName(), virtualTable);
     }
 
     private String replaceTableName(final String query, final String placeholder, final Table table) {

@@ -1,9 +1,12 @@
 package com.exasol.adapter.databricks.fixture.pushdown;
 
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.*;
+import org.hamcrest.Matcher;
+import org.junit.jupiter.api.DynamicNode;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.TestSetup;
@@ -12,37 +15,40 @@ import com.exasol.dbbuilder.dialects.Table;
 
 public class PushdownTestSetup {
     private final TestSetup testSetup;
-    private final List<TableFactory> tableFactories;
+    private final PushdownTestFactory testFactory;
+    private final List<PushdownTestHolder> tests = new ArrayList<>();
 
-    private PushdownTestSetup(final TestSetup testSetup, final List<TableFactory> tableFactories) {
+    private PushdownTestSetup(final TestSetup testSetup, final PushdownTestFactory testFactory) {
         this.testSetup = testSetup;
-        this.tableFactories = tableFactories;
+        this.testFactory = testFactory;
     }
 
     public static PushdownTestSetup create(final TestSetup testSetup, final List<TableFactory> tableFactories) {
-        return new PushdownTestSetup(testSetup, tableFactories);
+        final PushdownTestFactory testFactory = createTestFactory(testSetup, tableFactories);
+        return new PushdownTestSetup(testSetup, testFactory);
     }
 
-    private PushdownTestFactory createTestFactory() {
+    private static PushdownTestFactory createTestFactory(final TestSetup testSetup,
+            final List<TableFactory> tableFactories) {
         final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
-        final List<Table> databricksTables = createDatabricksTables(databricksSchema);
+        final List<Table> databricksTables = createDatabricksTables(databricksSchema, tableFactories);
         final ExasolVirtualSchema virtualSchema = testSetup.exasol().createVirtualSchema(databricksSchema);
         return new PushdownTestFactory(testSetup, virtualSchema, databricksTables);
     }
 
-    private List<Table> createDatabricksTables(final DatabricksSchema databricksSchema) {
+    private static List<Table> createDatabricksTables(final DatabricksSchema databricksSchema,
+            final List<TableFactory> tableFactories) {
         return tableFactories.stream().map(factory -> factory.createTable(databricksSchema)).toList();
     }
 
-    public Stream<DynamicNode> buildTests(final String testCategory, final TestBuilder testBuilder) {
-        final Stream<DynamicTest> tests = testBuilder.buildTests(createTestFactory())
-                .map(PushdownTestHolder::toDynamicTest);
-        return Stream.of(DynamicContainer.dynamicContainer(testCategory, tests));
+    public PushdownTestSetup addTest(final String testName, final String query,
+            final Matcher<ResultSet> expectedResultMatcher) {
+        this.tests.add(this.testFactory.create(testName, query, expectedResultMatcher));
+        return this;
     }
 
-    @FunctionalInterface
-    public static interface TestBuilder {
-        Stream<PushdownTestHolder> buildTests(PushdownTestFactory factory);
+    public Stream<DynamicNode> buildTests() {
+        return this.tests.stream().map(PushdownTestHolder::toDynamicTest);
     }
 
     @FunctionalInterface
