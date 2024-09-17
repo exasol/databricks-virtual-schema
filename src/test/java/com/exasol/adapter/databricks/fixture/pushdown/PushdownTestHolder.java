@@ -2,6 +2,7 @@ package com.exasol.adapter.databricks.fixture.pushdown;
 
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Objects;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.DynamicTest;
@@ -24,9 +25,9 @@ class PushdownTestHolder {
         this.testSetup = testSetup;
         this.virtualSchema = virtualSchema;
         this.virtualTables = virtualTables;
-        this.testName = testName;
-        this.query = query;
-        this.expectedResultMatcher = expectedResultMatcher;
+        this.testName = Objects.requireNonNull(testName, "testName");
+        this.query = Objects.requireNonNull(query, "query");
+        this.expectedResultMatcher = Objects.requireNonNull(expectedResultMatcher, "expectedResultMatcher");
     }
 
     private String getQuery() {

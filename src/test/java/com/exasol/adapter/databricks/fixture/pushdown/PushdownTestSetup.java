@@ -12,6 +12,7 @@ import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.TestSetup;
 import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
 import com.exasol.dbbuilder.dialects.Table;
+import com.exasol.matcher.ResultSetStructureMatcher;
 
 public class PushdownTestSetup {
     private final PushdownTestFactory testFactory;
@@ -39,14 +40,51 @@ public class PushdownTestSetup {
         return tableFactories.stream().map(factory -> factory.createTable(databricksSchema)).toList();
     }
 
-    public PushdownTestSetup addTest(final String testName, final String query,
-            final Matcher<ResultSet> expectedResultMatcher) {
-        this.tests.add(this.testFactory.create(testName, query, expectedResultMatcher));
-        return this;
+    public PushdownTestBuilder capability(final String capability) {
+        // this.tests.add(this.testFactory.create(testName, query, expectedResultMatcher));
+        return new PushdownTestBuilder(this, capability);
     }
 
     public Stream<DynamicNode> buildTests() {
         return this.tests.stream().map(PushdownTestHolder::toDynamicTest);
+    }
+
+    public static class PushdownTestBuilder {
+        private final String capability;
+        private final PushdownTestSetup testSetup;
+        private String testInfo;
+        private String query;
+        private Matcher<ResultSet> expectedResultMatcher;
+
+        private PushdownTestBuilder(final PushdownTestSetup testSetup, final String capability) {
+            this.testSetup = testSetup;
+            this.capability = capability;
+        }
+
+        public PushdownTestBuilder info(final String testInfo) {
+            this.testInfo = testInfo;
+            return this;
+        }
+
+        public PushdownTestBuilder query(final String query) {
+            this.query = query;
+            return this;
+        }
+
+        public PushdownTestBuilder expect(final ResultSetStructureMatcher.Builder expectedResultMatcher) {
+            return this.expect(expectedResultMatcher.matches());
+        }
+
+        public PushdownTestBuilder expect(final Matcher<ResultSet> expectedResultMatcher) {
+            this.expectedResultMatcher = expectedResultMatcher;
+            return this;
+        }
+
+        public PushdownTestSetup done() {
+            final String testName = capability + (testInfo != null ? " " + testInfo : "");
+            testSetup.tests.add(testSetup.testFactory.create(testName, query, expectedResultMatcher));
+            return testSetup;
+        }
     }
 
     @FunctionalInterface
