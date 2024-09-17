@@ -1,5 +1,7 @@
 package com.exasol.adapter.databricks.fixture.exasol;
 
+import static java.util.Collections.emptyMap;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -103,11 +105,18 @@ public class ExasolFixture implements AutoCloseable {
     }
 
     public ExasolVirtualSchema createVirtualSchema(final DatabricksSchema databricksSchema) {
-        return createVirtualSchema(databricksSchema.getParent().getName(), databricksSchema.getName());
+        return createVirtualSchema(databricksSchema, emptyMap());
     }
 
-    public ExasolVirtualSchema createVirtualSchema(final String databricksCatalog, final String databricksSchema) {
+    public ExasolVirtualSchema createVirtualSchema(final DatabricksSchema databricksSchema,
+            final Map<String, String> properties) {
+        return createVirtualSchema(databricksSchema.getParent().getName(), databricksSchema.getName(), properties);
+    }
+
+    public ExasolVirtualSchema createVirtualSchema(final String databricksCatalog, final String databricksSchema,
+            final Map<String, String> additionalProperties) {
         final Map<String, String> properties = new HashMap<>();
+        properties.putAll(additionalProperties);
         if (databricksCatalog != null) {
             properties.put("CATALOG_NAME", databricksCatalog);
         }

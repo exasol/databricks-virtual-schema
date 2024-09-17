@@ -63,7 +63,6 @@ public class MetadataDao {
     }
 
     private <T> T queryWithoutParameters(final String query, final ResultSetProcessor<T> resultSetProcessor) {
-        LOG.info(() -> "Executing query '" + query + "'...");
         try (final Statement statement = this.connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(query)) {
             return resultSetProcessor.process(resultSet);

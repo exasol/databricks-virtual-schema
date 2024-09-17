@@ -1,5 +1,6 @@
 package com.exasol.adapter.databricks;
 
+import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.startsWith;
@@ -35,7 +36,7 @@ class AbstractIntegrationTestBase {
     }
 
     protected ExasolVirtualSchema createVirtualSchema(final String databricksCatalog, final String databricksSchema) {
-        return testSetup.exasol().createVirtualSchema(databricksCatalog, databricksSchema);
+        return testSetup.exasol().createVirtualSchema(databricksCatalog, databricksSchema, emptyMap());
     }
 
     protected void assertCreateVirtualSchemaFails(final String databricksCatalog, final String databricksSchema,

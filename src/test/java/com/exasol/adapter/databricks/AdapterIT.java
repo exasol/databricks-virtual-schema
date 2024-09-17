@@ -1,5 +1,6 @@
 package com.exasol.adapter.databricks;
 
+import static java.util.Collections.emptyMap;
 import static org.hamcrest.Matchers.*;
 
 import java.math.BigDecimal;
@@ -38,7 +39,7 @@ class AdapterIT extends AbstractIntegrationTestBase {
 
     @Test
     void schemaMetadataAvailable() {
-        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema("system", "information_schema");
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema("system", "information_schema", emptyMap());
         testSetup.exasol().assertions().virtualSchemaExists(vs);
     }
 

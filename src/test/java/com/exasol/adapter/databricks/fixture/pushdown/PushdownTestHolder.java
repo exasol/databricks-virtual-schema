@@ -2,11 +2,12 @@ package com.exasol.adapter.databricks.fixture.pushdown;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matcher;
@@ -70,9 +71,18 @@ class PushdownTestHolder {
     private void assertPushdownQuery() {
         final String vsQuery = getQuery();
         final List<PushdownSql> explainVirtual = testSetup.exasol().metadata().explainVirtual(vsQuery);
-        final String reason = "Pushdown query for VS Query: " + vsQuery;
-        assertAll(() -> assertThat(reason, explainVirtual, hasSize(1)),
-                () -> assertThat(reason, explainVirtual.get(0).sql(), pushdownQueryMatcher));
+        assertThat("Pushdown query for VS Query: " + vsQuery, extractPushdownSelectStatement(explainVirtual),
+                pushdownQueryMatcher);
+    }
+
+    private String extractPushdownSelectStatement(final List<PushdownSql> explainVirtual) {
+        assertThat("EXPLAIN VIRTUAL result rows", explainVirtual, hasSize(1));
+        final String importStatement = explainVirtual.get(0).sql();
+        final Pattern pattern = Pattern.compile("^IMPORT INTO .* FROM JDBC AT .* STATEMENT '(.*)'$");
+        final java.util.regex.Matcher matcher = pattern.matcher(importStatement);
+        assertTrue(matcher.matches(),
+                "IMPORT statement '" + importStatement + "' does not match regex '" + pattern + "'");
+        return matcher.group(1).replace("''", "'");
     }
 
     DynamicNode toDynamicTest() {

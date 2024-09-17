@@ -1,8 +1,7 @@
 package com.exasol.adapter.databricks;
 
 import static com.exasol.matcher.ResultSetStructureMatcher.table;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.*;
 
 import java.util.stream.Stream;
 
@@ -19,35 +18,36 @@ class PushdownQueryIT extends AbstractIntegrationTestBase {
 
                 .capability("select *").query("SELECT * FROM $tab")
                 .expect(table("BIGINT", "VARCHAR").row(1L, "a").row(2L, "b").row(3L, "c").matchesInAnyOrder())
-                .expectPushdown(containsString("SELECT * FROM")).done()
+                .expectPushdown(startsWith("SELECT * FROM")).done()
 
                 .capability("SELECTLIST_PROJECTION").info("all columns uses *").query("SELECT id, name FROM $tab")
                 .expect(table("BIGINT", "VARCHAR").row(1L, "a").row(2L, "b").row(3L, "c").matchesInAnyOrder())
-                .expectPushdown(containsString("SELECT * FROM")).done()
+                .expectPushdown(startsWith("SELECT * FROM")).done()
 
                 .capability("SELECTLIST_PROJECTION").info("single column").query("SELECT id FROM $tab")
-                .expect(table("BIGINT").row(1L).row(2L).row(3L).matchesInAnyOrder()).expectPushdown(containsString("SELECT `tab`.`ID` FROM"))
-                .done()
+                .expect(table("BIGINT").row(1L).row(2L).row(3L).matchesInAnyOrder())
+                .expectPushdown(startsWith("SELECT `tab`.`ID` FROM")).done()
 
                 .capability("SELECTLIST_EXPRESSIONS").query("SELECT id*2, 'name: '||name FROM $tab")
-                .expect(table("BIGINT", "VARCHAR").row(2L, "name: a").row(4L, "name: b").row(6L, "name: c").matchesInAnyOrder())
-                .expectPushdown(containsString("blubb")).done()
+                .expect(table("BIGINT", "VARCHAR").row(2L, "name: a").row(4L, "name: b").row(6L, "name: c")
+                        .matchesInAnyOrder())
+                .expectPushdown(startsWith("blubb")).done()
 
                 .capability("FILTER_EXPRESSIONS").query("SELECT * FROM $tab where id = 1 or name = 'b'")
                 .expect(table("BIGINT", "VARCHAR").row(1L, "a").row(2L, "b").matchesInAnyOrder())
-                .expectPushdown(containsString("WHERE ((`tab`.`ID` = 1) OR (`tab`.`NAME` = ''b''))")).done()
+                .expectPushdown(containsString("WHERE ((`tab`.`ID` = 1) OR (`tab`.`NAME` = 'b'))")).done()
 
                 .capability("LIMIT").query("SELECT * FROM $tab order by id limit 2")
                 .expect(table("BIGINT", "VARCHAR").row(1L, "a").row(2L, "b").matches())
-                .expectPushdown(endsWith("LIMIT 2'")).done()
+                .expectPushdown(endsWith("LIMIT 2")).done()
 
                 .capability("LIMIT_WITH_OFFSET").query("SELECT * FROM $tab order by id limit 2 offset 1")
                 .expect(table("BIGINT", "VARCHAR").row(2L, "b").row(3L, "c").matches())
-                .expectPushdown(endsWith("LIMIT 2 OFFSET 1'")).done()
+                .expectPushdown(endsWith("LIMIT 2 OFFSET 1")).done()
 
                 .capability("ORDER_BY_COLUMN").query("SELECT id, name FROM $tab order by id")
                 .expect(table("BIGINT", "VARCHAR").row(1L, "a").row(2L, "b").row(3L, "c").matches())
-                .expectPushdown(endsWith("ORDER BY `tab`.`ID` ASC NULLS LAST'")).done()
+                .expectPushdown(endsWith("ORDER BY `tab`.`ID` ASC NULLS LAST")).done()
 
                 .capability("ORDER_BY_EXPRESSION").query("SELECT id, name FROM $tab order by -id")
                 .expect(table("BIGINT", "VARCHAR").row(3L, "c").row(2L, "b").row(1L, "a").matches())

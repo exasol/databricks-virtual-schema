@@ -3,6 +3,7 @@ package com.exasol.adapter.databricks.fixture.pushdown;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matcher;
@@ -31,7 +32,7 @@ public class PushdownTestSetup {
             final List<TableFactory> tableFactories) {
         final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
         final List<Table> databricksTables = createDatabricksTables(databricksSchema, tableFactories);
-        final ExasolVirtualSchema virtualSchema = testSetup.exasol().createVirtualSchema(databricksSchema);
+        final ExasolVirtualSchema virtualSchema = testSetup.exasol().createVirtualSchema(databricksSchema, Map.of("LOG_LEVEL", "WARNING"));
         return new PushdownTestFactory(testSetup, virtualSchema, databricksTables);
     }
 
