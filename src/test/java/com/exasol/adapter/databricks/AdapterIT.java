@@ -42,10 +42,10 @@ class AdapterIT extends AbstractIntegrationTestBase {
         testSetup.exasol().assertions().virtualSchemaExists(vs);
     }
 
+    // Inserting values into a generated column fails, so we need to run this separately from tests that insert rows.
     @TestFactory
     Stream<DynamicNode> dataTypeGeneratedColumn() {
         return testSetup.datatypeTest() //
-                // inserting values into a generated column fails.
                 .addValueTest("string generated always as ('gen')").expectType("VARCHAR(2000000) UTF8", 2000000L).done()
                 .buildTests();
     }
