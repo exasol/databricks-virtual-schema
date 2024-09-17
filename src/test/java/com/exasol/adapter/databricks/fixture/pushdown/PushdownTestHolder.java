@@ -1,8 +1,10 @@
 package com.exasol.adapter.databricks.fixture.pushdown;
 
+import static java.util.stream.Collectors.joining;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -76,6 +78,10 @@ class PushdownTestHolder {
     }
 
     private String extractPushdownSelectStatement(final List<PushdownSql> explainVirtual) {
+        if (explainVirtual.size() != 1) {
+            fail("Expected exactly one pushdown query but got " + explainVirtual.size() + ":\n"
+                    + explainVirtual.stream().map(PushdownSql::sql).collect(joining("\n")));
+        }
         assertThat("EXPLAIN VIRTUAL result rows", explainVirtual, hasSize(1));
         final String importStatement = explainVirtual.get(0).sql();
         final Pattern pattern = Pattern.compile("^IMPORT INTO .* FROM JDBC AT .* STATEMENT '(.*)'$");
