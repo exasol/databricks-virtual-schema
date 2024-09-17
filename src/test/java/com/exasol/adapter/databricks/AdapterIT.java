@@ -104,10 +104,10 @@ class AdapterIT extends AbstractIntegrationTestBase {
 
                 .addValueTest("DECIMAL(36)").expectDecimal(36, 0).nullValue()
                 .value(new BigDecimal("-9223372036854775808")).value(BigDecimal.valueOf(0))
-                .value(new BigDecimal("9223372036854775807")).done() //
+                .value(new BigDecimal("9223372036854775807")).done()
 
                 .addValueTest("DECIMAL(36,36)").expectDecimal(36, 36).nullValue().value(0, new BigDecimal("0E-36"))
-                .done() //
+                .done()
 
                 .addValueTest("FLOAT").expectType("DOUBLE", 64).nullValue().value(0D)
                 .value(-3.402E+38, -3.4020000005553803E38).value(-1.175E-37, -1.1749999727240737E-37)
@@ -135,16 +135,28 @@ class AdapterIT extends AbstractIntegrationTestBase {
                 .addValueTest("INTERVAL MONTH").expectIntervalYearToMonth().nullValue().value("-3600", "-000000300-00")
                 .done()
 
-                .addValueTest("INTERVAL DAY").expectIntervalDayToSecond().nullValue().done() //
-                .addValueTest("INTERVAL DAY TO HOUR").expectIntervalDayToSecond().nullValue().done() //
-                .addValueTest("INTERVAL DAY TO MINUTE").expectIntervalDayToSecond().nullValue().done() //
-                .addValueTest("INTERVAL DAY TO SECOND").expectIntervalDayToSecond().done() //
-                .addValueTest("INTERVAL HOUR").expectIntervalDayToSecond().nullValue().done() //
-                .addValueTest("INTERVAL HOUR TO MINUTE").expectIntervalDayToSecond().nullValue().done() //
-                .addValueTest("INTERVAL HOUR TO SECOND").expectIntervalDayToSecond().nullValue().done() //
-                .addValueTest("INTERVAL MINUTE").expectIntervalDayToSecond().nullValue().done() //
-                .addValueTest("INTERVAL MINUTE TO SECOND").expectIntervalDayToSecond().nullValue().done() //
-                .addValueTest("INTERVAL SECOND").expectIntervalDayToSecond().nullValue().done() //
+                .addValueTest("INTERVAL DAY").expectIntervalDayToSecond().nullValue()
+                .value("10", "+000000010 00:00:00.000000000").done() //
+                .addValueTest("INTERVAL DAY TO HOUR").expectIntervalDayToSecond().nullValue()
+                .value("10 23", "+000000010 23:00:00.000000000").done() //
+                .addValueTest("INTERVAL DAY TO MINUTE").expectIntervalDayToSecond().nullValue()
+                .value("10 23:59", "+000000010 23:59:00.000000000").done() //
+                .addValueTest("INTERVAL DAY TO SECOND").expectIntervalDayToSecond()
+                .value("11 23:4:0", "+000000011 23:04:00.000000000").done() //
+                .addValueTest("INTERVAL HOUR").expectIntervalDayToSecond().nullValue()
+                .value("23", "+000000000 23:00:00.000000000").done() //
+                .addValueTest("INTERVAL HOUR TO MINUTE").expectIntervalDayToSecond().nullValue()
+                .value("23:59", "+000000000 23:59:00.000000000").done() //
+                .addValueTest("INTERVAL HOUR TO SECOND").expectIntervalDayToSecond().nullValue()
+                .value("23:59:59", "+000000000 23:59:59.000000000")
+                .value("200:13:50.3", "+000000008 08:13:50.300000000").done() //
+                .addValueTest("INTERVAL MINUTE").expectIntervalDayToSecond().nullValue()
+                .value("59", "+000000000 00:59:00.000000000").done() //
+                .addValueTest("INTERVAL MINUTE TO SECOND").expectIntervalDayToSecond().nullValue()
+                .value("59:59", "+000000000 00:59:59.000000000").value("0:0.1", "+000000000 00:00:00.100000000").done() //
+                .addValueTest("INTERVAL SECOND").expectIntervalDayToSecond().nullValue()
+                .value("59", "+000000000 00:00:59.000000000").value("0.0001", "+000000000 00:00:00.000000000").done()
+
                 .buildTests();
     }
 

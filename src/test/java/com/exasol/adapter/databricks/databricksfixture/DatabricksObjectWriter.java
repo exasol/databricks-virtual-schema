@@ -91,7 +91,7 @@ class DatabricksObjectWriter extends AbstractImmediateDatabaseObjectWriter {
                         + " columns is too large. Consider moving test values to other rows", exception);
             } else {
                 throw new DatabaseObjectException(table, "Failed to execute insert query '" + sql + "' for row "
-                        + rowIndex + " with " + row.size() + " columns", exception);
+                        + rowIndex + " with " + row.size() + " columns: "+exception.getMessage(), exception);
             }
         }
     }
