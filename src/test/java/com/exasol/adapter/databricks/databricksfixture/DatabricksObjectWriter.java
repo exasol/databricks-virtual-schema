@@ -79,7 +79,7 @@ class DatabricksObjectWriter extends AbstractImmediateDatabaseObjectWriter {
     private void writeRow(final Table table, final String sql, final PreparedStatement preparedStatement,
             final int rowIndex, final List<Object> row) {
         try {
-            LOG.finest("Inserting row " + rowIndex + " into " + table.getName() + "...");
+            LOG.finest("Inserting row " + rowIndex + " into table '" + table.getName() + "'...");
             for (int i = 0; i < row.size(); ++i) {
                 preparedStatement.setObject(i + 1, row.get(i));
             }

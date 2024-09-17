@@ -25,6 +25,7 @@ Code name: Initial implementation
 * Added `com.exasol:virtual-schema-shared-integration-tests:3.0.0`
 * Added `org.hamcrest:hamcrest:3.0`
 * Added `org.itsallcode:hamcrest-auto-matcher:0.8.1`
+* Added `org.junit-pioneer:junit-pioneer:2.2.0`
 * Added `org.junit.jupiter:junit-jupiter:5.11.0`
 * Added `org.slf4j:slf4j-jdk14:2.0.16`
 

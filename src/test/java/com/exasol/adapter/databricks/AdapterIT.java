@@ -8,11 +8,13 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junitpioneer.jupiter.DefaultTimeZone;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
 import com.exasol.dbbuilder.dialects.Table;
 
+@DefaultTimeZone("UTC")
 class AdapterIT extends AbstractIntegrationTestBase {
 
     @Test
@@ -119,12 +121,10 @@ class AdapterIT extends AbstractIntegrationTestBase {
                 .addValueTest("BOOLEAN").expectType("BOOLEAN", 1).nullValue().value(1, true).value(0, false).done() //
 
                 .addValueTest("TIMESTAMP").expectType("TIMESTAMP(3)", 29).nullValue()
-                // TODO wrong timestamp, expected time 05:43 instead of 07:43
-                .timestamp("2021-7-1T8:43:28UTC+3" /* = 2021-07-01T05:43:28.000+00:00 */, "2021-7-1 07:43:28").done()
+                .timestamp("2021-7-1T8:43:28UTC+3" /* = 2021-07-01T05:43:28.000+00:00 */, "2021-7-1 05:43:28").done()
 
                 .addValueTest("TIMESTAMP_NTZ").expectType("TIMESTAMP(3)", 29).nullValue()
-                // TODO wrong timestamp, expected time 08:43 instead of 10:43
-                .timestamp("2021-7-1T8:43:28", "2021-7-1 10:43:28").done()
+                .timestamp("2021-7-1T8:43:28", "2021-7-1 08:43:28").done()
 
                 .addValueTest("INTERVAL YEAR").expectIntervalYearToMonth().nullValue().value("+100", "+000000100-00")
                 .value("-5", "-000000005-00").done()
