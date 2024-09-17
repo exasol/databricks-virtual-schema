@@ -41,7 +41,6 @@ public class PushdownTestSetup {
     }
 
     public PushdownTestBuilder capability(final String capability) {
-        // this.tests.add(this.testFactory.create(testName, query, expectedResultMatcher));
         return new PushdownTestBuilder(this, capability);
     }
 
@@ -54,7 +53,8 @@ public class PushdownTestSetup {
         private final PushdownTestSetup testSetup;
         private String testInfo;
         private String query;
-        private Matcher<ResultSet> expectedResultMatcher;
+        private Matcher<ResultSet> resultMatcher;
+        private Matcher<String> pushdownQueryMatcher;
 
         private PushdownTestBuilder(final PushdownTestSetup testSetup, final String capability) {
             this.testSetup = testSetup;
@@ -76,13 +76,18 @@ public class PushdownTestSetup {
         }
 
         public PushdownTestBuilder expect(final Matcher<ResultSet> expectedResultMatcher) {
-            this.expectedResultMatcher = expectedResultMatcher;
+            this.resultMatcher = expectedResultMatcher;
+            return this;
+        }
+
+        public PushdownTestBuilder expectPushdown(final Matcher<String> expectedPushdownQueryMatcher) {
+            this.pushdownQueryMatcher = expectedPushdownQueryMatcher;
             return this;
         }
 
         public PushdownTestSetup done() {
             final String testName = capability + (testInfo != null ? " " + testInfo : "");
-            testSetup.tests.add(testSetup.testFactory.create(testName, query, expectedResultMatcher));
+            testSetup.tests.add(testSetup.testFactory.create(testName, query, resultMatcher, pushdownQueryMatcher));
             return testSetup;
         }
     }

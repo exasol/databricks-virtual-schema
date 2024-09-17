@@ -21,8 +21,9 @@ class PushdownTestFactory {
         this.virtualTables = virtualTables;
     }
 
-    PushdownTestHolder create(final String testName, final String query,
-            final Matcher<ResultSet> expectedResultMatcher) {
-        return new PushdownTestHolder(testSetup, virtualSchema, virtualTables, testName, query, expectedResultMatcher);
+    PushdownTestHolder create(final String testName, final String query, final Matcher<ResultSet> resultMatcher,
+            final Matcher<String> pushdownQueryMatcher) {
+        return new PushdownTestHolder(testSetup, virtualSchema, virtualTables, testName, query, resultMatcher,
+                pushdownQueryMatcher);
     }
 }

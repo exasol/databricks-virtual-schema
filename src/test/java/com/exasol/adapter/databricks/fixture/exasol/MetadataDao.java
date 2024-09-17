@@ -110,6 +110,17 @@ public class MetadataDao {
         }
     }
 
+    public List<PushdownSql> explainVirtual(final String query) {
+        return queryList("EXPLAIN VIRTUAL " + query, emptyList(), PushdownSql::fromResultSet);
+    }
+
+    public static record PushdownSql(int id, String sql, String json) {
+        static PushdownSql fromResultSet(final ResultSet resultSet) throws SQLException {
+            return new PushdownSql(resultSet.getInt("PUSHDOWN_ID"), resultSet.getString("PUSHDOWN_SQL"),
+                    resultSet.getString("PUSHDOWN_JSON"));
+        }
+    }
+
     public TableData getTableData(final String query) {
         return query(query, emptyList(), TableData::create);
     }
