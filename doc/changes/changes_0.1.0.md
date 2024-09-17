@@ -16,8 +16,8 @@ Code name: Initial implementation
 
 ### Test Dependency Updates
 
-* Added `com.databricks:databricks-jdbc:2.6.40`
-* Added `com.databricks:databricks-sdk-java:0.31.0`
+* Added `com.databricks:databricks-jdbc:2.6.40-patch-1`
+* Added `com.databricks:databricks-sdk-java:0.31.1`
 * Added `com.exasol:exasol-testcontainers:7.1.1`
 * Added `com.exasol:hamcrest-resultset-matcher:1.7.0`
 * Added `com.exasol:maven-project-version-getter:1.2.0`
