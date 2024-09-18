@@ -72,9 +72,12 @@ class PushdownTestHolder {
     }
 
     private void assertPushdownQuery() {
-        assumeTrue(pushdownQueryMatcher != null, "Query pushdown currently not supported");
         final String vsQuery = getQuery();
         final List<PushdownSql> explainVirtual = testSetup.exasol().metadata().explainVirtual(vsQuery);
+        assumeTrue(pushdownQueryMatcher != null,
+                "Query pushdown currently not supported for query '" + vsQuery + "', would execute "
+                        + explainVirtual.size() + " pushdown queries:\n"
+                        + explainVirtual.stream().map(PushdownSql::sql).collect(joining("\n")));
         assertThat("Pushdown for '" + vsQuery + "'", extractPushdownSelectStatement(explainVirtual),
                 pushdownQueryMatcher);
     }
