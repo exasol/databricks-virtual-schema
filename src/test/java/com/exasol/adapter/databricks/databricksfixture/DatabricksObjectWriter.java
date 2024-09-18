@@ -69,9 +69,7 @@ class DatabricksObjectWriter extends AbstractImmediateDatabaseObjectWriter {
         final List<List<Object>> rowList = rows.toList();
         try (final PreparedStatement preparedStatement = this.connection.prepareStatement(sql)) {
             LOG.fine("Inserting " + rowList.size() + " rows into table '" + table.getName() + "'...");
-            for (final List<Object> row : rowList) {
-                addBatch(preparedStatement, row);
-            }
+            rowList.forEach(row -> addBatch(preparedStatement, row));
             preparedStatement.executeBatch();
         } catch (final SQLException exception) {
             throw new DatabaseObjectException(table,
@@ -79,10 +77,14 @@ class DatabricksObjectWriter extends AbstractImmediateDatabaseObjectWriter {
         }
     }
 
-    private void addBatch(final PreparedStatement preparedStatement, final List<Object> row) throws SQLException {
-        for (int i = 0; i < row.size(); ++i) {
-            preparedStatement.setObject(i + 1, row.get(i));
+    private void addBatch(final PreparedStatement preparedStatement, final List<Object> row) {
+        try {
+            for (int i = 0; i < row.size(); ++i) {
+                preparedStatement.setObject(i + 1, row.get(i));
+            }
+            preparedStatement.addBatch();
+        } catch (final SQLException exception) {
+            throw new IllegalStateException("Failed to add batch: " + exception.getMessage(), exception);
         }
-        preparedStatement.addBatch();
     }
 }
