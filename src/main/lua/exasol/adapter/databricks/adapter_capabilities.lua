@@ -3,7 +3,9 @@
 M = {}
 
 ---Get capabilities supported by this adapter.
----All main and literal capabilities are supported, some `FN_*` capabilities are not supported.
+--- * All main capabilities are supported.
+--- * Literal capabilities are supported, `LITERAL_INTERVAL` is not supported.
+--- * Some `FN_*` capabilities are not supported.
 ---@return string[] supported_capabilities capabilities supported by the Databricks virtual schema
 function M.get_capabilities()
     return {
@@ -13,12 +15,12 @@ function M.get_capabilities()
         "JOIN_CONDITION_EQUI", "JOIN_TYPE_INNER", "JOIN_TYPE_FULL_OUTER", "JOIN_TYPE_LEFT_OUTER",
         "JOIN_TYPE_RIGHT_OUTER", "LIMIT", "LIMIT_WITH_OFFSET", "ORDER_BY_COLUMN", "ORDER_BY_EXPRESSION",
         -- Literal capabilities
-        "LITERAL_BOOL", "LITERAL_DATE", "LITERAL_DOUBLE", "LITERAL_EXACTNUMERIC", "LITERAL_INTERVAL", "LITERAL_NULL",
-        "LITERAL_STRING", "LITERAL_TIMESTAMP", "LITERAL_TIMESTAMP_UTC", --
+        "LITERAL_BOOL", "LITERAL_DATE", "LITERAL_DOUBLE", "LITERAL_EXACTNUMERIC", "LITERAL_NULL", "LITERAL_STRING",
+        "LITERAL_TIMESTAMP", "LITERAL_TIMESTAMP_UTC", --
         -- Predicate capabilities
-        "FN_PRED_AND", "FN_PRED_BETWEEN", "FN_PRED_EQUAL", "FN_PRED_IN_CONSTLIST", "FN_PRED_IS_NOT_NULL",
-        "FN_PRED_IS_NULL", "FN_PRED_LESS", "FN_PRED_LESSEQUAL", "FN_PRED_LIKE", "FN_PRED_LIKE_ESCAPE", "FN_PRED_NOT",
-        "FN_PRED_NOTEQUAL", "FN_PRED_OR", --
+        "FN_PRED_AND", "FN_PRED_OR", "FN_PRED_BETWEEN", "FN_PRED_EQUAL", "FN_PRED_NOTEQUAL", "FN_PRED_IN_CONSTLIST",
+        "FN_PRED_IS_NOT_NULL", "FN_PRED_IS_NULL", "FN_PRED_LESS", "FN_PRED_LESSEQUAL", "FN_PRED_LIKE",
+        "FN_PRED_LIKE_ESCAPE", "FN_PRED_NOT", --
         -- Conversion functions
         "FN_CAST", --
         -- Aggregate functions

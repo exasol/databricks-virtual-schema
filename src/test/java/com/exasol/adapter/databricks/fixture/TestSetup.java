@@ -2,6 +2,8 @@ package com.exasol.adapter.databricks.fixture;
 
 import static java.util.Arrays.asList;
 
+import java.util.List;
+
 import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture;
 import com.exasol.adapter.databricks.fixture.exasol.ExasolFixture;
 import com.exasol.adapter.databricks.fixture.pushdown.PushdownTestSetup;
@@ -37,7 +39,11 @@ public class TestSetup implements AutoCloseable {
     }
 
     public PushdownTestSetup pushdownTest(final TableFactory... tableFactories) {
-        return PushdownTestSetup.create(this, asList(tableFactories));
+        return pushdownTest(asList(tableFactories));
+    }
+
+    public PushdownTestSetup pushdownTest(final List<TableFactory> tableFactories) {
+        return PushdownTestSetup.create(this, tableFactories);
     }
 
     public void cleanupAfterTest() {
