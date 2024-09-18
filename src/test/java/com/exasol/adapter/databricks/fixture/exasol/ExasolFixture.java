@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture;
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.CleanupActions;
-import com.exasol.adapter.databricks.fixture.TestConfig;
 import com.exasol.containers.ExasolContainer;
 import com.exasol.dbbuilder.dialects.exasol.*;
 import com.exasol.drivers.JdbcDriver;
@@ -60,7 +59,7 @@ public class ExasolFixture implements AutoCloseable {
         this.databricksFixture = databricksFixture;
     }
 
-    public static ExasolFixture start(final TestConfig config, final DatabricksFixture databricksFixture) {
+    public static ExasolFixture start(final DatabricksFixture databricksFixture) {
         final ExasolContainer<? extends ExasolContainer<?>> exasol = new ExasolContainer<>(DEFAULT_EXASOL_VERSION) //
                 .withReuse(true);
         exasol.start();

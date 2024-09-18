@@ -22,7 +22,7 @@ public class TestSetup implements AutoCloseable {
     public static TestSetup start() {
         final TestConfig config = TestConfig.read();
         final DatabricksFixture databricks = DatabricksFixture.create(config);
-        final ExasolFixture exasol = ExasolFixture.start(config, databricks);
+        final ExasolFixture exasol = ExasolFixture.start(databricks);
         return new TestSetup(exasol, databricks);
     }
 
