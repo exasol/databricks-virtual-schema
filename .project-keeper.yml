@@ -14,7 +14,7 @@ linkReplacements:
 build:
   freeDiskSpace: false
   exasolDbVersions:
-    - "8.29.1"
+    - "8.31.0"
   workflows:
     - name: ci-build.yml
       stepCustomizations:
