@@ -14,7 +14,7 @@ class JdbcLoaderIT extends AbstractIntegrationTestBase {
                 .insert(1, "a").insert(2, "b").insert(3, "c");
         final String databricksQuery = "SELECT * FROM " + table.getFullyQualifiedName() + " ORDER BY ID";
         final String query = "IMPORT FROM JDBC AT " + getConnectionName() + " STATEMENT '" + databricksQuery + "'";
-        testSetup.exasol().assertions().query(query, table().row(1, "a").row(2, "b").row(3, "c").matches());
+        testSetup.exasol().assertions().query(query, table().row(1L, "a").row(2L, "b").row(3L, "c").matches());
     }
 
     private String getConnectionName() {
