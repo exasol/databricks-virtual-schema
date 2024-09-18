@@ -1,5 +1,7 @@
 package com.exasol.adapter.databricks.fixture.exasol;
 
+import static java.util.Collections.emptyMap;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,7 +14,6 @@ import java.util.logging.Logger;
 import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture;
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.CleanupActions;
-import com.exasol.adapter.databricks.fixture.TestConfig;
 import com.exasol.containers.ExasolContainer;
 import com.exasol.dbbuilder.dialects.exasol.*;
 import com.exasol.drivers.JdbcDriver;
@@ -37,7 +38,7 @@ public class ExasolFixture implements AutoCloseable {
     private static final Path ADAPTER_PATH = TARGET_DIR.resolve("databricks-virtual-schema-dist-" + VERSION + ".lua");
     private static final Path JDBC_DRIVER_PATH = TARGET_DIR.resolve("databricks-jdbc-driver/databricks-jdbc.jar");
 
-    private static final String DEFAULT_EXASOL_VERSION = "8.29.1";
+    private static final String DEFAULT_EXASOL_VERSION = "8.31.0";
     private final ExasolContainer<? extends ExasolContainer<?>> exasol;
     private final Connection connection;
     private final ExasolObjectFactory objectFactory;
@@ -58,7 +59,7 @@ public class ExasolFixture implements AutoCloseable {
         this.databricksFixture = databricksFixture;
     }
 
-    public static ExasolFixture start(final TestConfig config, final DatabricksFixture databricksFixture) {
+    public static ExasolFixture start(final DatabricksFixture databricksFixture) {
         final ExasolContainer<? extends ExasolContainer<?>> exasol = new ExasolContainer<>(DEFAULT_EXASOL_VERSION) //
                 .withReuse(true);
         exasol.start();
@@ -103,11 +104,18 @@ public class ExasolFixture implements AutoCloseable {
     }
 
     public ExasolVirtualSchema createVirtualSchema(final DatabricksSchema databricksSchema) {
-        return createVirtualSchema(databricksSchema.getParent().getName(), databricksSchema.getName());
+        return createVirtualSchema(databricksSchema, emptyMap());
     }
 
-    public ExasolVirtualSchema createVirtualSchema(final String databricksCatalog, final String databricksSchema) {
+    public ExasolVirtualSchema createVirtualSchema(final DatabricksSchema databricksSchema,
+            final Map<String, String> properties) {
+        return createVirtualSchema(databricksSchema.getParent().getName(), databricksSchema.getName(), properties);
+    }
+
+    public ExasolVirtualSchema createVirtualSchema(final String databricksCatalog, final String databricksSchema,
+            final Map<String, String> additionalProperties) {
         final Map<String, String> properties = new HashMap<>();
+        properties.putAll(additionalProperties);
         if (databricksCatalog != null) {
             properties.put("CATALOG_NAME", databricksCatalog);
         }

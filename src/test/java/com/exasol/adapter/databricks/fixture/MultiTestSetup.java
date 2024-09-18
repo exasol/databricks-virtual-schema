@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -126,6 +127,10 @@ public class MultiTestSetup {
             return value(databricksValue, Timestamp.valueOf(expectedExasolValue));
         }
 
+        public ValueMappingBuilder date(final String databricksValue, final String expectedExasolValue) {
+            return value(databricksValue, Date.valueOf(expectedExasolValue));
+        }
+
         public ValueMappingBuilder value(final Object databricksValue, final Object expectedExasolValue) {
             this.databricksValues.add(databricksValue);
             this.expectedExasolValues.add(expectedExasolValue);
@@ -167,7 +172,6 @@ public class MultiTestSetup {
         final String query = "select * from " + vs.qualifyTableName(databricksTable) + " order by \""
                 + ROW_ORDER_COLUMN_NAME + "\" asc";
         final TableData actualData = testSetup.exasol().metadata().getTableData(query);
-        LOG.fine("Got table data\n" + actualData);
         final List<DynamicNode> tests = new ArrayList<>();
         for (int i = 0; i < this.columnTests.size(); i++) {
             final ExaColumn actualType = actualColumns.get(i + 1);

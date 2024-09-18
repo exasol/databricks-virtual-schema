@@ -63,7 +63,6 @@ public class MetadataDao {
     }
 
     private <T> T queryWithoutParameters(final String query, final ResultSetProcessor<T> resultSetProcessor) {
-        LOG.info(() -> "Executing query '" + query + "'...");
         try (final Statement statement = this.connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(query)) {
             return resultSetProcessor.process(resultSet);
@@ -107,6 +106,17 @@ public class MetadataDao {
         static ExaColumn fromResultSet(final ResultSet resultSet) throws SQLException {
             return new ExaColumn(resultSet.getString(1), resultSet.getString(2), (Long) resultSet.getObject(3),
                     (Long) resultSet.getObject(4), (Long) resultSet.getObject(5));
+        }
+    }
+
+    public List<PushdownSql> explainVirtual(final String query) {
+        return queryList("EXPLAIN VIRTUAL " + query, emptyList(), PushdownSql::fromResultSet);
+    }
+
+    public static record PushdownSql(int id, String sql, String json) {
+        static PushdownSql fromResultSet(final ResultSet resultSet) throws SQLException {
+            return new PushdownSql(resultSet.getInt("PUSHDOWN_ID"), resultSet.getString("PUSHDOWN_SQL"),
+                    resultSet.getString("PUSHDOWN_JSON"));
         }
     }
 
@@ -179,8 +189,6 @@ public class MetadataDao {
             for (int i = 1; i <= columnCount; i++) {
                 final String columnName = columnNames.get(i - 1);
                 final Object columnValue = getColumnValue(resultSet, i);
-                final JDBCType columnType = JDBCType.valueOf(resultSet.getMetaData().getColumnType(i));
-                LOG.fine("Got value " + columnValue + " for column " + i + " of type " + columnType);
                 values.put(columnName, columnValue);
             }
             return new TableRow(values, columnNames);
