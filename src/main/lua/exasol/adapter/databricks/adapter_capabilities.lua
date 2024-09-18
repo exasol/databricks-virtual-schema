@@ -11,9 +11,7 @@ M = {}
 ---   * `AGGREGATE_GROUP_BY_TUPLE`
 --- * Literal capabilities: the following are **not** supported:
 ---   * `LITERAL_INTERVAL`
---- * Some `FN_*` capabilities are supported, he following are **not** supported:
----   * ``, see https://github.com/exasol/databricks-virtual-schema/issues/25
----   * ``
+--- * Some `FN_*` capabilities are supported
 ---@return string[] supported_capabilities capabilities supported by the Databricks virtual schema
 function M.get_capabilities()
     return {
