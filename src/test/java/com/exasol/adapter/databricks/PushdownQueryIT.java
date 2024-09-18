@@ -36,7 +36,7 @@ class PushdownQueryIT extends AbstractIntegrationTestBase {
 
                 .capability("SELECTLIST_EXPRESSIONS").query("SELECT id*2, name FROM $tab")
                 .expect(table("BIGINT", "VARCHAR").row(2L, "a").row(4L, "b").row(6L, "c").matchesInAnyOrder())
-                .expectPushdown(startsWith("SELECT xy2"))
+                .pushdownNotSupported()
 
                 .capability("FILTER_EXPRESSIONS").query("SELECT * FROM $tab where id = 1 or name = 'b'")
                 .expect(table("BIGINT", "VARCHAR").row(1L, "a").row(2L, "b").matchesInAnyOrder())

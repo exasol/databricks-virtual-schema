@@ -189,8 +189,6 @@ public class MetadataDao {
             for (int i = 1; i <= columnCount; i++) {
                 final String columnName = columnNames.get(i - 1);
                 final Object columnValue = getColumnValue(resultSet, i);
-                final JDBCType columnType = JDBCType.valueOf(resultSet.getMetaData().getColumnType(i));
-                LOG.fine("Got value " + columnValue + " for column " + i + " of type " + columnType);
                 values.put(columnName, columnValue);
             }
             return new TableRow(values, columnNames);
