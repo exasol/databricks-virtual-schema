@@ -32,7 +32,7 @@ public class DbAssertions {
 
     private void query(final String query, final List<Object> parameters, final Matcher<ResultSet> matcher) {
         metadataDao.query(query, parameters, resultSet -> {
-            assertThat("Result of '"+query+"'",resultSet, matcher);
+            assertThat("Result of '" + query + "'", resultSet, matcher);
             return null;
         });
     }
