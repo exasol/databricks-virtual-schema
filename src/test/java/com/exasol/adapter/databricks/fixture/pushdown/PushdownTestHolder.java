@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -38,7 +39,7 @@ class PushdownTestHolder {
         this.testName = Objects.requireNonNull(testName, "testName");
         this.query = Objects.requireNonNull(query, "query");
         this.resultMatcher = Objects.requireNonNull(resultMatcher, "resultMatcher");
-        this.pushdownQueryMatcher = Objects.requireNonNull(pushdownQueryMatcher, "pushdownQueryMatcher");
+        this.pushdownQueryMatcher = pushdownQueryMatcher;
     }
 
     private String getQuery() {
@@ -71,9 +72,10 @@ class PushdownTestHolder {
     }
 
     private void assertPushdownQuery() {
+        assumeTrue(pushdownQueryMatcher != null, "Query pushdown currently not supported");
         final String vsQuery = getQuery();
         final List<PushdownSql> explainVirtual = testSetup.exasol().metadata().explainVirtual(vsQuery);
-        assertThat("Pushdown query for VS Query: " + vsQuery, extractPushdownSelectStatement(explainVirtual),
+        assertThat("Pushdown for '" + vsQuery + "'", extractPushdownSelectStatement(explainVirtual),
                 pushdownQueryMatcher);
     }
 

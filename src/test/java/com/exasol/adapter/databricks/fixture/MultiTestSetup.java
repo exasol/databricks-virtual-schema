@@ -172,7 +172,6 @@ public class MultiTestSetup {
         final String query = "select * from " + vs.qualifyTableName(databricksTable) + " order by \""
                 + ROW_ORDER_COLUMN_NAME + "\" asc";
         final TableData actualData = testSetup.exasol().metadata().getTableData(query);
-        LOG.fine("Got table data\n" + actualData);
         final List<DynamicNode> tests = new ArrayList<>();
         for (int i = 0; i < this.columnTests.size(); i++) {
             final ExaColumn actualType = actualColumns.get(i + 1);

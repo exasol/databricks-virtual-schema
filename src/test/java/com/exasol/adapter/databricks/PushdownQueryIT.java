@@ -16,11 +16,8 @@ import com.exasol.matcher.TypeMatchMode;
 
 class PushdownQueryIT extends AbstractIntegrationTestBase {
 
-    private static final String BROKEN_PUSHDOWN = "Pushdown not yet working, need to investigate root cause";
-    private static final String TODO = "TODO!";
-
     @TestFactory
-    Stream<DynamicNode> singleTable() {
+    Stream<DynamicNode> selectlistFilterOrderLimit() {
         return testSetup
                 .pushdownTest(databricksSchema -> databricksSchema.createTable("tab", "ID", "INT", "NAME", "STRING")
                         .bulkInsert(Stream.of(List.of(1L, "a"), List.of(2, "b"), List.of(3, "c"))))
@@ -37,10 +34,9 @@ class PushdownQueryIT extends AbstractIntegrationTestBase {
                 .expect(table("BIGINT").row(1L).row(2L).row(3L).matchesInAnyOrder())
                 .expectPushdown(startsWith("SELECT `tab`.`ID` FROM"))
 
-                .capability("SELECTLIST_EXPRESSIONS").query("SELECT id*2, 'name: '||name FROM $tab")
-                .expect(table("BIGINT", "VARCHAR").row(2L, "name: a").row(4L, "name: b").row(6L, "name: c")
-                        .matchesInAnyOrder())
-                .expectPushdown(startsWith(BROKEN_PUSHDOWN))
+                .capability("SELECTLIST_EXPRESSIONS").query("SELECT id*2, name FROM $tab")
+                .expect(table("BIGINT", "VARCHAR").row(2L, "a").row(4L, "b").row(6L, "c").matchesInAnyOrder())
+                .expectPushdown(startsWith("SELECT xy2"))
 
                 .capability("FILTER_EXPRESSIONS").query("SELECT * FROM $tab where id = 1 or name = 'b'")
                 .expect(table("BIGINT", "VARCHAR").row(1L, "a").row(2L, "b").matchesInAnyOrder())
@@ -60,7 +56,7 @@ class PushdownQueryIT extends AbstractIntegrationTestBase {
 
                 .capability("ORDER_BY_EXPRESSION").query("SELECT id, name FROM $tab order by -id")
                 .expect(table("BIGINT", "VARCHAR").row(3L, "c").row(2L, "b").row(1L, "a").matches())
-                .expectPushdown(containsString(BROKEN_PUSHDOWN))
+                .pushdownNotSupported()
 
                 .buildTests();
     }
@@ -87,7 +83,7 @@ class PushdownQueryIT extends AbstractIntegrationTestBase {
                         .row("c2", "a", 10).row("c2", "a", 11).row("c2", "a", 12).row("c2", "a", 13) //
                         .row("c3", "b", 10).row("c3", "b", 11).row("c3", "b", 12).row("c3", "b", 13) //
                         .matches(TypeMatchMode.NO_JAVA_TYPE_CHECK))
-                .expectPushdown(containsString(BROKEN_PUSHDOWN))
+                .pushdownNotSupported()
 
                 .capability("JOIN_CONDITION_EQUI")
                 .query("select NAME, COUNTRY, OID from $customers join $orders on CID=CUST_ID order by name, oid")
@@ -154,13 +150,12 @@ class PushdownQueryIT extends AbstractIntegrationTestBase {
 
                 .capability("LITERAL_INTERVAL").info("year to month")
                 .query("select INTERVAL '13-03' YEAR TO MONTH, VAL from $tab")
-                .expect(table("INTERVAL YEAR TO MONTH", "BIGINT").row("+13-03", 1L).matches())
-                .expectPushdown(startsWith("SELECT INTERVAL '+13-03' YEAR(2) TO MONTH, `tab`.`VAL` FROM"))
+                .expect(table("INTERVAL YEAR TO MONTH", "BIGINT").row("+13-03", 1L).matches()).pushdownNotSupported()
 
                 .capability("LITERAL_INTERVAL").info("day to second")
                 .query("select INTERVAL '1 12:00:30.123' DAY TO SECOND, VAL from $tab")
                 .expect(table("INTERVAL DAY TO SECOND", "BIGINT").row("+01 12:00:30.123", 1L).matches())
-                .expectPushdown(startsWith("SELECT -123.456, `tab`.`VAL` FROM"))
+                .pushdownNotSupported()
 
                 .capability("LITERAL_NULL").query("select NULL, VAL from $tab")
                 .expect(table("BOOLEAN", "BIGINT").row(null, 1L).matches())

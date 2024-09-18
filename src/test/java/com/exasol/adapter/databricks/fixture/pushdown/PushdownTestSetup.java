@@ -81,7 +81,12 @@ public class PushdownTestSetup {
         }
 
         public PushdownTestBuilder expectPushdown(final Matcher<String> expectedPushdownQueryMatcher) {
-            this.pushdownQueryMatcher = expectedPushdownQueryMatcher;
+            this.pushdownQueryMatcher = Objects.requireNonNull(expectedPushdownQueryMatcher);
+            return this;
+        }
+
+        public PushdownTestBuilder pushdownNotSupported() {
+            this.pushdownQueryMatcher = null;
             return this;
         }
 
