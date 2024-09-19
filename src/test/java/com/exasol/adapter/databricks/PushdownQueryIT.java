@@ -179,8 +179,8 @@ class PushdownQueryIT extends AbstractIntegrationTestBase {
     @TestFactory
     Stream<DynamicNode> predicates() {
         return testSetup
-                .pushdownTest(databricksSchema -> databricksSchema.createTable("tab", "VAL", "INT")
-                        .bulkInsert(Stream.of(List.of(1L))))
+                .pushdownTest(databricksSchema -> databricksSchema.createTable("tab", "VAL", "INT", "STRVAL", "STRING")
+                        .bulkInsert(Stream.of(List.of(1L, "text%"))))
 
                 .capability("FN_PRED_AND").info("evaluate constants").query("select true and false from $tab")
                 .expect(table("BOOLEAN").row(false).matches()).expectPushdown(startsWith("SELECT false FROM"))
@@ -204,6 +204,123 @@ class PushdownQueryIT extends AbstractIntegrationTestBase {
                 .capability("FN_PRED_NOTEQUAL").query("select VAL!=0 from $tab")
                 .expect(table("BOOLEAN").row(true).matches())
                 .expectPushdown(startsWith("SELECT (`tab`.`VAL` <> 0) FROM"))
+
+                .capability("FN_PRED_IN_CONSTLIST").query("select VAL IN (0, 1, 2) from $tab")
+                .expect(table("BOOLEAN").row(true).matches())
+                .expectPushdown(startsWith("SELECT (`tab`.`VAL` IN (0, 1, 2)) FROM"))
+
+                .capability("FN_PRED_IS_NOT_NULL").query("select VAL is not null from $tab")
+                .expect(table("BOOLEAN").row(true).matches())
+                .expectPushdown(startsWith("SELECT (`tab`.`VAL` IS NOT NULL) FROM"))
+
+                .capability("FN_PRED_IS_NULL").query("select VAL is null from $tab")
+                .expect(table("BOOLEAN").row(false).matches())
+                .expectPushdown(startsWith("SELECT (`tab`.`VAL` IS NULL) FROM"))
+
+                .capability("FN_PRED_LESS").query("select VAL<2 from $tab").expect(table("BOOLEAN").row(true).matches())
+                .expectPushdown(startsWith("SELECT (`tab`.`VAL` < 2) FROM"))
+
+                .capability("FN_PRED_LESS").info("converted from >").query("select VAL>0 from $tab")
+                .expect(table("BOOLEAN").row(true).matches())
+                .expectPushdown(startsWith("SELECT (0 < `tab`.`VAL`) FROM"))
+
+                .capability("FN_PRED_LESSEQUAL").query("select VAL<=2 from $tab")
+                .expect(table("BOOLEAN").row(true).matches())
+                .expectPushdown(startsWith("SELECT (`tab`.`VAL` <= 2) FROM"))
+
+                .capability("FN_PRED_LESSEQUAL").info("converted from >=").query("select VAL>=0 from $tab")
+                .expect(table("BOOLEAN").row(true).matches())
+                .expectPushdown(startsWith("SELECT (0 <= `tab`.`VAL`) FROM"))
+
+                .capability("FN_PRED_LIKE").info("like").query("select STRVAL like 'te_t_' from $tab")
+                .expect(table("BOOLEAN").row(true).matches())
+                .expectPushdown(startsWith("SELECT (`tab`.`STRVAL` LIKE 'te_t_') FROM"))
+
+                .capability("FN_PRED_LIKE").info("not like").query("select STRVAL not like 'te_t_' from $tab")
+                .expect(table("BOOLEAN").row(false).matches())
+                .expectPushdown(startsWith("SELECT (NOT (`tab`.`STRVAL` LIKE 'te_t_')) FROM"))
+
+                .capability("FN_PRED_LIKE_ESCAPE").query("select STRVAL like 'te_t#%' ESCAPE '#' from $tab")
+                .expect(table("BOOLEAN").row(true).matches())
+                .expectPushdown(startsWith("SELECT (`tab`.`STRVAL` LIKE 'te_t#%' ESCAPE '#') FROM"))
+
+                .capability("FN_PRED_NOT").query("select not VAL=0 from $tab")
+                .expect(table("BOOLEAN").row(true).matches())
+                .expectPushdown(startsWith("SELECT (NOT (`tab`.`VAL` = 0)) FROM"))
+
+                .buildTests();
+    }
+
+    @TestFactory
+    Stream<DynamicNode> functions() {
+        return testSetup
+                .pushdownTest(databricksSchema -> databricksSchema.createTable("tab", "NUM", "INT", "STR", "STRING")
+                        .bulkInsert(Stream.of(List.of(2L, "text"))))
+
+                .capability("FN_CAST").query("select cast(NUM as varchar(3)) from $tab")
+                .expect(table("VARCHAR").row("2").matches()).expectPushdown(startsWith("SELECT CAST(`tab`.`NUM` AS VARCHAR(3)) FROM"))
+
+                .buildTests();
+    }
+
+    @TestFactory
+    Stream<DynamicNode> aggregateFunctions() {
+        return testSetup
+                .pushdownTest(databricksSchema -> databricksSchema.createTable("tab", "CAT", "STRING", "VAL", "INT")
+                        .bulkInsert(Stream.of(List.of("a", 1), List.of("b", 1), List.of("a", 2), List.of("c", 3),
+                                List.of("a", 10))))
+
+                .capability("FN_AGG_AVG").query("select avg(val) from $tab")
+                .expect(table("DOUBLE PRECISION").row(3.4).matches())
+                .expectPushdown(startsWith("SELECT AVG(`tab`.`VAL`) FROM"))
+
+                .capability("FN_AGG_AVG_DISTINCT").query("select avg(distinct val) from $tab")
+                .expect(table("DOUBLE PRECISION").row(4.0).matches())
+                .expectPushdown(startsWith("SELECT AVG(DISTINCT `tab`.`VAL`) FROM"))
+
+                .capability("FN_AGG_COUNT").query("select count(val) from $tab")
+                .expect(table("BIGINT").row(5L).matches()).expectPushdown(startsWith("SELECT COUNT(`tab`.`VAL`) FROM"))
+
+                .capability("FN_AGG_COUNT_DISTINCT").query("select count(distinct val) from $tab")
+                .expect(table("BIGINT").row(4L).matches())
+                .expectPushdown(startsWith("SELECT COUNT(DISTINCT `tab`.`VAL`) FROM"))
+
+                .capability("FN_AGG_COUNT_STAR").query("select count(*) from $tab")
+                .expect(table("BIGINT").row(5L).matches()).expectPushdown(startsWith("SELECT COUNT(*) FROM"))
+
+                .capability("FN_AGG_MAX").query("select max(val) from $tab").expect(table("BIGINT").row(10L).matches())
+                .expectPushdown(startsWith("SELECT MAX(`tab`.`VAL`) FROM"))
+
+                .capability("FN_AGG_MEDIAN").query("select median(val) from $tab")
+                .expect(table("DOUBLE PRECISION").row(2.0).matches())
+                .expectPushdown(startsWith("SELECT MEDIAN(`tab`.`VAL`) FROM"))
+
+                .capability("FN_AGG_MIN").query("select min(val) from $tab").expect(table("BIGINT").row(1L).matches())
+                .expectPushdown(startsWith("SELECT MIN(`tab`.`VAL`) FROM"))
+
+                .capability("FN_AGG_SUM").query("select sum(val) from $tab")
+                .expect(table("DECIMAL").row(BigDecimal.valueOf(17)).matches())
+                .expectPushdown(startsWith("SELECT SUM(`tab`.`VAL`) FROM"))
+
+                .capability("FN_AGG_SUM_DISTINCT").query("select sum(distinct val) from $tab")
+                .expect(table("DECIMAL").row(BigDecimal.valueOf(16)).matches())
+                .expectPushdown(startsWith("SELECT SUM(DISTINCT `tab`.`VAL`) FROM"))
+
+                .capability("AGGREGATE_HAVING").info("group by")
+                .query("select cat, count(val) from $tab group by cat having count(val) > 1")
+                .expect(table("VARCHAR", "BIGINT").row("a", 3L).matches()).pushdownNotSupported()
+
+                .capability("AGGREGATE_GROUP_BY_COLUMN")
+                .query("select cat, count(val) from $tab group by cat order by cat")
+                .expect(table("VARCHAR", "BIGINT").row("a", 3L).row("b", 1L).row("c", 1L).matches())
+                .expectPushdown(allOf(startsWith("SELECT `tab`.`CAT`, COUNT(`tab`.`VAL`) FROM"),
+                        endsWith("GROUP BY `tab`.`CAT` ORDER BY `tab`.`CAT` ASC NULLS LAST")))
+
+                .capability("AGGREGATE_SINGLE_GROUP")
+                .query("select cat, count(val) from $tab group by cat order by cat")
+                .expect(table("VARCHAR", "BIGINT").row("a", 3L).row("b", 1L).row("c", 1L).matches())
+                .expectPushdown(allOf(startsWith("SELECT `tab`.`CAT`, COUNT(`tab`.`VAL`) FROM"),
+                        endsWith("ORDER BY `tab`.`CAT` ASC NULLS LAST")))
 
                 .buildTests();
     }

@@ -7,6 +7,7 @@ Code name: Initial implementation
 ## Features
 
 * #11: Added query pushdown
+* #21: Added support for most important pushdown capabilities
 
 ## Refactoring
 
