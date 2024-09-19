@@ -1,7 +1,8 @@
 require("busted.runner")()
 local assert = require("luassert")
-local DatabricksAdapter = require("exasol.adapter.databricks.DatabricksAdapter")
 local mockagne = require("mockagne")
+local DatabricksAdapter = require("exasol.adapter.databricks.DatabricksAdapter")
+local adapter_capabilities = require("exasol.adapter.databricks.adapter_capabilities")
 
 ---@type MetadataReader
 local metadata_reader_mock = nil
@@ -74,6 +75,15 @@ describe("DatabricksAdapter", function()
                 type = "pushdown",
                 sql = [[IMPORT INTO (c1 DECIMAL(10,2)) FROM JDBC AT "conn" STATEMENT 'SELECT * FROM `virtualTable`']]
             }, response)
+        end)
+    end)
+
+    describe("get_capabilities()", function()
+        it("returns getCapabilities response", function()
+            -- Data type from base library not available
+            ---@diagnostic disable-next-line: undefined-field
+            local response = testee():get_capabilities(nil, properties_mock)
+            assert.is.same({type = "getCapabilities", capabilities = adapter_capabilities.get_capabilities()}, response)
         end)
     end)
 end)
