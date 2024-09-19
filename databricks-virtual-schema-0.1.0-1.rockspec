@@ -33,7 +33,8 @@ build_dependencies = {
 test_dependencies = {
     "busted >= 2.2.0-1",
     "luacheck >= 1.2.0-1",
-    "luacov >= 0.15.0-1"
+    "luacov >= 0.15.0-1",
+    "mockagne >= 1.0-2"
 }
 
 test = {

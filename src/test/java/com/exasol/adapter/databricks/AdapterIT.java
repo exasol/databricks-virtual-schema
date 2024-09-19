@@ -1,11 +1,16 @@
 package com.exasol.adapter.databricks;
 
 import static java.util.Collections.emptyMap;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
+import org.itsallcode.matcher.auto.AutoMatcher;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -13,6 +18,7 @@ import org.junitpioneer.jupiter.DefaultTimeZone;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
+import com.exasol.adapter.databricks.fixture.exasol.MetadataDao.ExaColumn;
 import com.exasol.dbbuilder.dialects.Table;
 
 @DefaultTimeZone("UTC")
@@ -202,5 +208,47 @@ class AdapterIT extends AbstractIntegrationTestBase {
                         Mitigations:
 
                         * Please remove the column or change the data type."""));
+    }
+
+    @Test
+    void alterVirtualSchemaSetProperty() {
+        final DatabricksSchema databricksSchema1 = testSetup.databricks().createSchema();
+        final DatabricksSchema databricksSchema2 = testSetup.databricks().createSchema();
+        databricksSchema1.createTable("tab1", "col1", "VARCHAR(5)");
+        databricksSchema2.createTable("tab2", "col2", "INTEGER");
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema1);
+        assertThat(testSetup.exasol().metadata().getVirtualColumns(vs),
+                AutoMatcher.equalTo(List.of(new ExaColumn("tab1", "col1", "VARCHAR(5) UTF8", 5L, null, null))));
+        vs.setProperties(Map.of("SCHEMA_NAME", databricksSchema2.getName()));
+        assertThat(testSetup.exasol().metadata().getVirtualColumns(vs),
+                AutoMatcher.equalTo(List.of(new ExaColumn("tab2", "col2", "DECIMAL(10,0)", 10L, 10L, 0L))));
+    }
+
+    @Test
+    void alterVirtualSchemaSetPropertyFailsForMissingSchema() {
+        final DatabricksSchema databricksSchema1 = testSetup.databricks().createSchema();
+        databricksSchema1.createTable("tab1", "col1", "VARCHAR(5)");
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema1);
+        assertThat(testSetup.exasol().metadata().getVirtualColumns(vs),
+                AutoMatcher.equalTo(List.of(new ExaColumn("tab1", "col1", "VARCHAR(5) UTF8", 5L, null, null))));
+
+        final Map<String, String> newProperties = Map.of("SCHEMA_NAME", "missing-schema");
+        final RuntimeException exception = assertThrows(RuntimeException.class, () -> vs.setProperties(newProperties));
+        assertThat(exception.getMessage(), containsString("failed with status 404"));
+    }
+
+    @Test
+    void alterVirtualSchemaRefresh() {
+        final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
+        databricksSchema.createTable("tab1", "col1", "VARCHAR(5)");
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema);
+        assertThat(testSetup.exasol().metadata().getVirtualColumns(vs),
+                AutoMatcher.equalTo(List.of(new ExaColumn("tab1", "col1", "VARCHAR(5) UTF8", 5L, null, null))));
+
+        databricksSchema.createTable("tab2", "col2", "BIGINT");
+        vs.refresh();
+        assertThat(testSetup.exasol().metadata().getVirtualColumns(vs),
+                AutoMatcher.equalTo(List.of(new ExaColumn("tab1", "col1", "VARCHAR(5) UTF8", 5L, null, null),
+                        new ExaColumn("tab2", "col2", "DECIMAL(19,0)", 19L, 19L, 0L))));
     }
 }

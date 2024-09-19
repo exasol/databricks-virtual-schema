@@ -8,6 +8,7 @@ Code name: Initial implementation
 
 * #11: Added query pushdown
 * #21: Added support for most important pushdown capabilities
+* #12: Added support for `ALTER VIRTUAL SCHEMA <vs> SET ...`
 
 ## Refactoring
 
