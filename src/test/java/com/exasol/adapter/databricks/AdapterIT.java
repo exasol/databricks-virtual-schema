@@ -11,13 +11,11 @@ import java.util.Map;
 
 import org.itsallcode.matcher.auto.AutoMatcher;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.DefaultTimeZone;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
 import com.exasol.adapter.databricks.fixture.exasol.MetadataDao.ExaColumn;
 
-@DefaultTimeZone("UTC")
 class AdapterIT extends AbstractIntegrationTestBase {
 
     @Test

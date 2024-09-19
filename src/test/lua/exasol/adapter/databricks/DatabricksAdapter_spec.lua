@@ -27,6 +27,7 @@ describe("DatabricksAdapter", function()
         new_properties_mock = mockagne.getMock()
         mockagne.when(properties_mock:merge(new_properties_mock)).thenAnswer(properties_mock)
     end)
+
     describe("create_virtual_schema()", function()
         it("returns createVirtualSchema response", function()
             local schema_metadata = {tables = {type = "table", name = "virtualTable"}}
@@ -35,6 +36,7 @@ describe("DatabricksAdapter", function()
             assert.is.same({type = "createVirtualSchema", schemaMetadata = schema_metadata}, response)
         end)
     end)
+
     describe("set_properties()", function()
         it("returns setProperties response", function()
             local schema_metadata = {tables = {type = "table", name = "virtualTable"}}
@@ -43,9 +45,16 @@ describe("DatabricksAdapter", function()
             assert.is.same({type = "setProperties", schemaMetadata = schema_metadata}, response)
         end)
     end)
-    describe("refresh()", function()
 
+    describe("refresh()", function()
+        it("returns refresh response", function()
+            local schema_metadata = {tables = {type = "table", name = "virtualTable"}}
+            simulate_metadata(schema_metadata)
+            local response = testee():refresh(nil, properties_mock)
+            assert.is.same({type = "refresh", schemaMetadata = schema_metadata}, response)
+        end)
     end)
+
     describe("push_down()", function()
         it("returns pushdown response", function()
             ---@type PushdownRequest
