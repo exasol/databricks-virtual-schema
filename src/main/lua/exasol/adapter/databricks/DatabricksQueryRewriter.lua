@@ -33,7 +33,7 @@ function DatabricksQueryRewriter:_replace_source_table_name(element)
                 extended_element[key] = value
             end
         end
-        if (element.type ~= nil and element.type == "table" and element.schema == nil) then
+        if element.type == "table" then
             local table_name = element.name
             local table_notes = self._pushdown_metadata:get_table_notes(table_name)
             local catalog_name = table_notes:get_databricks_catalog_name()
