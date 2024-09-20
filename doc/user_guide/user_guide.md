@@ -171,7 +171,6 @@ You can find additional information about the JDBC connection URL [in the Databr
 CREATE VIRTUAL SCHEMA VSDAB_VIRTUAL_SCHEMA
     USING VSDAB_SCHEMA.VSDAB_ADAPTER
     WITH
-    SCHEMA_NAME     = '<schema name>'
     CATALOG_NAME    = '<Databricks catalog name>'
     SCHEMA_NAME     = '<Databricks schema name>'
 ```
@@ -191,56 +190,40 @@ The core database will then refrain from pushing down the related SQL constructs
 Just add the property `EXCLUDED_CAPABILITIES` to the Virtual Schema creation statement and provide a comma-separated list of capabilities you want to exclude.
 
 ```sql
-CREATE VIRTUAL SCHEMA EVSL_VIRTUAL_SCHEMA
+CREATE VIRTUAL SCHEMA VSDAB_VIRTUAL_SCHEMA
     USING VSDAB_SCHEMA.VSDAB_ADAPTER
     WITH
     SCHEMA_NAME           = '<schema name>'
     EXCLUDED_CAPABILITIES = 'SELECTLIST_PROJECTION, ORDER_BY_COLUMN'
+    -- ...
 ```
-
-### Filtering Tables
-
-Often you will not need or even want all the tables in the source schema to be visible in the RLS-protected schema. In those cases you can simply specify an include-list as a property when creating the RLS Virtual Schema.
-
-Just provide a comma-separated list of table names in the property `TABLE_FILTER` and the scan of the source schema will skip all tables that are not listed. In a source schema with a large number of tables, this can also speed up the scan.
-
-```sql
-CREATE VIRTUAL SCHEMA EVSL_VIRTUAL_SCHEMA
-    USING VSDAB_SCHEMA.VSDAB_ADAPTER
-    WITH
-    SCHEMA_NAME  = '<schema name>'
-    TABLE_FILTER = 'ORDERS, ORDER_ITEMS, PRODUCTS'
-```
-
-Spaces around the table names are ignored.
 
 ### Changing the Properties of an Existing Virtual Schema
 
 While you could in theory drop and re-create an Virtual Schema, there is a more convenient way to apply changes in the adapter properties.
 
-Use `ALTER VIRTUAL SCHEMA ... SET ...` to update the properties of an existing Virtual Schema.
+Use [`ALTER VIRTUAL SCHEMA ... SET ...`](https://docs.exasol.com/sql/alter_schema.htm) to update the properties of an existing Virtual Schema.
 
 Example:
 
 ```sql
-ALTER VIRTUAL SCHEMA EVSL_VIRTUAL_SCHEMA
-SET SCHEMA_NAME = '<new schema name>'
+ALTER VIRTUAL SCHEMA VSDAB_VIRTUAL_SCHEMA
+SET
+    CATALOG_NAME    = '<New Databricks catalog name>'
+    SCHEMA_NAME     = '<New Databricks schema name>'
 ```
 
-You can for example change the `SCHEMA_NAME` property to point the Virtual Schema to a new source schema or the [table filter](#filtering-tables).
+You can for example change `CATALOG_NAME` and `SCHEMA_NAME` property to point the Virtual Schema to a new source schema.
 
 ## Updating a Virtual Schema
 
-All Virtual Schemas cache their metadata. That metadata for example contains all information about structure and data types of the underlying data source. RLS is a Virtual Schema and uses the same caching mechanism.
+All Virtual Schemas cache their metadata. That metadata for example contains all information about structure and data types of the underlying data source.
 
-To let RLS know that something changed in the metadata, please use the [`ALTER VIRTUAL SCHEMA ... REFRESH`](https://docs.exasol.com/sql/alter_schema.htm) statement.
+To let VSDAB know that something changed in the metadata, please use the [`ALTER VIRTUAL SCHEMA ... REFRESH`](https://docs.exasol.com/sql/alter_schema.htm) statement.
 
 ```
-ALTER VIRTUAL SCHEMA <virtul schema name> REFRESH
+ALTER VIRTUAL SCHEMA <virtual schema name> REFRESH
 ```
-
-Please note that this is also required if you change the special columns that control the RLS protection.
-
 
 ## Using the Virtual Schema
 
@@ -251,20 +234,21 @@ So if you want to query a table in a Virtual Schema, just use the `SELECT` state
 Example:
 
 ```sql
-SELECT * FROM EVSL_VIRTUAL_SCHEMA.<table>
+SELECT * FROM VSDAB_VIRTUAL_SCHEMA.<table>
 ```
 
 ### Examining the Push-down Query
 
-To understand what a Virtual Schema really does and as a starting point for optimizing your queries, it often helps to take a look at the push-down query Exasol generates. This is as easy as prepending `EXPLAIN VIRTUAL` to your Query.
+To understand what a Virtual Schema really does and as a starting point for optimizing your queries, it often helps to take a look at the push-down query Exasol generates. This is as easy as prepending `EXPLAIN VIRTUAL` to your query.
 
 Example:
 
 ```sql
-EXPLAIN VIRTUAL SELECT * FROM EVSL_VIRTUAL_SCHEMA.<table>
+EXPLAIN VIRTUAL SELECT * FROM VSDAB_VIRTUAL_SCHEMA.<table>
 ```
 
 ## Known Limitations
 
-* `SELECT *` is not yet supported due to an issue between the core database and the Lua Virtual Schemas in push-down requests (SPOT-10626)
-* Source Schema and Virtual Schema must be on the same database.
+* M2M Principal authentication (OAuth M2M) is not yet implemented, see [issue #3](https://github.com/exasol/databricks-virtual-schema/issues/3)
+* Table filtering using `TABLE_FILTER` is not yet implemented, see [issue #14](https://github.com/exasol/databricks-virtual-schema/issues/14)
+* VSDAB supports only Databricks schemas with 50 or less tables, see [issue #8](https://github.com/exasol/databricks-virtual-schema/issues/8)
