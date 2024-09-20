@@ -1,9 +1,13 @@
 package com.exasol.adapter.databricks;
 
+import static com.exasol.matcher.ResultSetStructureMatcher.table;
 import static java.util.Collections.emptyMap;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.*;
@@ -13,6 +17,7 @@ import org.junitpioneer.jupiter.DefaultTimeZone;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
+import com.exasol.adapter.databricks.fixture.exasol.MetadataDao.PushdownSql;
 import com.exasol.dbbuilder.dialects.Table;
 
 @DefaultTimeZone("UTC")
@@ -172,6 +177,19 @@ class AdapterIT extends AbstractIntegrationTestBase {
         final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema);
         testSetup.exasol().assertions().assertQueryFails("select * from " + vs.qualifyTableName(table), startsWith(
                 "ETL-3003: [Column=0 Row=0] [String data right truncation. String length exceeds limit of 2000 characters]"));
+    }
+
+    @Test
+    void excludeCapabilities() {
+        final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
+        final Table table = databricksSchema.createTable("tab", "ID", "INT", "NAME", "STRING")
+                .bulkInsert(Stream.of(List.of(1L, "a"), List.of(2, "b"), List.of(3, "c")));
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema,
+                Map.of("EXCLUDED_CAPABILITIES", "SELECTLIST_PROJECTION"));
+        final String query = "SELECT id FROM " + vs.qualifyTableName(table);
+        testSetup.exasol().assertions().query(query, table("BIGINT").row(1L).row(2L).row(3L).matchesInAnyOrder());
+        final List<PushdownSql> explainVirtual = testSetup.exasol().metadata().explainVirtual(query);
+        assertThat(explainVirtual.get(0).extractSelectQuery(), startsWith("SELECT * FROM"));
     }
 
     @ParameterizedTest
