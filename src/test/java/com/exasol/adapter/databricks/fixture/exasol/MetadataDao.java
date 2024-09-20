@@ -97,17 +97,28 @@ public class MetadataDao {
 
     public List<ExaColumn> getVirtualColumns(final ExasolVirtualSchema virtualSchema, final Table databricksTable) {
         return queryList("""
-                select COLUMN_NAME, COLUMN_TYPE, COLUMN_MAXSIZE, COLUMN_NUM_PREC, COLUMN_NUM_SCALE
+                select COLUMN_TABLE, COLUMN_NAME, COLUMN_TYPE, COLUMN_MAXSIZE, COLUMN_NUM_PREC, COLUMN_NUM_SCALE
                 from SYS.EXA_ALL_COLUMNS
                 where COLUMN_SCHEMA = ? and COLUMN_TABLE = ?
                 order by COLUMN_TABLE, COLUMN_ORDINAL_POSITION
                 """, List.of(virtualSchema.getName(), databricksTable.getName()), ExaColumn::fromResultSet);
     }
 
-    public static record ExaColumn(String columnName, String type, Long maxSize, Long numPrecision, Long numScale) {
+    public List<ExaColumn> getVirtualColumns(final ExasolVirtualSchema virtualSchema) {
+        return queryList("""
+                select COLUMN_TABLE, COLUMN_NAME, COLUMN_TYPE, COLUMN_MAXSIZE, COLUMN_NUM_PREC, COLUMN_NUM_SCALE
+                from SYS.EXA_ALL_COLUMNS
+                where COLUMN_SCHEMA = ?
+                order by COLUMN_TABLE, COLUMN_ORDINAL_POSITION
+                """, List.of(virtualSchema.getName()), ExaColumn::fromResultSet);
+    }
+
+    public static record ExaColumn(String table, String columnName, String type, Long maxSize, Long numPrecision,
+            Long numScale) {
         static ExaColumn fromResultSet(final ResultSet resultSet) throws SQLException {
-            return new ExaColumn(resultSet.getString(1), resultSet.getString(2), (Long) resultSet.getObject(3),
-                    (Long) resultSet.getObject(4), (Long) resultSet.getObject(5));
+            return new ExaColumn(resultSet.getString("COLUMN_TABLE"), resultSet.getString("COLUMN_NAME"),
+                    resultSet.getString("COLUMN_TYPE"), (Long) resultSet.getObject("COLUMN_MAXSIZE"),
+                    (Long) resultSet.getObject("COLUMN_NUM_PREC"), (Long) resultSet.getObject("COLUMN_NUM_SCALE"));
         }
     }
 

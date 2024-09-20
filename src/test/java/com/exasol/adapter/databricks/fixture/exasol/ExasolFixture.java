@@ -5,8 +5,7 @@ import static java.util.Collections.emptyMap;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -140,7 +139,7 @@ public class ExasolFixture implements AutoCloseable {
                 .properties(properties) //
                 .build();
         this.cleanupAfterTest.add("Drop virtual schema " + virtualSchema.getName(), () -> virtualSchema.drop());
-        return new ExasolVirtualSchema(virtualSchema);
+        return new ExasolVirtualSchema(this, virtualSchema);
     }
 
     private AdapterScript getAdapterScript() {
@@ -167,6 +166,15 @@ public class ExasolFixture implements AutoCloseable {
         properties.put("DEBUG_ADDRESS", this.udfLogCapturer.getServerHost() + ":" + this.udfLogCapturer.getPort());
         properties.put("LOG_LEVEL", "TRACE");
         return properties;
+    }
+
+    public void executeStatement(final String sql) {
+        try (Statement stmt = this.connection.createStatement()) {
+            stmt.executeUpdate(sql);
+        } catch (final SQLException exception) {
+            throw new IllegalStateException("Failed to execute statement '" + sql + "': " + exception.getMessage(),
+                    exception);
+        }
     }
 
     public MetadataDao metadata() {

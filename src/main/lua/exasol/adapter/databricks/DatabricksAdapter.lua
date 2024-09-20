@@ -13,9 +13,9 @@ local VERSION<const> = "0.1.0"
 local adapter_capabilities = require("exasol.adapter.databricks.adapter_capabilities")
 local DatabricksQueryRewriter = require("exasol.adapter.databricks.DatabricksQueryRewriter")
 
---- Create a `DatabricksAdapter`.
--- @param metadata_reader metadata reader
--- @return Adapter
+---Create a `DatabricksAdapter`.
+---@param metadata_reader MetadataReader metadata reader
+---@return DatabricksAdapter
 function DatabricksAdapter:new(metadata_reader)
     local instance = setmetatable({}, self)
     instance:_init(metadata_reader)
