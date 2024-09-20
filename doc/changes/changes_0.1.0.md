@@ -1,8 +1,14 @@
-# Virtual Schema for Databricks 0.1.0, released 2024-??-??
+# Virtual Schema for Databricks 0.1.0, released 2024-09-20
 
 Code name: Initial implementation
 
 ## Summary
+
+The **Databricks Virtual Schema** provides an abstraction layer that makes an external Databricks database accessible from an Exasol database through regular SQL commands. The contents of the external Databricks database are mapped to virtual tables which look like and can be queried as any regular Exasol table.
+
+If you want to set up a Virtual Schema for a different database system, please head over to the [Virtual Schemas Repository](https://github.com/exasol/virtual-schemas).
+
+**Important:** This project is work in progress. Some features are not yet implemented. See [known limitations](../../README.md#known-limitations) for details.
 
 ## Features
 

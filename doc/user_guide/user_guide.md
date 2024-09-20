@@ -250,6 +250,8 @@ EXPLAIN VIRTUAL SELECT * FROM VSDAB_VIRTUAL_SCHEMA.<table>
 
 ## Known Limitations
 
-* M2M Principal authentication (OAuth M2M) is not yet implemented, see [issue #3](https://github.com/exasol/databricks-virtual-schema/issues/3)
-* Table filtering using `TABLE_FILTER` is not yet implemented, see [issue #14](https://github.com/exasol/databricks-virtual-schema/issues/14)
-* VSDAB supports only Databricks schemas with 50 or less tables, see [issue #8](https://github.com/exasol/databricks-virtual-schema/issues/8)
+* Currently only supports token authentication, M2M Principal authentication (OAuth M2M) will be added later, see [issue #3](https://github.com/exasol/databricks-virtual-schema/issues/3)
+* Currently supports at most 50 tables per virtual schema, see [issue #8](https://github.com/exasol/databricks-virtual-schema/issues/8)
+* Currently the case of table and columns names is not converted, i.e. you need to specify names exactly in upper/lower case as in Databricks, see [issue #18](https://github.com/exasol/databricks-virtual-schema/issues/18)
+* Creating a virtual schema fails when a source table uses an unknown or unsupported data type, see [issue #15](https://github.com/exasol/databricks-virtual-schema/issues/15)
+* The `TABLE_FILTER` option is not yet supported, see [issue #14](https://github.com/exasol/databricks-virtual-schema/issues/14)
