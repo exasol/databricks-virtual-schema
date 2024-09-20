@@ -12,7 +12,6 @@ local function create(involved_tables)
         type = "pushdown",
         involvedTables = involved_tables
     })
-
 end
 
 describe("PushdownMetadata", function()
