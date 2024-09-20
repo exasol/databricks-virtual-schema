@@ -1,13 +1,14 @@
 package com.exasol.adapter.databricks;
 
+import static com.exasol.matcher.ResultSetStructureMatcher.table;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.itsallcode.matcher.auto.AutoMatcher;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
 import com.exasol.adapter.databricks.fixture.exasol.MetadataDao.ExaColumn;
+import com.exasol.adapter.databricks.fixture.exasol.MetadataDao.PushdownSql;
+import com.exasol.dbbuilder.dialects.Table;
 
 class AdapterIT extends AbstractIntegrationTestBase {
 
@@ -87,5 +90,18 @@ class AdapterIT extends AbstractIntegrationTestBase {
         assertThat(testSetup.exasol().metadata().getVirtualColumns(vs),
                 AutoMatcher.equalTo(List.of(new ExaColumn("tab1", "col1", "VARCHAR(5) UTF8", 5L, null, null),
                         new ExaColumn("tab2", "col2", "DECIMAL(19,0)", 19L, 19L, 0L))));
+    }
+
+    @Test
+    void excludeCapabilities() {
+        final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
+        final Table table = databricksSchema.createTable("tab", "ID", "INT", "NAME", "STRING")
+                .bulkInsert(Stream.of(List.of(1L, "a"), List.of(2, "b"), List.of(3, "c")));
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema,
+                Map.of("EXCLUDED_CAPABILITIES", "SELECTLIST_PROJECTION"));
+        final String query = "SELECT id FROM " + vs.qualifyTableName(table);
+        testSetup.exasol().assertions().query(query, table("BIGINT").row(1L).row(2L).row(3L).matchesInAnyOrder());
+        final List<PushdownSql> explainVirtual = testSetup.exasol().metadata().explainVirtual(query);
+        assertThat(explainVirtual.get(0).extractSelectQuery(), startsWith("SELECT * FROM"));
     }
 }

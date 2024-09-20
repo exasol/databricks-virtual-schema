@@ -90,8 +90,8 @@ public class DatabricksFixture implements AutoCloseable {
         final String hostName = databricksUri.getHost();
         final int port = databricksUri.getPort() < 0 ? 443 : databricksUri.getPort();
         final String httpPath = "/sql/1.0/warehouses/" + getEndpoint().getId();
-        return String.format("jdbc:databricks://%s:%d;transportMode=http;ssl=1;AuthMech=3;httpPath=%s", hostName, port,
-                httpPath);
+        return String.format("jdbc:databricks://%s:%d/default;transportMode=http;ssl=1;AuthMech=3;httpPath=%s;",
+                hostName, port, httpPath);
     }
 
     public String getJdbcUsername() {

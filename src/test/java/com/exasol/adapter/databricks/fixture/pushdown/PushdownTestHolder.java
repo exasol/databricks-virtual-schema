@@ -3,14 +3,12 @@ package com.exasol.adapter.databricks.fixture.pushdown;
 import static java.util.stream.Collectors.joining;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matcher;
@@ -88,12 +86,7 @@ class PushdownTestHolder {
                     + explainVirtual.stream().map(PushdownSql::sql).collect(joining("\n")));
         }
         assertThat("EXPLAIN VIRTUAL result rows", explainVirtual, hasSize(1));
-        final String importStatement = explainVirtual.get(0).sql();
-        final Pattern pattern = Pattern.compile("^IMPORT INTO .* FROM JDBC AT .* STATEMENT '(.*)'$");
-        final java.util.regex.Matcher matcher = pattern.matcher(importStatement);
-        assertTrue(matcher.matches(),
-                "IMPORT statement '" + importStatement + "' does not match regex '" + pattern + "'");
-        return matcher.group(1).replace("''", "'");
+        return explainVirtual.get(0).extractSelectQuery();
     }
 
     DynamicNode toDynamicTest() {

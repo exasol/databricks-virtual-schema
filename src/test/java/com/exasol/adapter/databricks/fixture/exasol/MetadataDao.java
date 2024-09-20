@@ -3,10 +3,12 @@ package com.exasol.adapter.databricks.fixture.exasol;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.*;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import com.exasol.dbbuilder.dialects.Table;
 
@@ -128,6 +130,13 @@ public class MetadataDao {
         static PushdownSql fromResultSet(final ResultSet resultSet) throws SQLException {
             return new PushdownSql(resultSet.getInt("PUSHDOWN_ID"), resultSet.getString("PUSHDOWN_SQL"),
                     resultSet.getString("PUSHDOWN_JSON"));
+        }
+
+        public String extractSelectQuery() {
+            final Pattern pattern = Pattern.compile("^IMPORT INTO .* FROM JDBC AT .* STATEMENT '(.*)'$");
+            final java.util.regex.Matcher matcher = pattern.matcher(sql());
+            assertTrue(matcher.matches(), "IMPORT statement '" + sql() + "' does not match regex '" + pattern + "'");
+            return matcher.group(1).replace("''", "'");
         }
     }
 
