@@ -13,6 +13,10 @@ Code name: Initial implementation
 
 * #16: Added shellcheck to CI build
 
+## Documentation
+
+* #22: Added user guide
+
 ## Dependency Updates
 
 ### Test Dependency Updates

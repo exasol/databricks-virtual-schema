@@ -60,12 +60,13 @@ public class ExasolFixture implements AutoCloseable {
     }
 
     public static ExasolFixture start(final DatabricksFixture databricksFixture) {
+        @SuppressWarnings("resource") // Resource will be closed in close() method
         final ExasolContainer<? extends ExasolContainer<?>> exasol = new ExasolContainer<>(DEFAULT_EXASOL_VERSION) //
                 .withReuse(true);
         exasol.start();
         exasol.getDriverManager()
                 .install(JdbcDriver.builder("DATABRICKS").enableSecurityManager(false)
-                        .mainClass("com.databricks.client.jdbc.Driver").prefix("jdbc:databricks")
+                        .mainClass("com.databricks.client.jdbc.Driver").prefix("jdbc:databricks:")
                         .sourceFile(JDBC_DRIVER_PATH).build());
         final Connection connection = exasol.createConnection();
         final ExasolObjectFactory objectFactory = new ExasolObjectFactory(connection,
