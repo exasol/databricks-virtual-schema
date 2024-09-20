@@ -2,13 +2,13 @@
 
 Databricks Virtual Schema for Lua (short "VSDAB") is an implementation of a [Virtual Schema](https://docs.exasol.com/db/latest/database_concepts/virtual_schemas.htm).
 
-With VSDAB you can make a read-only connection from a schema in a Databricks database to a so-called "Virtual Schema". A Virtual Schema is a projection of the data in the source schema. It looks and feels like a real schema with the main difference being that you can only read data and not write it.
+With VSDAB you can make a read-only connection from a schema in a Databricks database to a so-called "Virtual Schema". Exasol Virtual Schemas make external data sources accessible in our data analytics platform through regular SQL commands. The contents of the external data sources are mapped to virtual tables which look like and can be queried as any regular Exasol table.
 
 ## Introduction
 
 Each Virtual Schema needs a data source. In the case of Databricks Virtual Schema for Lua, this source is a database schema in a Databricks database. We call that the "origin schema".
 
-Conceptually Virtual Schemas are very similar to database views. They have an owner (typically the one who creates them) and share that owners access permissions. This means that for a Virtual Schema to be useful, the owner must have the permissions to view the source.
+Conceptually Virtual Schemas are very similar to database views. They have an owner (typically the one who creates them) and share that owner's access permissions. This means that for a Virtual Schema to be useful, the owner must have the permissions to view the source.
 
 Users of the Virtual Schema must have permissions to view the Virtual Schema itself, but they don't need permissions to view the source.
 
@@ -80,7 +80,7 @@ CREATE SCHEMA VSDAB_SCHEMA;
 
 ### Creating Virtual Schema Adapter Script
 
-Now you need to install the adapter script (i.e. the plug-in that drives the Virtual Schema):
+Now you need to install the adapter script (i.e. the plug-in driving the Virtual Schema):
 
 ```sql
 CREATE OR REPLACE LUA ADAPTER SCRIPT VSDAB_SCHEMA.VSDAB_ADAPTER AS
@@ -136,7 +136,9 @@ jdbc:databricks://abc-1234abcd-5678.cloud.databricks.com:443/default;transportMo
 
 #### Authentication
 
-Enter credentials in `USER` and `IDENTIFIED BY` fields of the connection. You have two options for authentication.
+Enter credentials in `USER` and `IDENTIFIED BY` fields of the connection. You have two options for authentication, described in the following sections:
+* Personal Access Token (PAT)
+* Service Principal (OAuth M2M)
 
 ##### Personal Access Token (PAT)
 
@@ -155,7 +157,7 @@ Use the string `token` as username in `USER` and enter your generated token as p
 
 ##### Service Principal (OAuth M2M)
 
-Create client ID and client secret as described in the [Databricks documentation](https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html).
+Create _client ID_ and _client secret_ as described in the [Databricks documentation](https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html).
 
 **Not yet implemented** M2M authentication is not yet implemented, see [issue #3](https://github.com/exasol/databricks-virtual-schema/issues/3).
 
@@ -183,11 +185,11 @@ VSDAB supports the capabilities listed in the file [`adapter_capabilities.lua`](
 
 #### Excluding Capabilities
 
-Sometimes you want to prevent constructs from being pushed down. In this case, you can tell the RLS adapter to exclude one or more capabilities from being reported to the core database.
+Sometimes you want to prevent specific constructs from being pushed down. In this case, you can tell the VSDAB adapter to exclude one or more capabilities from being reported to the core database.
 
 The core database will then refrain from pushing down the related SQL constructs.
 
-Just add the property `EXCLUDED_CAPABILITIES` to the Virtual Schema creation statement and provide a comma-separated list of capabilities you want to exclude.
+Just add the property `EXCLUDED_CAPABILITIES` to the Virtual Schema creation statement and provide a comma-separated list of capabilities you want to exclude as shown in the following example:
 
 ```sql
 CREATE VIRTUAL SCHEMA VSDAB_VIRTUAL_SCHEMA
@@ -200,26 +202,23 @@ CREATE VIRTUAL SCHEMA VSDAB_VIRTUAL_SCHEMA
 
 ### Changing the Properties of an Existing Virtual Schema
 
-While you could in theory drop and re-create an Virtual Schema, there is a more convenient way to apply changes in the adapter properties.
+While in theory you could drop and re-create an Virtual Schema, there is a more convenient way to apply changes in the adapter properties.
 
 Use [`ALTER VIRTUAL SCHEMA ... SET ...`](https://docs.exasol.com/sql/alter_schema.htm) to update the properties of an existing Virtual Schema.
 
-Example:
+The following example allows pointing the Virtual Schema to a different source schema by changing properties `CATALOG_NAME` and `SCHEMA_NAME`:
 
 ```sql
 ALTER VIRTUAL SCHEMA VSDAB_VIRTUAL_SCHEMA
 SET
     CATALOG_NAME    = '<New Databricks catalog name>'
     SCHEMA_NAME     = '<New Databricks schema name>'
-```
-
-You can for example change `CATALOG_NAME` and `SCHEMA_NAME` property to point the Virtual Schema to a new source schema.
 
 ## Updating a Virtual Schema
 
 All Virtual Schemas cache their metadata. That metadata for example contains all information about structure and data types of the underlying data source.
 
-To let VSDAB know that something changed in the metadata, please use the [`ALTER VIRTUAL SCHEMA ... REFRESH`](https://docs.exasol.com/sql/alter_schema.htm) statement.
+To let VSDAB know that something changed in the metadata, please use the [`ALTER VIRTUAL SCHEMA ... REFRESH`](https://docs.exasol.com/sql/alter_schema.htm) statement:
 
 ```
 ALTER VIRTUAL SCHEMA <virtual schema name> REFRESH
