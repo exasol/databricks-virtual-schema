@@ -22,8 +22,6 @@ Check the section ["Installation"](#installation) for details on how to install 
 
 The main function of a Virtual Schema is to take a query and turn it into a different one that reads from the data source. The input query &mdash; that means the query users of a Virtual Schema run &mdash; is always a `SELECT` statement.
 
-If your VSDAB uses local access the output query will also be a `SELECT` statement &mdash; after all the data is on the same database.
-
 For VSDAB the output query is an `IMPORT` statement using a JDBC connection to Databricks, thus allowing to get data via a network connection.
 
 The output query is also called "push-down query", since it is pushed down to the data source. See section ["Examining the Push-down query"](#examining-the-push-down-query)
@@ -43,13 +41,17 @@ Make sure you pick the file with `-dist-` in the name, because that is the insta
 
 5. Connection details for your Databricks database consisting of the JDBC URL and credentials.
 
-### Install the Databricks JDBC Driver
+### Configure JDBC Driver for ExaLoader
+
+ExaLoader is responsible for executing the pushdown query on the Databricks and fetching the results. This section describes how to configure the JDBC driver for ExaLoader.
+
+#### Upload the Databricks JDBC Driver to BucketFS
 
 1. Download the latest [Databricks JDBC Driver](https://www.databricks.com/spark/jdbc-drivers-archive).
 2. Unpack the downloaded ZIP file.
 2. Upload file `DatabricksJDBC42.jar` to BucketFS under path `default/drivers/jdbc/`, see the [BucketFS documentation](https://docs.exasol.com/db/latest/administration/on-premise/bucketfs/accessfiles.htm) for details.
 
-### Register the JDBC driver for ExaLoader
+#### Register the JDBC Driver
 
 In order to enable the ExaLoader to fetch data from Databricks you must register the driver for ExaLoader as described in the [Installation procedure for JDBC drivers](https://github.com/exasol/docker-db/#installing-custom-jdbc-drivers).
 
