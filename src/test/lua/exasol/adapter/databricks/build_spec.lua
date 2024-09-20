@@ -1,5 +1,6 @@
 require("busted.runner")()
 local assert = require("luassert")
+local mockagne = require("mockagne")
 local DatabricksAdapter = require("exasol.adapter.databricks.DatabricksAdapter")
 
 describe("Build setup", function()
@@ -11,9 +12,8 @@ describe("Build setup", function()
     end
 
     local function get_current_version()
-        -- Metadatareader not required for this test, using nil instead
-        ---@diagnostic disable-next-line: missing-parameter
-        return DatabricksAdapter:new(nil).get_version()
+        local metadata_reader_mock = mockagne.getMock()
+        return DatabricksAdapter:new(metadata_reader_mock):get_version()
     end
 
     local function get_rockspec_filename()

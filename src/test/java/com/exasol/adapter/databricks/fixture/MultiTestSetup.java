@@ -175,7 +175,7 @@ public class MultiTestSetup {
         final List<DynamicNode> tests = new ArrayList<>();
         for (int i = 0; i < this.columnTests.size(); i++) {
             final ExaColumn actualType = actualColumns.get(i + 1);
-            tests.add(this.columnTests.get(i).createTest(actualType, actualData));
+            tests.add(this.columnTests.get(i).createTest(databricksTable, actualType, actualData));
         }
         return tests.stream();
     }
@@ -211,17 +211,17 @@ public class MultiTestSetup {
     private static record ColumnTypeTest(String columnName, String databricksType, ExpectedExasolType expectedType,
             List<Object> databricksValues, List<Object> expectedValues) {
 
-        DynamicNode createTest(final ExaColumn actualType, final TableData actualData) {
+        DynamicNode createTest(final Table databricksTable, final ExaColumn actualType, final TableData actualData) {
             return DynamicContainer.dynamicContainer("Databricks Type " + databricksType,
-                    Stream.concat(testExasolColumnType(actualType), testExpectedValues(actualData)));
+                    Stream.concat(testExasolColumnType(databricksTable, actualType), testExpectedValues(actualData)));
         }
 
-        private Stream<DynamicNode> testExasolColumnType(final ExaColumn actual) {
+        private Stream<DynamicNode> testExasolColumnType(final Table databricksTable, final ExaColumn actual) {
             if (expectedType == null) {
                 return Stream.empty();
             }
-            final ExaColumn expected = new ExaColumn(columnName, expectedType.exasolType, expectedType.maxSize,
-                    expectedType.precision, expectedType.scale);
+            final ExaColumn expected = new ExaColumn(databricksTable.getName(), columnName, expectedType.exasolType,
+                    expectedType.maxSize, expectedType.precision, expectedType.scale);
             return Stream.of(DynamicTest.dynamicTest("Exasol type " + expected.type(),
                     () -> assertThat(actual, AutoMatcher.equalTo(expected))));
         }
