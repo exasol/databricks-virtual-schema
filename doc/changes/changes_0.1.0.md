@@ -1,4 +1,4 @@
-# Virtual Schema for Databricks 0.1.0, released 2024-09-20
+# Virtual Schema for Databricks 0.1.0, released 2024-09-23
 
 Code name: Initial implementation
 

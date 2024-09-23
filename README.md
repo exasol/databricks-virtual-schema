@@ -18,11 +18,11 @@ If you want to set up a Virtual Schema for a different database system, please h
 
 ## Known Limitations
 
-* Currently only supports token authentication, M2M Principal authentication (OAuth M2M) will be added later, see [issue #3](https://github.com/exasol/databricks-virtual-schema/issues/3)
-* Currently supports at most 50 tables per virtual schema, see [issue #8](https://github.com/exasol/databricks-virtual-schema/issues/8)
-* Currently the case of table and columns names is not converted, i.e. you need to specify names exactly in upper/lower case as in Databricks, see [issue #18](https://github.com/exasol/databricks-virtual-schema/issues/18)
-* Creating a virtual schema fails when a source table uses an unknown or unsupported data type, see [issue #15](https://github.com/exasol/databricks-virtual-schema/issues/15)
-* The `TABLE_FILTER` option is not yet supported, see [issue #14](https://github.com/exasol/databricks-virtual-schema/issues/14)
+* Currently, the virtual schema only supports token authentication. M2M Principal authentication (OAuth M2M) will be added later, see [issue #3](https://github.com/exasol/databricks-virtual-schema/issues/3).
+* Currently, the virtual schema supports at most 50 tables per virtual schema, see [issue #8](https://github.com/exasol/databricks-virtual-schema/issues/8).
+* Currently, the table and column names are case-sensitive, i.e. you need to specify names exactly in upper/lower case as in Databricks, see [issue #18](https://github.com/exasol/databricks-virtual-schema/issues/18).
+* Creating a virtual schema fails when a source table uses an unknown or unsupported data type, see [issue #15](https://github.com/exasol/databricks-virtual-schema/issues/15).
+* The `TABLE_FILTER` option is not yet supported, see [issue #14](https://github.com/exasol/databricks-virtual-schema/issues/14).
 
 ## Table of Contents
 
