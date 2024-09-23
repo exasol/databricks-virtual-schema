@@ -150,6 +150,18 @@ build:
             name: Install Lua dependencies
             id: install-lua-dependencies
             run: luarocks --local install *.rockspec --deps-only --force
+        - action: INSERT_AFTER
+          stepId: verify-release
+          content:
+            # Lua integration tests require Databricks credentials
+            name: Configure Databricks credentials
+            id: configure-databricks-credentials
+            run: |
+              cat > test.properties <<EOL
+              databricks.token = ${{ secrets.DATABRICKS_TOKEN }}
+              databricks.host = ${{ secrets.DATABRICKS_HOST }}
+              databricks.storageRoot = ${{ secrets.DATABRICKS_STORAGE_ROOT }}
+              EOL
         # Generate dummy error code reports. Error code crawler does not support Lua projects yet.
         - action: INSERT_AFTER
           stepId: build

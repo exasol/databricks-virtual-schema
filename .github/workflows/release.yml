@@ -129,6 +129,14 @@ jobs:
         env: {
           GITHUB_TOKEN: '${{ github.token }}'
         }
+      - name: Configure Databricks credentials
+        id: configure-databricks-credentials
+        run: |
+          cat > test.properties <<EOL
+          databricks.token = ${{ secrets.DATABRICKS_TOKEN }}
+          databricks.host = ${{ secrets.DATABRICKS_HOST }}
+          databricks.storageRoot = ${{ secrets.DATABRICKS_STORAGE_ROOT }}
+          EOL
       - {
         name: Build project,
         id: build,
