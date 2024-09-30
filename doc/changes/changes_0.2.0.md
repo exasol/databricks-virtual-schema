@@ -8,7 +8,7 @@ This release maps unsupported Databricks data types `BINARY`, `ARRAY`, `MAP`, `S
 
 ## Features
 
-* ISSUE_NUMBER: description
+* #15: Mapped unsupported data types to `VARCHAR`
 
 ## Dependency Updates
 
