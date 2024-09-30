@@ -94,6 +94,10 @@ public class MultiTestSetup {
             return expectedExasolType(new ExpectedExasolType(expectedExasolType, expectedMaxSize, null, null));
         }
 
+        public ValueMappingBuilder expectVarchar() {
+            return expectType("VARCHAR(2000000) UTF8", 2000000);
+        }
+
         public ValueMappingBuilder expectIntervalYearToMonth() {
             // Mapping of Databricks interval types to precision is not clear, using maximum value.
             return expectedExasolType(new ExpectedExasolType("INTERVAL YEAR(9) TO MONTH", 13L, null, null));
@@ -152,7 +156,7 @@ public class MultiTestSetup {
     }
 
     private String sanitizeColumnName(String value) {
-        for (final String specialChar : List.of(" ", ",", "'", "(", ")")) {
+        for (final String specialChar : List.of(" ", ",", "'", "(", ")", "[", "]", "<", ">", ":")) {
             value = value.replace(specialChar, "_");
         }
         return value;

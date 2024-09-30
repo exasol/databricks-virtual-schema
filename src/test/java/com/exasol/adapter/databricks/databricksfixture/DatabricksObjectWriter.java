@@ -1,9 +1,6 @@
 package com.exasol.adapter.databricks.databricksfixture;
 
-import java.sql.*;
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
+import java.sql.Connection;
 
 import com.databricks.sdk.WorkspaceClient;
 import com.databricks.sdk.service.catalog.*;
@@ -11,7 +8,6 @@ import com.exasol.adapter.databricks.fixture.TestConfig;
 import com.exasol.dbbuilder.dialects.*;
 
 class DatabricksObjectWriter extends AbstractImmediateDatabaseObjectWriter {
-    private static final Logger LOG = Logger.getLogger(DatabricksObjectWriter.class.getName());
     private final WorkspaceClient client;
     private final TestConfig config;
 
@@ -58,33 +54,5 @@ class DatabricksObjectWriter extends AbstractImmediateDatabaseObjectWriter {
                 .create(new CreateSchema().setName(name).setComment("Databricks VS integration tests")
                         .setStorageRoot(config.getDatabricksStorageRoot() + name).setCatalogName(catalog.getName()));
         return new DatabricksSchema(DatabricksIdentifier.of(name), schemaInfo, catalog, this);
-    }
-
-    // Override write method because databricks does not support setting autocommit
-    // See https://github.com/exasol/test-db-builder-java/issues/136
-    @Override
-    public void write(final Table table, final Stream<List<Object>> rows) {
-        final String valuePlaceholders = "?" + ", ?".repeat(table.getColumnCount() - 1);
-        final String sql = "INSERT INTO " + table.getFullyQualifiedName() + " VALUES(" + valuePlaceholders + ")";
-        final List<List<Object>> rowList = rows.toList();
-        try (final PreparedStatement preparedStatement = this.connection.prepareStatement(sql)) {
-            LOG.fine("Inserting " + rowList.size() + " rows into table '" + table.getName() + "'...");
-            rowList.forEach(row -> addBatch(preparedStatement, row));
-            preparedStatement.executeBatch();
-        } catch (final SQLException exception) {
-            throw new DatabaseObjectException(table,
-                    "Failed to create or execute prepared statement '" + sql + "' for insert.", exception);
-        }
-    }
-
-    private void addBatch(final PreparedStatement preparedStatement, final List<Object> row) {
-        try {
-            for (int i = 0; i < row.size(); ++i) {
-                preparedStatement.setObject(i + 1, row.get(i));
-            }
-            preparedStatement.addBatch();
-        } catch (final SQLException exception) {
-            throw new IllegalStateException("Failed to add batch: " + exception.getMessage(), exception);
-        }
     }
 }

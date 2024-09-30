@@ -261,7 +261,7 @@ Mitigations:
         end)
 
         describe("raises error for unsupported types", function()
-            local tests = {"BINARY", "ARRAY", "MAP", "STRUCT", "VARIANT"}
+            local tests = {"BINARY"}
             for _, type in ipairs(tests) do
                 it(type, function()
                     assert.has_error(function()
@@ -272,6 +272,17 @@ Mitigations:
 Mitigations:
 
 * Please remove the column or change the data type.]], type))
+                end)
+            end
+        end)
+
+        describe("maps generic types to VARCHAR", function()
+            local tests = {"ARRAY", "MAP", "STRUCT", "VARIANT"}
+            for _, type in ipairs(tests) do
+                it(type, function()
+                    local actual = map_data_type({name = type, text = ""})
+                    local expected = {type = "VARCHAR", size = 2000000}
+                    assert.is.same(expected, actual.dataType)
                 end)
             end
         end)
