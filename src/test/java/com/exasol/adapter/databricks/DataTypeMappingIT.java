@@ -1,5 +1,6 @@
 package com.exasol.adapter.databricks;
 
+import static com.exasol.matcher.ResultSetStructureMatcher.table;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
 
@@ -22,8 +23,7 @@ class DataTypeMappingIT extends AbstractIntegrationTestBase {
     @TestFactory
     Stream<DynamicNode> dataTypeGeneratedColumn() {
         return testSetup.datatypeTest() //
-                .addValueTest("string generated always as ('gen')").expectType("VARCHAR(2000000) UTF8", 2000000L).done()
-                .buildTests();
+                .addValueTest("string generated always as ('gen')").expectVarchar().done().buildTests();
     }
 
     @TestFactory
@@ -40,18 +40,17 @@ class DataTypeMappingIT extends AbstractIntegrationTestBase {
                 .addValueTest("VARCHAR(10)").expectType("VARCHAR(10) UTF8", 10L).nullValue().value("abc")
                 .value("1234567890").value("öäüß").done()
 
-                .addValueTest("VARCHAR(3000000)").expectType("VARCHAR(2000000) UTF8", 2000000).nullValue().value("abc")
+                .addValueTest("VARCHAR(3000000)").expectVarchar().nullValue().value("abc").done()
+
+                .addValueTest("string").expectVarchar().nullValue().value("abc").value("1234567890").value("öäüß")
                 .done()
 
-                .addValueTest("string").expectType("VARCHAR(2000000) UTF8", 2000000L).nullValue().value("abc")
-                .value("1234567890").value("öäüß").done()
+                .addValueTest("string not null").expectVarchar().value("not null").value("abc").value("1234567890")
+                .value("öäüß").value("not null").value("not null").value("not null").value("not null").value("not null")
+                .done()
 
-                .addValueTest("string not null").expectType("VARCHAR(2000000) UTF8", 2000000L).value("not null")
-                .value("abc").value("1234567890").value("öäüß").value("not null").value("not null").value("not null")
-                .value("not null").value("not null").done()
-
-                .addValueTest("string comment 'my column'").expectType("VARCHAR(2000000) UTF8", 2000000L).nullValue()
-                .value("abc").value("1234567890").value("öäüß").done()
+                .addValueTest("string comment 'my column'").expectVarchar().nullValue().value("abc").value("1234567890")
+                .value("öäüß").done()
 
                 .addValueTest("TINYINT").expectDecimal(3, 0).nullValue().value((short) -128).value((short) 0)
                 .value((short) 127).done()
@@ -135,6 +134,13 @@ class DataTypeMappingIT extends AbstractIntegrationTestBase {
                 .addValueTest("INTERVAL SECOND").expectIntervalDayToSecond().nullValue()
                 .value("59", "+000000000 00:00:59.000000000").value("0.0001", "+000000000 00:00:00.000000000").done()
 
+                // Generic VARCHAR mapping for unsupported data types
+                // Inserting non-null values requires custom SQL statements, see unsupportedDataTypesMappedToVarchar()
+                .addValueTest("ARRAY<INT>").expectVarchar().nullValue().done() //
+                .addValueTest("MAP<INT,STRING>").expectVarchar().nullValue().done() //
+                .addValueTest("STRUCT<id:INT,name:STRING>").expectVarchar().nullValue().done() //
+                .addValueTest("VARIANT").expectVarchar().nullValue().done() //
+
                 .buildTests();
     }
 
@@ -149,8 +155,24 @@ class DataTypeMappingIT extends AbstractIntegrationTestBase {
     }
 
     @ParameterizedTest
-    @CsvSource(delimiterString = ";", value = { "ARRAY<INT>; ARRAY", "MAP<INT,STRING>; MAP",
-            "STRUCT<id:INT,name:STRING>; STRUCT", "VARIANT; VARIANT", "BINARY; BINARY" })
+    @CsvSource(delimiterString = ";", value = { //
+            "ARRAY<TINYINT>; CAST(ARRAY(1, 2, 3) AS ARRAY<TINYINT>); [1,2,3]",
+            "MAP<STRING,INT>; map('red', 1, 'green', 2); {\"green\":2,\"red\":1}",
+            "STRUCT<id:INT,name:STRING>; named_struct('id', 5, 'name', 'Spark'); {\"id\":5,\"name\":\"Spark\"}",
+            "VARIANT; parse_json('{\"key\": 123, \"data\": [4, 5, \"str\"]}'); {\"data\":[4,5,\"str\"],\"key\":123}" })
+    void unsupportedDataTypesMappedToVarchar(final String databricksType, final String insertSql,
+            final String expectedValue) {
+        final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
+        final Table tab = databricksSchema.createTable("tab", "col", databricksType);
+        testSetup.databricks()
+                .executeStatement("INSERT INTO %s VALUES (%s)".formatted(tab.getFullyQualifiedName(), insertSql));
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema);
+        testSetup.exasol().assertions().query("select * from " + vs.qualifyTableName(tab),
+                table("VARCHAR").row(expectedValue).matches());
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiterString = ";", value = { "BINARY; BINARY" })
     void unsupportedDataTypes(final String databricksType, final String typeInErrorMessage) {
         final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
         databricksSchema.createTable("tab", "col", databricksType + " COMMENT 'my column'");

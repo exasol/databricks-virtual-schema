@@ -88,10 +88,6 @@ local function unsupported_interval_type_error(databricks_column)
     return exa_error
 end
 
-local function unsupported_type()
-    return nil
-end
-
 ---@param type "char"|"varchar"
 ---@param text string
 ---@param max_size integer
@@ -112,6 +108,16 @@ end
 
 local EXASOL_MAX_VARCHAR_SIZE = 2000000
 local EXASOL_MAX_CHAR_SIZE = 2000
+
+---Data types not supported by Exasol are converted to `VARCHAR(2000000)`
+---@return ExasolTypeDefinition
+local function generic_varchar_type()
+    return {type = exasol.DATA_TYPES.VARCHAR, size = EXASOL_MAX_VARCHAR_SIZE}
+end
+
+local function unsupported_type()
+    return nil
+end
 
 -- Databricks types: https://docs.databricks.com/en/sql/language-manual/sql-ref-datatypes.html
 ---@type table<string, fun(databricks_column: DatabricksColumn): ExasolTypeDefinition?>
@@ -225,11 +231,12 @@ local DATA_TYPE_FACTORIES = {
             error(unsupported_interval_type_error(databricks_column))
         end
     end,
+    -- Mapping binary to VARCHAR fails, see https://github.com/exasol/databricks-virtual-schema/issues/34
     BINARY = unsupported_type,
-    ARRAY = unsupported_type,
-    MAP = unsupported_type,
-    STRUCT = unsupported_type,
-    VARIANT = unsupported_type
+    ARRAY = generic_varchar_type,
+    MAP = generic_varchar_type,
+    STRUCT = generic_varchar_type,
+    VARIANT = generic_varchar_type
 }
 
 ---@param databricks_column DatabricksColumn

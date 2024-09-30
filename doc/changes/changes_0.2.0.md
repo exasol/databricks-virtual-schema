@@ -1,8 +1,10 @@
 # Virtual Schema for Databricks 0.2.0, released 2024-??-??
 
-Code name:
+Code name: Map unsupported data types to VARCHAR
 
 ## Summary
+
+This release maps unsupported Databricks data types `BINARY`, `ARRAY`, `MAP`, `STRUCT` and `VARIANT` to Exasol type `VARCHAR`. Creating a virtual schema no longer fails when the source schema contains columns of these types. Please note that type `BINARY` is still not supported and creating a virtual schema with a `BINARY` column fails, see [issue #34](https://github.com/exasol/databricks-virtual-schema/issues/34) for details.
 
 ## Features
 
