@@ -1,6 +1,7 @@
 require("busted.runner")()
 require("entry")
 require("exasol.assertions")
+local assert = require("luassert")
 local http_client = require("exasol.adapter.databricks.http_client")
 local log = require("remotelog")
 local util = require("exasol.adapter.databricks.test_utils")
