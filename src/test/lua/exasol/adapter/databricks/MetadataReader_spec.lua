@@ -1,8 +1,8 @@
 require("busted.runner")()
+require("exasol.assertions")
 local assert = require("luassert")
 local log = require("remotelog")
 local MetadataReader = require("exasol.adapter.databricks.MetadataReader")
-require("exasol.assertions")
 
 log.set_level("INFO")
 

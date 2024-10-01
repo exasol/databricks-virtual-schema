@@ -1,5 +1,6 @@
 require("busted.runner")()
 require("entry")
+require("exasol.assertions")
 local http_client = require("exasol.adapter.databricks.http_client")
 local log = require("remotelog")
 local util = require("exasol.adapter.databricks.test_utils")
@@ -42,6 +43,6 @@ describe("entry.adapter_call()", function()
                 [[{"type":"createVirtualSchema","schemaMetadataInfo":{"name":"new vs", "properties":{
                 "CONNECTION_NAME":"my_connection", "CATALOG_NAME":"catalog", "SCHEMA_NAME": "schema"
             }}}]])
-        util.assert_json_same({type = "createVirtualSchema", schemaMetadata = {tables = {}, adapterNotes = nil}}, actual)
+        assert.is.same_json({type = "createVirtualSchema", schemaMetadata = {tables = {}, adapterNotes = nil}}, actual)
     end)
 end)
