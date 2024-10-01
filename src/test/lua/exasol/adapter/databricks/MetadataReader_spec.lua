@@ -122,7 +122,7 @@ describe("MetadataReader", function()
                 it(string.format("%s / %s", test.type_name, test.type_text), function()
                     local actual = map_data_type({name = test.type_name, text = test.type_text})
                     assert.is.same(test.expected, actual.dataType)
-                    assert.is.same("col1", actual.name)
+                    assert.is.same("COL1", actual.name)
                     assert.is.same("col comment", actual.comment)
                     assert.is.same(nil, actual.default)
                     assert.is.same(true, actual.isNullable)
@@ -348,6 +348,39 @@ Mitigations:
                 local metadata = read_metadata(databricks_tables)
                 assert.is.same_json({databricks_metadata = {metadata = "for column"}},
                                     metadata.tables[1].columns[1].adapterNotes)
+            end)
+        end)
+
+        describe("converts names to upper case", function()
+            local databricks_tables = {
+                {
+                    catalog_name = "cat",
+                    schema_name = "schema",
+                    name = "name",
+                    full_name = "fullname",
+                    table_type = "type",
+                    comment = "comment",
+                    data_source_format = "format",
+                    columns = {
+                        {
+                            name = "col",
+                            nullable = true,
+                            position = 0,
+                            type = {name = "STRING", text = "typeText"},
+                            comment = "comment",
+                            databricks_metadata = {metadata = "for column"}
+                        }
+                    },
+                    databricks_metadata = {metadata = "for table"}
+                }
+            }
+            it("table names", function()
+                local metadata = read_metadata(databricks_tables)
+                assert.is.same("NAME", metadata.tables[1].name)
+            end)
+            it("column names", function()
+                local metadata = read_metadata(databricks_tables)
+                assert.is.same("COL", metadata.tables[1].columns[1].name)
             end)
         end)
     end)

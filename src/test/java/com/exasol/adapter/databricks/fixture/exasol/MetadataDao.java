@@ -118,7 +118,8 @@ public class MetadataDao {
                 select "ADAPTER_NOTES"
                 from "EXA_ALL_VIRTUAL_TABLES"
                 where TABLE_SCHEMA=? and TABLE_NAME=?
-                """, List.of(virtualSchema.getName(), databricksTable.getName()), rs -> rs.getString("ADAPTER_NOTES"));
+                """, List.of(virtualSchema.getName(), databricksTable.getName().toUpperCase()),
+                rs -> rs.getString("ADAPTER_NOTES"));
         assertThat("Expected exactly one entry for virtual table", adapterNotes, hasSize(1));
         return adapterNotes.get(0);
     }
@@ -129,7 +130,8 @@ public class MetadataDao {
                 select "ADAPTER_NOTES"
                 from "EXA_ALL_VIRTUAL_COLUMNS"
                 where COLUMN_SCHEMA=? and COLUMN_TABLE=? and COLUMN_NAME=?
-                """, List.of(virtualSchema.getName(), databricksTable.getName(), columnName),
+                """,
+                List.of(virtualSchema.getName(), databricksTable.getName().toUpperCase(), columnName.toUpperCase()),
                 rs -> rs.getString("ADAPTER_NOTES"));
         assertThat("Expected exactly one entry for virtual column", adapterNotes, hasSize(1));
         return adapterNotes.get(0);

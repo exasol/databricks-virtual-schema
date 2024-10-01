@@ -73,12 +73,12 @@ class AdapterIT extends AbstractIntegrationTestBase {
         databricksSchema2.createTable("tab2", "col2", "INTEGER");
         final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema1);
         assertThat(testSetup.exasol().metadata().getVirtualColumns(vs),
-                AutoMatcher.equalTo(List.of(new ExaColumn("tab1", "col1", "VARCHAR(5) UTF8", 5L, null, null))));
+                AutoMatcher.equalTo(List.of(new ExaColumn("TAB1", "COL1", "VARCHAR(5) UTF8", 5L, null, null))));
 
         vs.setProperties(Map.of("SCHEMA_NAME", databricksSchema2.getName()));
 
         assertThat(testSetup.exasol().metadata().getVirtualColumns(vs),
-                AutoMatcher.equalTo(List.of(new ExaColumn("tab2", "col2", "DECIMAL(10,0)", 10L, 10L, 0L))));
+                AutoMatcher.equalTo(List.of(new ExaColumn("TAB2", "COL2", "DECIMAL(10,0)", 10L, 10L, 0L))));
     }
 
     @Test
@@ -87,7 +87,7 @@ class AdapterIT extends AbstractIntegrationTestBase {
         databricksSchema1.createTable("tab1", "col1", "VARCHAR(5)");
         final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema1);
         assertThat(testSetup.exasol().metadata().getVirtualColumns(vs),
-                AutoMatcher.equalTo(List.of(new ExaColumn("tab1", "col1", "VARCHAR(5) UTF8", 5L, null, null))));
+                AutoMatcher.equalTo(List.of(new ExaColumn("TAB1", "COL1", "VARCHAR(5) UTF8", 5L, null, null))));
 
         final Map<String, String> newProperties = Map.of("SCHEMA_NAME", "missing-schema");
         final RuntimeException exception = assertThrows(RuntimeException.class, () -> vs.setProperties(newProperties));
@@ -100,14 +100,14 @@ class AdapterIT extends AbstractIntegrationTestBase {
         databricksSchema.createTable("tab1", "col1", "VARCHAR(5)");
         final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema);
         assertThat(testSetup.exasol().metadata().getVirtualColumns(vs),
-                AutoMatcher.equalTo(List.of(new ExaColumn("tab1", "col1", "VARCHAR(5) UTF8", 5L, null, null))));
+                AutoMatcher.equalTo(List.of(new ExaColumn("TAB1", "COL1", "VARCHAR(5) UTF8", 5L, null, null))));
 
         databricksSchema.createTable("tab2", "col2", "BIGINT");
         vs.refresh();
 
         assertThat(testSetup.exasol().metadata().getVirtualColumns(vs),
-                AutoMatcher.equalTo(List.of(new ExaColumn("tab1", "col1", "VARCHAR(5) UTF8", 5L, null, null),
-                        new ExaColumn("tab2", "col2", "DECIMAL(19,0)", 19L, 19L, 0L))));
+                AutoMatcher.equalTo(List.of(new ExaColumn("TAB1", "COL1", "VARCHAR(5) UTF8", 5L, null, null),
+                        new ExaColumn("TAB2", "COL2", "DECIMAL(19,0)", 19L, 19L, 0L))));
     }
 
     @Test
