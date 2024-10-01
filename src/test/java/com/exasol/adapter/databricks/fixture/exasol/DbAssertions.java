@@ -41,8 +41,8 @@ public class DbAssertions {
         query("""
                 select SCHEMA_NAME, ADAPTER_SCRIPT_SCHEMA, ADAPTER_SCRIPT_NAME, ADAPTER_NOTES
                 from EXA_ALL_VIRTUAL_SCHEMAS
-                """, table().row(virtualSchema.getName(), "ADAPTER_SCRIPT_SCHEMA", "DATABRICKS_VS_ADAPTER", "notes")
-                .matches());
+                """,
+                table().row(virtualSchema.getName(), "ADAPTER_SCRIPT_SCHEMA", "DATABRICKS_VS_ADAPTER", null).matches());
     }
 
     public void assertQueryFails(final String query, final Matcher<String> errorMessageMatcher) {

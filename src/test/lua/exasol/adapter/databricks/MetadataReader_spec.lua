@@ -1,7 +1,7 @@
 require("busted.runner")()
+require("exasol.assertions")
 local assert = require("luassert")
 local log = require("remotelog")
-local utils = require("exasol.adapter.databricks.test_utils")
 local MetadataReader = require("exasol.adapter.databricks.MetadataReader")
 
 log.set_level("INFO")
@@ -67,7 +67,17 @@ local function map_data_type(databricks_type)
             table_type = "MANAGED",
             data_source_format = "DELTA",
             comment = "table comment",
-            columns = {{name = "col1", comment = "col comment", position = 1, nullable = true, type = databricks_type}}
+            columns = {
+                {
+                    name = "col1",
+                    comment = "col comment",
+                    position = 1,
+                    nullable = true,
+                    type = databricks_type,
+                    databricks_metadata = {org_col = "table1.col1"}
+                }
+            },
+            databricks_metadata = {org_table = "table1"}
         }
     })
     assert.is.equal(1, #tables)
@@ -297,6 +307,48 @@ Mitigations:
 
 * This is an internal software error. Please report it via the project's ticket tracker.]])
 
+        end)
+        describe("adds original databricks metadata to adapter notes", function()
+            ---@type DatabricksTable[]
+            local databricks_tables = {
+                {
+                    catalog_name = "cat",
+                    schema_name = "schema",
+                    name = "name",
+                    full_name = "fullname",
+                    table_type = "type",
+                    comment = "comment",
+                    data_source_format = "format",
+                    columns = {
+                        {
+                            name = "col",
+                            nullable = true,
+                            position = 0,
+                            type = {name = "STRING", text = "typeText"},
+                            comment = "comment",
+                            databricks_metadata = {metadata = "for column"}
+                        }
+                    },
+                    databricks_metadata = {metadata = "for table"}
+                }
+            }
+            it("no metadata for vs adapter notes", function()
+                local metadata = read_metadata(databricks_tables)
+                assert.is.same(nil, metadata.adapterNotes)
+            end)
+            it("table adapter notes", function()
+                local metadata = read_metadata(databricks_tables)
+                assert.is.same_json({
+                    catalog_name = "cat",
+                    schema_name = "schema",
+                    databricks_metadata = {metadata = "for table"}
+                }, metadata.tables[1].adapterNotes)
+            end)
+            it("column adapter notes", function()
+                local metadata = read_metadata(databricks_tables)
+                assert.is.same_json({databricks_metadata = {metadata = "for column"}},
+                                    metadata.tables[1].columns[1].adapterNotes)
+            end)
         end)
     end)
 end)

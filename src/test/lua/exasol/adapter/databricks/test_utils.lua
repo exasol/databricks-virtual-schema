@@ -41,12 +41,4 @@ function M.find_first(tbl, predicate)
     return nil
 end
 
----Asserts that the actual JSON data is equal to the expected JSON data.
----@param expected table expected JSON data as table
----@param actual string actual JSON data as string
-function M.assert_json_same(expected, actual)
-    local actual_json = cjson.decode(actual)
-    assert.are.same(expected, actual_json)
-end
-
 return M
