@@ -1,4 +1,4 @@
-# Virtual Schema for Databricks 0.2.0, released 2024-??-??
+# Virtual Schema for Databricks 0.2.0, released 2024-10-01
 
 Code name: Map unsupported data types to VARCHAR
 
