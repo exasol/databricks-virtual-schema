@@ -7,15 +7,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture;
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.CleanupActions;
+import com.exasol.bucketfs.BucketAccessException;
 import com.exasol.containers.ExasolContainer;
 import com.exasol.dbbuilder.dialects.exasol.*;
-import com.exasol.drivers.JdbcDriver;
 import com.exasol.mavenprojectversiongetter.MavenProjectVersionGetter;
 
 public class ExasolFixture implements AutoCloseable {
@@ -63,15 +64,46 @@ public class ExasolFixture implements AutoCloseable {
         final ExasolContainer<? extends ExasolContainer<?>> exasol = new ExasolContainer<>(DEFAULT_EXASOL_VERSION) //
                 .withReuse(true);
         exasol.start();
-        exasol.getDriverManager()
-                .install(JdbcDriver.builder("DATABRICKS").enableSecurityManager(false)
-                        .mainClass("com.databricks.client.jdbc.Driver").prefix("jdbc:databricks:")
-                        .sourceFile(JDBC_DRIVER_PATH).build());
+        installJdbcDriver(exasol);
         final Connection connection = exasol.createConnection();
         final ExasolObjectFactory objectFactory = new ExasolObjectFactory(connection,
                 ExasolObjectConfiguration.builder().build());
         final UdfLogCapturer udfLogCapturer = UdfLogCapturer.start();
         return new ExasolFixture(exasol, connection, objectFactory, udfLogCapturer, databricksFixture);
+    }
+
+    /**
+     * Install the JDBC driver and register it for ExaLoader.
+     * <p>
+     * This intentionally does not use {@link ExasolContainer#getDriverManager()} /
+     * {@link com.exasol.drivers.ExasolDriverManager} because we want to reproduce the same configuration as recommended
+     * in the user guide:
+     * <ul>
+     * <li>install driver in path {@code drivers/jdbc/databricks} instead of {@code drivers/jdbc}</li>
+     * <li>omit entries {@code JAR} and {@code DRIVERMAIN} in {@code settings.cfg}</li>
+     * </ul>
+     * 
+     * @param exasol Exasol container
+     */
+    private static void installJdbcDriver(final ExasolContainer<? extends ExasolContainer<?>> exasol) {
+        final String driverBasePath = "drivers/jdbc/databricks/";
+        final String jdbcDriverFileName = JDBC_DRIVER_PATH.getFileName().toString();
+        final String settingsCfgContent = """
+                DRIVERNAME=DATABRICKS
+                PREFIX=jdbc:databricks:
+                NOSECURITY=YES
+                FETCHSIZE=100000
+                INSERTSIZE=-1
+
+                """; // Note the trailing newline!
+        try {
+            exasol.getDefaultBucket().uploadFile(JDBC_DRIVER_PATH, driverBasePath + jdbcDriverFileName);
+            exasol.getDefaultBucket().uploadStringContent(settingsCfgContent, driverBasePath + "settings.cfg");
+        } catch (FileNotFoundException | BucketAccessException | TimeoutException exception) {
+            throw new IllegalStateException("Failed to install JDBC driver", exception);
+        } catch (final InterruptedException exception) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     public void buildAdapter() {
