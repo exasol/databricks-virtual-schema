@@ -66,7 +66,10 @@ INSERTSIZE=-1
 
 ```
 
-**Important:** Make sure that the file contains a trailing empty line. JDBC driver registration won't work if it is missing.
+**Important:** Make sure that file `settings.cfg`
+* contains a trailing empty line.
+* uses Unix line breaks (LF) instead of Windows (CRLF).
+JDBC driver registration won't work if the file format is wrong.
 
 ### Creating a Schema to Hold the Adapter Script
 
@@ -83,6 +86,7 @@ CREATE SCHEMA VSDAB_SCHEMA;
 Now you need to install the adapter script (i.e. the plug-in driving the Virtual Schema):
 
 ```sql
+--/
 CREATE OR REPLACE LUA ADAPTER SCRIPT VSDAB_SCHEMA.VSDAB_ADAPTER AS
     table.insert(package.searchers,
         function (module_name)
@@ -101,6 +105,11 @@ CREATE OR REPLACE LUA ADAPTER SCRIPT VSDAB_SCHEMA.VSDAB_ADAPTER AS
 ```
 
 The first fixed part is a module loading preamble that is required with Exasol version 8.
+
+Please note:
+* We recommend using DbVisualizer for executing this statement.
+* Note the leading `--/` and trailing `/\n;`
+* When DbVisualizer asks to enter data for parameter markers, uncheck option "SQL Commander" > "SQL Commander Options" > "Parameterized SQL". See this [Knowledge Base article](https://exasol.my.site.com/s/article/DbVisualizer-Syntax-Errors-with-Scripts) for details.
 
 ### Create a Named Connection
 
@@ -173,6 +182,7 @@ You can find additional information about the JDBC connection URL [in the Databr
 CREATE VIRTUAL SCHEMA VSDAB_VIRTUAL_SCHEMA
     USING VSDAB_SCHEMA.VSDAB_ADAPTER
     WITH
+    CONNECTION_NAME = 'DATABRICKS_JDBC_CONNECTION'
     CATALOG_NAME    = '<Databricks catalog name>'
     SCHEMA_NAME     = '<Databricks schema name>'
 ```
