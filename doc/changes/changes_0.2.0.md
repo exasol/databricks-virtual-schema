@@ -8,10 +8,13 @@ This release maps unsupported Databricks data types `BINARY`, `ARRAY`, `MAP`, `S
 
 The release also stores the original Databricks metadata for each table and column as JSON format in field `databricks_metadata` of the adapter notes for table and column. This helps with debugging the virtual schema.
 
+The release also converts the names of Databricks tables and columns to upper case in Exasol to improve usability of the virtual schema. Quoting table and column names with double quotes `"` is no longer required as Exasol converts all names to upper case by default.
+
 ## Features
 
 * #15: Mapped unsupported data types to `VARCHAR`
 * #33: Store Databricks metadata in adapter notes
+* #18: Convert table and column names to upper case
 
 ## Documentation
 

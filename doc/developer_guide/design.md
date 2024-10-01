@@ -155,3 +155,17 @@ Considered alternatives:
   * `-` Less flexible with test setup and teardown
   * `-` Would require `@Nested` test classes or only a single `@Test` per class
   * `-` Test failures harder to read, need to read assertion stack traces
+
+### Convert Table and Column Names to Upper Case
+
+VSDAB converts Databricks table and columns to upper case.
+
+Rationale: Exasol converts unquoted identifiers to upper case. If a table or column contains lower case characters, users need to specify the exact case and quote the identifier in double quotes `"`. This is inconvenient and a potential source of errors.
+
+Converting all names to upper case introduces the risk of conflicts, e.g. when a Databricks table contains columns with the same name but different case, e.g. `COL` and `col`. However this is a problem, because creating such tables in Databricks is not possible and fails with the following error:
+
+```
+Failed to write to object: 'CREATE TABLE `vs-test-cat-1727789463981`.`schema-1727789465842`.`tab1` (`col` VARCHAR(5), `COL` INT)'. Cause: '[Databricks][JDBCDriver](500051) ERROR processing query/statement. Error Code: 0, SQL state: 42711, Query: CREATE TAB***, Error message from Server: org.apache.hive.service.cli.HiveSQLException: Error running query: [COLUMN_ALREADY_EXISTS] org.apache.spark.sql.AnalysisException: [COLUMN_ALREADY_EXISTS] The column `col` already exists. Choose another name or rename the existing column. SQLSTATE: 42711
+```
+
+Databricks tables are all in lower case, so tables names cannot create conflicts either.
