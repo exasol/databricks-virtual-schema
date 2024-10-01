@@ -58,7 +58,8 @@ local function convert_column(raw)
         position = raw.position,
         comment = raw.comment,
         type = {name = raw.type_name, text = raw.type_text, precision = raw.type_precision, scale = raw.type_scale},
-        nullable = raw.nullable
+        nullable = raw.nullable,
+        databricks_metadata = raw
     }
 end
 
@@ -74,11 +75,13 @@ local function convert_table(raw)
         table_type = raw.table_type,
         data_source_format = raw.data_source_format,
         comment = raw.comment,
-        columns = columns
+        columns = columns,
+        databricks_metadata = raw
     }
 end
 
 ---Get a list of all tables.
+---See Databricks documentation https://docs.databricks.com/api/workspace/tables/list
 ---@param catalog_name string name of the catalog
 ---@param schema_name string name of the schema
 ---@return DatabricksTable[] tables

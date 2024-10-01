@@ -18,6 +18,7 @@ local DatabricksCatalog = {}
 ---@field data_source_format string Data source format, e.g. `DELTA`
 ---@field comment string Comment of the table
 ---@field columns DatabricksColumn[] Columns
+---@field databricks_metadata table<string,any> Original tabledata provided by the Databricks API
 local DatabricksTable = {}
 
 ---Details for a Databricks column.
@@ -28,6 +29,7 @@ local DatabricksTable = {}
 ---@field position integer Position of the column in the table (zero-based)
 ---@field type DatabricksType Data type of the column
 ---@field nullable boolean If true, the column can contain NULL values
+---@field databricks_metadata table<string,any> Original column metadata provided by the Databricks API
 local DatabricksColumn = {}
 
 ---Details for a Databricks type.

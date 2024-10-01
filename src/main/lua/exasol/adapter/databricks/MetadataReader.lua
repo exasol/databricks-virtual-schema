@@ -4,6 +4,7 @@ local TableAdapterNotes = require("exasol.adapter.databricks.TableAdapterNotes")
 local util = require("exasol.adapter.databricks.util")
 local log = require("remotelog")
 local ExaError = require("ExaError")
+local cjson = require("cjson")
 
 ---This class reads schema, table and column metadata from the source.
 ---@class MetadataReader
@@ -292,13 +293,15 @@ end
 ---@param databricks_colum DatabricksColumn
 ---@return ExasolColumnMetadata exasol_column_metadata
 local function convert_column_metadata(databricks_colum)
+    local adapter_notes = cjson.encode({databricks_metadata = databricks_colum.databricks_metadata})
     return {
         name = databricks_colum.name,
         dataType = convert_data_type(databricks_colum),
         isNullable = databricks_colum.nullable,
         isIdentity = nil, -- Databricks does not support identity columns
         default = nil, -- Databricks does not support default values
-        comment = databricks_colum.comment
+        comment = databricks_colum.comment,
+        adapterNotes = adapter_notes
     }
 end
 
@@ -321,7 +324,7 @@ end
 function MetadataReader:read(properties)
     local databricks_client = self:_create_databricks_client(properties)
     local tables = databricks_client:list_tables(properties:get_catalog_name(), properties:get_schema_name())
-    return {tables = util.map(tables, convert_table_metadata), adapterNotes = "notes"}
+    return {tables = util.map(tables, convert_table_metadata), adapterNotes = nil}
 end
 
 return MetadataReader

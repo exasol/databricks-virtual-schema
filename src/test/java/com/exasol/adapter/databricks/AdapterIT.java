@@ -4,6 +4,7 @@ import static com.exasol.matcher.ResultSetStructureMatcher.table;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
@@ -45,6 +46,23 @@ class AdapterIT extends AbstractIntegrationTestBase {
         final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema("system", "information_schema",
                 emptyMap());
         testSetup.exasol().assertions().virtualSchemaExists(vs);
+    }
+
+    @Test
+    void databricksMetadataAvailableInAdapterNotes() {
+        final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
+        final Table table = databricksSchema.createTable("tab1", "col1", "VARCHAR(5)");
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema);
+        assertAll(
+                () -> assertThat("table adapter notes", testSetup.exasol().metadata().getTableAdapterNotes(vs, table),
+                        allOf(containsString("\"databricks_metadata\":{\""),
+                                containsString("\"storage_location\":\"s3:\\/\\/databricks-workspace-stack"),
+                                containsString("\"table_type\":\"MANAGED\""))),
+                () -> assertThat("column adapter notes",
+                        testSetup.exasol().metadata().getColumnAdapterNotes(vs, table, "col1"),
+                        allOf(containsString("\"databricks_metadata\":{\""), containsString("\"name\":\"col1\""),
+                                containsString("\"type_name\":\"STRING\""),
+                                containsString("\"type_text\":\"varchar(5)\""))));
     }
 
     @Test

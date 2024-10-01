@@ -42,7 +42,6 @@ describe("entry.adapter_call()", function()
                 [[{"type":"createVirtualSchema","schemaMetadataInfo":{"name":"new vs", "properties":{
                 "CONNECTION_NAME":"my_connection", "CATALOG_NAME":"catalog", "SCHEMA_NAME": "schema"
             }}}]])
-        util.assert_json_same({type = "createVirtualSchema", schemaMetadata = {tables = {}, adapterNotes = "notes"}},
-                              actual)
+        util.assert_json_same({type = "createVirtualSchema", schemaMetadata = {tables = {}, adapterNotes = nil}}, actual)
     end)
 end)

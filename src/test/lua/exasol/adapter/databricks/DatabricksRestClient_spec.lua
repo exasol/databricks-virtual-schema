@@ -35,33 +35,31 @@ describe("DatabricksRestClient #itest", function()
             assert.is.same("EXTERNAL", columns_table.table_type)
             assert.is.same("UNITY_CATALOG", columns_table.data_source_format)
             assert.is.same(33, #columns_table.columns)
+
+            local expected_column_metadata = {
+                comment = 'Catalog that contains the relation.',
+                name = 'table_catalog',
+                nullable = false,
+                position = 0.0,
+                type_json = '{"name":"table_catalog","type":"string","nullable":false,"metadata":{"comment":"Catalog that contains the relation."}}',
+                type_name = 'STRING',
+                type_precision = 0.0,
+                type_scale = 0.0,
+                type_text = 'string'
+            }
             ---@type DatabricksColumn
             local expected_catalog_column = {
                 name = "table_catalog",
                 comment = "Catalog that contains the relation.",
                 position = 0,
                 type = {name = "STRING", text = "string", precision = 0, scale = 0},
-                nullable = false
+                nullable = false,
+                databricks_metadata = expected_column_metadata
             }
             assert.is.same(expected_catalog_column, columns_table.columns[1])
-            ---@type DatabricksColumn
-            local expected_position_column = {
-                name = "ordinal_position",
-                comment = "The position (numbered from 1) of the column within the relation.",
-                position = 4,
-                type = {name = "INT", text = "int", precision = 0, scale = 0},
-                nullable = false
-            }
-            assert.is.same(expected_position_column, columns_table.columns[5])
-            ---@type DatabricksColumn
-            local expected_max_length_column = {
-                name = "character_maximum_length",
-                comment = "Always NULL, reserved for future use.",
-                position = 9,
-                type = {name = "LONG", text = "long", precision = 0, scale = 0},
-                nullable = true
-            }
-            assert.is.same(expected_max_length_column, columns_table.columns[10])
+
+            assert.is.same("system.information_schema.columns", columns_table.databricks_metadata.full_name)
+            assert.is.same("UNITY_CATALOG", columns_table.databricks_metadata.data_source_format)
         end)
 
         it("request fails for for unknown catalog/schema", function()
