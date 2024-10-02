@@ -49,13 +49,13 @@ ExaLoader is responsible for executing the pushdown query on the Databricks and 
 
 1. Download the latest [Databricks JDBC Driver](https://www.databricks.com/spark/jdbc-drivers-archive).
 2. Unpack the downloaded ZIP file.
-2. Upload file `DatabricksJDBC42.jar` to the default BucketFS bucket under path `drivers/jdbc/databricks/` (i.e. `/buckets/bfsdefault/default/drivers/jdbc/databricks/`), see the [BucketFS documentation](https://docs.exasol.com/db/latest/administration/on-premise/bucketfs/accessfiles.htm) for details.
+2. Upload file `DatabricksJDBC42.jar` to the default BucketFS bucket under path `drivers/jdbc/databricks/` (i.e. `bfsdefault/default/drivers/jdbc/databricks/`), see the [BucketFS documentation](https://docs.exasol.com/db/latest/administration/on-premise/bucketfs/accessfiles.htm) for details.
 
 #### Register the JDBC Driver
 
 In order to enable the ExaLoader to fetch data from Databricks you must register the driver for ExaLoader as described in the [Installation procedure for JDBC drivers](https://github.com/exasol/docker-db/#installing-custom-jdbc-drivers).
 
-To do that you need to create file `settings.cfg` and upload it to the default BucketFS bucket under `drivers/jdbc/databricks/` (i.e. `/buckets/bfsdefault/default/drivers/jdbc/databricks/`):
+To do that you need to create file `settings.cfg` and upload it to the default BucketFS bucket under `drivers/jdbc/databricks/` (i.e. `bfsdefault/default/drivers/jdbc/databricks/`):
 
 ```properties
 DRIVERNAME=DATABRICKS
