@@ -34,13 +34,26 @@ function DatabricksQueryRewriter:_replace_source_table_name(element)
             end
         end
         if element.type == "table" then
-            local table_name = element.name
-            local table_notes = self._pushdown_metadata:get_table_notes(table_name)
-            local catalog_name = table_notes:get_databricks_catalog_name()
-            local schema_name = table_notes:get_databricks_schema_name()
-            log.debug("Extended table '%s' with source catalog %s and schema %s", table_name, catalog_name, schema_name)
-            extended_element.schema = schema_name
-            extended_element.catalog = catalog_name
+            local exasol_table_name = element.name
+            local table_notes = self._pushdown_metadata:get_table_notes(exasol_table_name)
+            local databricks_catalog_name = table_notes:get_databricks_catalog_name()
+            local databricks_schema_name = table_notes:get_databricks_schema_name()
+            local databricks_table_name = table_notes:get_databricks_table_name()
+            log.debug("Extended original table %s to databricks table %s.%s.%s", exasol_table_name,
+                      databricks_catalog_name, databricks_schema_name, databricks_table_name)
+            extended_element.name = databricks_table_name
+            extended_element.schema = databricks_schema_name
+            extended_element.catalog = databricks_catalog_name
+        elseif element.type == "column" then
+            local exasol_table_name = element.tableName
+            local exasol_column_name = element.name
+            local table_notes = self._pushdown_metadata:get_table_notes(exasol_table_name)
+            local databricks_table_name = table_notes:get_databricks_table_name()
+            local databricks_column_name = table_notes:get_databricks_column_name(exasol_column_name)
+            log.debug("Extended original column %s.%s to databricks %s.%s", exasol_table_name, element.name,
+                      databricks_table_name, databricks_column_name)
+            extended_element.name = databricks_column_name
+            extended_element.tableName = databricks_table_name
         end
     else
         return element
@@ -61,6 +74,7 @@ end
 ---@return string rewritten_query rewritten query to be fed into the ExaLoader for import
 function DatabricksQueryRewriter:rewrite(original_query)
     local remote_query = self:_replace_source_table_name(original_query)
+    log.trace("Rewritten query structure: %s", cjson.encode(remote_query))
     return self:_create_import(remote_query)
 end
 

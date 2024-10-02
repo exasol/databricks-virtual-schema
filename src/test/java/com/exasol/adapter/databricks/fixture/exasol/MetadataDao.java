@@ -101,7 +101,8 @@ public class MetadataDao {
                 from SYS.EXA_ALL_COLUMNS
                 where COLUMN_SCHEMA = ? and COLUMN_TABLE = ?
                 order by COLUMN_TABLE, COLUMN_ORDINAL_POSITION
-                """, List.of(virtualSchema.getName(), databricksTable.getName()), ExaColumn::fromResultSet);
+                """, List.of(virtualSchema.getName(), databricksTable.getName().toUpperCase()),
+                ExaColumn::fromResultSet);
     }
 
     public List<ExaColumn> getVirtualColumns(final ExasolVirtualSchema virtualSchema) {

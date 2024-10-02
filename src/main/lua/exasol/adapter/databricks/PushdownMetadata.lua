@@ -23,9 +23,12 @@ local function decode_adapter_notes(table)
     local success, result = pcall(TableAdapterNotes.decode, table.adapterNotes)
     if not success then
         local exa_error = tostring(ExaError:new("E-VSDAB-16",
-                                                "Failed to decode adapter notes {{adapter_notes}} for table {{table_name}}.",
-                                                {adapter_notes = table.adapterNotes, table_name = table.name})
-                :add_mitigations("Please refresh or drop and re-create the virtual schema."))
+                                                "Failed to decode adapter notes {{adapter_notes}} for table {{table_name}}: {{error_msg}}",
+                                                {
+            adapter_notes = table.adapterNotes,
+            table_name = table.name,
+            error_msg = result
+        }):add_mitigations("Please refresh or drop and re-create the virtual schema."))
         log.error(exa_error)
         error(exa_error)
     end

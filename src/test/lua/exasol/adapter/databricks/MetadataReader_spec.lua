@@ -341,6 +341,8 @@ Mitigations:
                 assert.is.same_json({
                     catalog_name = "cat",
                     schema_name = "schema",
+                    table_name = "name",
+                    columns = {COL = {column_name = "col"}},
                     databricks_metadata = {metadata = "for table"}
                 }, metadata.tables[1].adapterNotes)
             end)

@@ -82,11 +82,18 @@ describe("DatabricksAdapter", function()
         ---@type PushdownRequest
         local request<const> = {
             type = "pushdown",
-            involvedTables = {{name = "virtualTable", adapterNotes = "{}", columns = {}}},
+            involvedTables = {
+                {
+                    name = "virtualTable",
+                    adapterNotes = [[{"catalog_name":"databricks_cat", "schema_name": "databricks_schema", "table_name":"databricks_tab","columns":{"col": {"column_name":"databricks_col"}}}]],
+                    columns = {}
+                }
+            },
             schemaMetadataInfo = {name = "vsName", properties = {}},
             pushdownRequest = {
                 type = "select",
                 from = {type = "table", name = "virtualTable"},
+                selectList = {{type = "column", columnNr = 0, name = "col", tableName = "virtualTable"}},
                 selectListDataTypes = {{type = "DECIMAL", precision = 10, scale = 2}}
             }
         }
@@ -95,7 +102,7 @@ describe("DatabricksAdapter", function()
             local response = testee():push_down(request, properties_mock)
             assert.is.same({
                 type = "pushdown",
-                sql = [[IMPORT INTO (c1 DECIMAL(10,2)) FROM JDBC AT "conn" STATEMENT 'SELECT * FROM `virtualTable`']]
+                sql = [[IMPORT INTO (c1 DECIMAL(10,2)) FROM JDBC AT "conn" STATEMENT 'SELECT `databricks_tab`.`databricks_col` FROM `databricks_cat`.`databricks_schema`.`databricks_tab`']]
             }, response)
         end)
         it("validates properties", function()
