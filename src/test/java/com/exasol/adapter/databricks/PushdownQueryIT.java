@@ -17,7 +17,7 @@ import com.exasol.matcher.TypeMatchMode;
 class PushdownQueryIT extends AbstractIntegrationTestBase {
 
     @TestFactory
-    Stream<DynamicNode> selectlistFilterOrderLimit() {
+    Stream<DynamicNode> selectListFilterOrderLimit() {
         return testSetup
                 .pushdownTest(databricksSchema -> databricksSchema.createTable("tab", "id", "INT", "name", "STRING")
                         .bulkInsert(Stream.of(List.of(1L, "a"), List.of(2, "b"), List.of(3, "c"))))
@@ -191,7 +191,7 @@ class PushdownQueryIT extends AbstractIntegrationTestBase {
 
                 .capability("FN_PRED_OR").query("select VAL=1 or VAL>1 from $tab")
                 .expect(table("BOOLEAN").row(true).matches())
-                .expectPushdown(startsWith("SELECT ((`tab`.`VAL` = 1) OR (1 < `tab`.`val`)) FROM"))
+                .expectPushdown(startsWith("SELECT ((`tab`.`val` = 1) OR (1 < `tab`.`val`)) FROM"))
 
                 .capability("FN_PRED_BETWEEN").query("select VAL between 0 and 2 from $tab")
                 .expect(table("BOOLEAN").row(true).matches())
@@ -314,13 +314,13 @@ class PushdownQueryIT extends AbstractIntegrationTestBase {
                 .capability("AGGREGATE_GROUP_BY_COLUMN")
                 .query("select cat, count(val) from $tab group by cat order by cat")
                 .expect(table("VARCHAR", "BIGINT").row("a", 3L).row("b", 1L).row("c", 1L).matches())
-                .expectPushdown(allOf(startsWith("SELECT `tab`.`CAT`, COUNT(`tab`.`VAL`) FROM"),
+                .expectPushdown(allOf(startsWith("SELECT `tab`.`cat`, COUNT(`tab`.`val`) FROM"),
                         endsWith("GROUP BY `tab`.`cat` ORDER BY `tab`.`cat` ASC NULLS LAST")))
 
                 .capability("AGGREGATE_SINGLE_GROUP")
                 .query("select cat, count(val) from $tab group by cat order by cat")
                 .expect(table("VARCHAR", "BIGINT").row("a", 3L).row("b", 1L).row("c", 1L).matches())
-                .expectPushdown(allOf(startsWith("SELECT `tab`.`CAT`, COUNT(`tab`.`VAL`) FROM"),
+                .expectPushdown(allOf(startsWith("SELECT `tab`.`cat`, COUNT(`tab`.`val`) FROM"),
                         endsWith("ORDER BY `tab`.`cat` ASC NULLS LAST")))
 
                 .buildTests();
