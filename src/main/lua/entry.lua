@@ -6,8 +6,13 @@ local DatabricksAdapterProperties = require("exasol.adapter.databricks.Databrick
 local MetadataReader = require("exasol.adapter.databricks.MetadataReader")
 local RequestDispatcher = require("exasol.vscl.RequestDispatcher")
 
+---@param config DatabricksConnectionDetails
+---@return DatabricksRestClient
 local function databricks_client_factory(config)
-    return DatabricksRestClient:new(config)
+    local function token_provider()
+        return config.token
+    end
+    return DatabricksRestClient:new(config.url, token_provider)
 end
 
 --- Handle a Virtual Schema request.
