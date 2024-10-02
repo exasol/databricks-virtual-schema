@@ -35,11 +35,7 @@ end
 function TableAdapterNotes.create(databricks_table)
     log.trace("Creating TableAdapterNotes for table '%s' @ %s.%s", databricks_table.name, databricks_table.catalog_name,
               databricks_table.schema_name)
-    ---@type table<string,ColumnAdapterNotes>
-    local databricks_columns = {}
-    for _, col in pairs(databricks_table.columns) do
-        databricks_columns[col.name:upper()] = ColumnAdapterNotes.create(col)
-    end
+    local databricks_columns = ColumnAdapterNotes.create_map(databricks_table.columns)
     return TableAdapterNotes:new(databricks_table.catalog_name, databricks_table.schema_name, databricks_table.name,
                                  databricks_columns, databricks_table.databricks_metadata)
 end

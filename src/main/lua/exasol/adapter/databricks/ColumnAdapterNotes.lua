@@ -15,10 +15,15 @@ function ColumnAdapterNotes:new(databricks_column)
     return instance
 end
 
----@param databricks_column DatabricksColumn
-function ColumnAdapterNotes.create(databricks_column)
-    log.trace("Creating ColumnAdapterNotes for column '%s'", databricks_column.name)
-    return ColumnAdapterNotes:new(databricks_column.name)
+---@param databricks_columns DatabricksColumn[]
+---@return table<string,ColumnAdapterNotes> column_map
+function ColumnAdapterNotes.create_map(databricks_columns)
+    local columns = {}
+    for _, col in pairs(databricks_columns or {}) do
+        local name = col.name
+        columns[name:upper()] = ColumnAdapterNotes:new(name)
+    end
+    return columns
 end
 
 ---@return string databricks_column_name Databricks column name

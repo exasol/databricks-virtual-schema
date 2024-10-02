@@ -33,7 +33,7 @@ Mitigations:
             assert.has_error(function()
                 create({{name = "tab1", adapterNotes = "invalid json", columns = {}}})
             end,
-                             [[E-VSDAB-16: Failed to decode adapter notes 'invalid json' for table 'tab1': '...main/lua/exasol/adapter/databricks/TableAdapterNotes.lua:51: Expected value but found invalid token at character 1'
+                             [[E-VSDAB-16: Failed to decode adapter notes 'invalid json' for table 'tab1': '...main/lua/exasol/adapter/databricks/TableAdapterNotes.lua:47: Expected value but found invalid token at character 1'
 
 Mitigations:
 

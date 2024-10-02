@@ -4,7 +4,7 @@ local mockagne = require("mockagne")
 local log = require("remotelog")
 local DatabricksQueryRewriter = require("exasol.adapter.databricks.DatabricksQueryRewriter")
 
-log.set_level("TRACE")
+log.set_level("INFO")
 
 ---@type PushdownMetadata
 local metadata_mock = nil
@@ -39,6 +39,9 @@ describe("DatabricksQueryRewriter", function()
     describe("rewrite()", function()
         it("renders empty query", function()
             assert_rewritten({}, [[IMPORT FROM JDBC AT "connection_id" STATEMENT 'SELECT *']])
+        end)
+        it("renders invalid object", function()
+            assert_rewritten("invalid", [[IMPORT FROM JDBC AT "connection_id" STATEMENT 'SELECT *']])
         end)
         it("renders query without columns", function()
             simulate_table_notes("tab1", "databricks-catalog", "databricks-schema", "databricks-table")

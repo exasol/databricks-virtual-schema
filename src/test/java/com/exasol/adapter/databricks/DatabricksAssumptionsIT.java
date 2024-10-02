@@ -29,6 +29,9 @@ class DatabricksAssumptionsIT {
         databricks.close();
     }
 
+    /**
+     * Databricks does not support two columns with same name in different case (upper/lower).
+     */
     @Test
     void columnsWithSameNameDifferentCaseNotSupported() {
         final DatabricksSchema databricksSchema = databricks.createSchema();
@@ -38,6 +41,9 @@ class DatabricksAssumptionsIT {
                 "[COLUMN_ALREADY_EXISTS] The column `col` already exists. Choose another name or rename the existing column."));
     }
 
+    /**
+     * Databricks does not support two tables with same name in different case (upper/lower).
+     */
     @Test
     void tablesWithSameNameDifferentCaseNotSupported() {
         final DatabricksSchema databricksSchema = databricks.createSchema();
@@ -48,5 +54,4 @@ class DatabricksAssumptionsIT {
                 "[TABLE_OR_VIEW_ALREADY_EXISTS] Cannot create table or view `%s`.`TAB` because it already exists."
                         .formatted(databricksSchema.getName())));
     }
-
 }
