@@ -13,10 +13,6 @@ The release also stores the original Databricks metadata for each table and colu
 * #15: Mapped unsupported data types to `VARCHAR`
 * #33: Store Databricks metadata in adapter notes
 
-## Documentation
-
-* #32: Updated JDBC driver installation instructions in user guide
-
 ## Dependency Updates
 
 ### Test Dependency Updates
