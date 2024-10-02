@@ -43,24 +43,22 @@ Make sure you pick the file with `-dist-` in the name, because that is the insta
 
 ### Configure JDBC Driver for ExaLoader
 
-ExaLoader is responsible for executing the pushdown query on the Databricks and fetching the results. This section describes how to configure the JDBC driver for ExaLoader.
+ExaLoader is responsible for executing the pushdown query on the Databricks and fetching the results. This section describes how to configure the JDBC driver for ExaLoader. You can find more details in the [Exasol Administration documentation](https://docs.exasol.com/db/latest/administration/aws/manage_drivers/add_jdbc_driver.htm).
 
 #### Upload the Databricks JDBC Driver to BucketFS
 
 1. Download the latest [Databricks JDBC Driver](https://www.databricks.com/spark/jdbc-drivers-archive).
 2. Unpack the downloaded ZIP file.
-2. Upload file `DatabricksJDBC42.jar` to BucketFS under path `default/drivers/jdbc/`, see the [BucketFS documentation](https://docs.exasol.com/db/latest/administration/on-premise/bucketfs/accessfiles.htm) for details.
+2. Upload file `DatabricksJDBC42.jar` to the default BucketFS bucket under path `drivers/jdbc/databricks/` (i.e. `bfsdefault/default/drivers/jdbc/databricks/`), see the [BucketFS documentation](https://docs.exasol.com/db/latest/administration/on-premise/bucketfs/accessfiles.htm) for details.
 
 #### Register the JDBC Driver
 
 In order to enable the ExaLoader to fetch data from Databricks you must register the driver for ExaLoader as described in the [Installation procedure for JDBC drivers](https://github.com/exasol/docker-db/#installing-custom-jdbc-drivers).
 
-To do that you need to create file `settings.cfg` and upload it to `default/drivers/jdbc/` in BucketFS:
+To do that you need to create file `settings.cfg` and upload it to the default BucketFS bucket under `drivers/jdbc/databricks/` (i.e. `bfsdefault/default/drivers/jdbc/databricks/`):
 
 ```properties
 DRIVERNAME=DATABRICKS
-JAR=DatabricksJDBC42.jar
-DRIVERMAIN=com.databricks.client.jdbc.Driver
 PREFIX=jdbc:databricks:
 NOSECURITY=YES
 FETCHSIZE=100000
@@ -68,7 +66,10 @@ INSERTSIZE=-1
 
 ```
 
-**Important:** Make sure that the file contains a trailing empty line. JDBC driver registration won't work if it is missing.
+**Important:** Make sure that file `settings.cfg`
+* contains a trailing empty line.
+* uses Unix line breaks (LF) instead of Windows (CRLF).
+JDBC driver registration won't work if the file format is wrong.
 
 ### Creating a Schema to Hold the Adapter Script
 
@@ -85,6 +86,7 @@ CREATE SCHEMA VSDAB_SCHEMA;
 Now you need to install the adapter script (i.e. the plug-in driving the Virtual Schema):
 
 ```sql
+--/
 CREATE OR REPLACE LUA ADAPTER SCRIPT VSDAB_SCHEMA.VSDAB_ADAPTER AS
     table.insert(package.searchers,
         function (module_name)
@@ -103,6 +105,11 @@ CREATE OR REPLACE LUA ADAPTER SCRIPT VSDAB_SCHEMA.VSDAB_ADAPTER AS
 ```
 
 The first fixed part is a module loading preamble that is required with Exasol version 8.
+
+Please note:
+* We recommend using DbVisualizer for executing this statement.
+* Note the leading `--/` and trailing `/\n;`
+* When DbVisualizer asks to enter data for parameter markers, uncheck option "SQL Commander" > "SQL Commander Options" > "Parameterized SQL". See this [Knowledge Base article](https://exasol.my.site.com/s/article/DbVisualizer-Syntax-Errors-with-Scripts) for details.
 
 ### Create a Named Connection
 
@@ -175,6 +182,7 @@ You can find additional information about the JDBC connection URL [in the Databr
 CREATE VIRTUAL SCHEMA VSDAB_VIRTUAL_SCHEMA
     USING VSDAB_SCHEMA.VSDAB_ADAPTER
     WITH
+    CONNECTION_NAME = 'DATABRICKS_JDBC_CONNECTION'
     CATALOG_NAME    = '<Databricks catalog name>'
     SCHEMA_NAME     = '<Databricks schema name>'
 ```
@@ -253,5 +261,4 @@ EXPLAIN VIRTUAL SELECT * FROM VSDAB_VIRTUAL_SCHEMA.<table>
 * Currently, the virtual schema only supports token authentication. M2M Principal authentication (OAuth M2M) will be added later, see [issue #3](https://github.com/exasol/databricks-virtual-schema/issues/3).
 * Currently, the virtual schema supports at most 50 tables per virtual schema, see [issue #8](https://github.com/exasol/databricks-virtual-schema/issues/8).
 * Currently, the table and column names are case-sensitive, i.e. you need to specify names exactly in upper/lower case as in Databricks, see [issue #18](https://github.com/exasol/databricks-virtual-schema/issues/18).
-* Creating a virtual schema fails when a source table uses an unknown or unsupported data type, see [issue #15](https://github.com/exasol/databricks-virtual-schema/issues/15).
 * The `TABLE_FILTER` option is not yet supported, see [issue #14](https://github.com/exasol/databricks-virtual-schema/issues/14).
