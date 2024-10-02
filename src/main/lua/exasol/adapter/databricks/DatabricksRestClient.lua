@@ -7,7 +7,6 @@ local cjson = require("cjson")
 local util = require("exasol.adapter.databricks.util")
 
 ---@alias DatabricksRestClientFactory fun(connection_details: DatabricksConnectionDetails): DatabricksRestClient
----@alias TokenProvider fun(): string
 
 ---@class DatabricksRestClient
 ---@field _base_url string base URL of the Databricks REST API

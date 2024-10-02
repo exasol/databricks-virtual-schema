@@ -3,6 +3,7 @@ local ExaError = require("ExaError")
 local http = require("socket.http")
 local socket = require("socket")
 local ssl = require("ssl")
+local ltn12 = require("ltn12")
 
 http.PROXY = nil
 http.USERAGENT = "Exasol Databricks Virtual Schema"
@@ -11,6 +12,7 @@ http.USERAGENT = "Exasol Databricks Virtual Schema"
 ---@field url string
 ---@field method "GET" | "POST" | nil
 ---@field headers table<string, string> | nil
+---@field request_body string?
 ---@field verify_tls_certificate boolean | nil default: true
 
 ---@alias SocketFactory fun(args: table<string, any>): TCPSocket
@@ -92,6 +94,30 @@ function M._create_socket_factory(args)
     end
 end
 
+---@alias BodySource fun(): string?
+
+---Creates an ltn12 source for the given string data or `nil` if the data is nil.
+---Based on https://github.com/lunarmodules/luasocket/blob/master/src/ltn12.lua#L118
+---@param data string?
+---@return BodySource? source
+local function create_source(data)
+    local BLOCKSIZE<const> = 2048
+    if data then
+        local i = 1
+        return function()
+            local chunk = string.sub(data, i, i + BLOCKSIZE - 1)
+            i = i + BLOCKSIZE
+            if chunk ~= "" then
+                return chunk
+            else
+                return nil
+            end
+        end
+    else
+        return nil
+    end
+end
+
 ---@param args RequestArgs
 ---@return string response_body
 function M.request(args)
@@ -107,6 +133,7 @@ function M.request(args)
         method = method,
         headers = headers,
         redirect = true,
+        source = create_source(args.request_body),
         sink = sink,
         create = M._create_socket_factory(args)
     })
