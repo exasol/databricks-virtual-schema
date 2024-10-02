@@ -65,6 +65,8 @@ build:
               databricks.token = ${{ secrets.DATABRICKS_TOKEN }}
               databricks.host = ${{ secrets.DATABRICKS_HOST }}
               databricks.storageRoot = ${{ secrets.DATABRICKS_STORAGE_ROOT }}
+              databricks.oauth.secret = ${{ secrets.DATABRICKS_OAUTH_SECRET }}
+              databricks.oauth.clientId = ${{ secrets.DATABRICKS_OAUTH_CLIENT_ID }}
               EOL
 
         - action: INSERT_AFTER
@@ -161,6 +163,8 @@ build:
               databricks.token = ${{ secrets.DATABRICKS_TOKEN }}
               databricks.host = ${{ secrets.DATABRICKS_HOST }}
               databricks.storageRoot = ${{ secrets.DATABRICKS_STORAGE_ROOT }}
+              databricks.oauth.secret = ${{ secrets.DATABRICKS_OAUTH_SECRET }}
+              databricks.oauth.clientId = ${{ secrets.DATABRICKS_OAUTH_CLIENT_ID }}
               EOL
         # Generate dummy error code reports. Error code crawler does not support Lua projects yet.
         - action: INSERT_AFTER

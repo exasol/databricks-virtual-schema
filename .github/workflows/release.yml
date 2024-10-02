@@ -136,6 +136,8 @@ jobs:
           databricks.token = ${{ secrets.DATABRICKS_TOKEN }}
           databricks.host = ${{ secrets.DATABRICKS_HOST }}
           databricks.storageRoot = ${{ secrets.DATABRICKS_STORAGE_ROOT }}
+          databricks.oauth.secret = ${{ secrets.DATABRICKS_OAUTH_SECRET }}
+          databricks.oauth.clientId = ${{ secrets.DATABRICKS_OAUTH_CLIENT_ID }}
           EOL
       - {
         name: Build project,

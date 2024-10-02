@@ -2,6 +2,18 @@
 
 ## Initial Setup
 
+### Configure Databricks Credentials for Integration Tests
+
+Create file `test.properties` with the following content, adapting the values for your test environment. Follow the [user guide](../user_guide/user_guide.md#authentication) to get the credentials.
+
+```properties
+databricks.token = abcdefg1234567890hijklmopqrstuvwxyz1
+databricks.host = https://abc-1234abcd-5678.cloud.databricks.com
+databricks.storageRoot = s3://databricks-workspace-stack-123abc-bucket/unity-catalog/1234500000/
+databricks.oauth.secret = abcdefg1234567890hijklmopqrstuvwxyz1
+databricks.oauth.clientId = 123abc45-def7-89gh-1234-567890abcdef
+```
+
 ### Install Test and Build Dependencies
 
 ```sh

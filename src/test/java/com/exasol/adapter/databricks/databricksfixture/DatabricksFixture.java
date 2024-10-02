@@ -86,12 +86,20 @@ public class DatabricksFixture implements AutoCloseable {
     }
 
     public String getJdbcUrl() {
+        return getJdbcUrl(AuthMode.TOKEN);
+    }
+
+    public String getJdbcUrl(final AuthMode authMode) {
         final URI databricksUri = config.getDatabricksHostUri();
         final String hostName = databricksUri.getHost();
         final int port = databricksUri.getPort() < 0 ? 443 : databricksUri.getPort();
         final String httpPath = "/sql/1.0/warehouses/" + getEndpoint().getId();
-        return String.format("jdbc:databricks://%s:%d/default;transportMode=http;ssl=1;AuthMech=3;httpPath=%s;",
-                hostName, port, httpPath);
+        final String oauthCredentials = authMode == AuthMode.OAUTH_M2M
+                ? "OAuth2ClientId=%s;OAuth2Secret=%s;".formatted(config.getDatabricksOauthClientId(),
+                        config.getDatabricksOauthSecret())
+                : "";
+        return "jdbc:databricks://%s:%d/default;transportMode=http;ssl=1;AuthMech=%d;Auth_Flow=%d;httpPath=%s;%s"
+                .formatted(hostName, port, authMode.authMech, authMode.authFlow, httpPath, oauthCredentials);
     }
 
     public String getJdbcUsername() {
@@ -117,5 +125,17 @@ public class DatabricksFixture implements AutoCloseable {
     @Override
     public void close() {
         cleanupTasks.cleanup();
+    }
+
+    public enum AuthMode {
+        TOKEN(3, -1), OAUTH_M2M(11, 1);
+
+        private final int authMech;
+        private final int authFlow;
+
+        AuthMode(final int authMech, final int authFlow) {
+            this.authMech = authMech;
+            this.authFlow = authFlow;
+        }
     }
 }

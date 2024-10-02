@@ -117,7 +117,7 @@ Create a named connection:
 
 ```sql
 CREATE OR REPLACE CONNECTION DATABRICKS_JDBC_CONNECTION
-TO 'jdbc:databricks://$WORKSPACE_HOST_NAME:$PORT/default;transportMode=http;ssl=1;AuthMech=3;httpPath=$HTTP_PATH;'
+TO 'jdbc:databricks://$WORKSPACE_HOST_NAME:$PORT/default;transportMode=http;ssl=1;AuthMech=$AUTH_MECH;Auth_Flow=$AUTH_FLOW;OAuth2ClientId=$OAUTH_CLIENT_ID;OAuth2Secret=$OAUTH_SECRET;httpPath=$HTTP_PATH;'
 USER '$USERNAME'
 IDENTIFIED BY '$PASSWORD';
 ```
@@ -128,6 +128,10 @@ Fill in the following placeholders in the JDBC URL:
 * `$WORKSPACE_HOST_NAME`: Hostname of your Databricks workspace, e.g. `abc-1234abcd-5678.cloud.databricks.com`
 * `$PORT`: Port of your Databricks workspace, usually `443`
 * `$HTTP_PATH`: Partial URL corresponding to the Spark server, e.g. `/sql/1.0/warehouses/abc123def456ghi7`
+* `$AUTH_MECH`: Depends on authentication method, see [below](#authentication) for details
+* `$AUTH_FLOW`: Depends on authentication method, see [below](#authentication) for details
+* `$OAUTH_CLIENT_ID`: Depends on authentication method, see [below](#authentication) for details
+* `$OAUTH_SECRET`: Depends on authentication method, see [below](#authentication) for details
 
 You can find the JDBC URL by logging in to your Databricks workspace:
 
@@ -136,12 +140,6 @@ You can find the JDBC URL by logging in to your Databricks workspace:
 3. Click on the entry for your SQL Warehouse
 4. Click on tab "Connection details"
 5. Select JDBC URL for version "2.6.5 or later"
-
-Example JDBC URL:
-
-```
-jdbc:databricks://abc-1234abcd-5678.cloud.databricks.com:443/default;transportMode=http;ssl=1;AuthMech=3;httpPath=/sql/1.0/warehouses/abc123def456ghi7;
-```
 
 #### Authentication
 
@@ -162,19 +160,50 @@ USER 'token'
 IDENTIFIED BY '$TOKEN';
 ```
 
-Use the string `token` as username in `USER` and enter your generated token as password in `IDENTIFIED BY`.
+* Use the string `token` as username in `USER` and enter your generated token as password in `IDENTIFIED BY`.
+* Modify the JDBC URL:
+  * Set `$AUTH_MECH` to `3`.
+  * The value for `$AUTH_FLOW` is not used, omit option `Auth_Flow`,
+  * Omit option `OAuth2ClientId`
+  * Omit option `OAuth2Secret`
+
+Example JDBC URL for token authentication:
+
+```
+jdbc:databricks://abc-1234abcd-5678.cloud.databricks.com:443/default;transportMode=http;ssl=1;AuthMech=3;httpPath=/sql/1.0/warehouses/abc123def456ghi7;
+```
+
+**Important:** Databricks documentation recommends adding the credentials as fields `UID` and `PWD` to the JDBC URL. This may leak credentials in log and error messages. We recommend entering credentials in `USER` and `IDENTIFIED BY` fields of the connection as described above.
 
 ##### Service Principal (OAuth M2M)
 
 Create _client ID_ and _client secret_ as described in the [Databricks documentation](https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html).
 
-**Not yet implemented** M2M authentication is not yet implemented, see [issue #3](https://github.com/exasol/databricks-virtual-schema/issues/3).
+```sql
+CREATE OR REPLACE CONNECTION DATABRICKS_JDBC_CONNECTION
+TO '...'
+USER ''
+IDENTIFIED BY '';
+```
+
+* Use empty strings in `USER` and `IDENTIFIED BY`.
+* Modify the JDBC URL:
+  * Set `$AUTH_MECH` to `11`
+  * Set `$AUTH_FLOW` to `1`
+  * Set `$OAUTH_CLIENT_ID` to the OAuth M2M client ID
+  * Set `$OAUTH_SECRET` to the OAuth M2M secret
+
+Example JDBC URL for M2M authentication:
+
+```
+jdbc:databricks://abc-1234abcd-5678.cloud.databricks.com:443/default;transportMode=http;ssl=1;AuthMech=11;Auth_Flow=1;OAuth2ClientId=$OAUTH_CLIENT_ID;OAuth2Secret=$OAUTH_SECRET;httpPath=/sql/1.0/warehouses/abc123def456ghi7;
+```
+
+**Important:** Oauth client ID and secret are stored in the JDBC URL. This URL may occur in log and error message, potentially leaking the credentials. This is due to restrictions of the Databricks JDBC driver which does not allow specifying client ID and secret as username and password.
 
 #### Additional Information
 
 You can find additional information about the JDBC connection URL [in the Databricks JDBC driver guide](https://docs.databricks.com/en/_extras/documents/Databricks-JDBC-Driver-Install-and-Configuration-Guide.pdf).
-
-**Important:** Databricks documentation recommends adding the credentials as fields `UID` and `PWD` to the JDBC URL. This may leak credentials in log and error messages. We recommend entering credentials in `USER` and `IDENTIFIED BY` fields of the connection as described above.
 
 ### Creating Virtual Schema
 
@@ -258,6 +287,5 @@ EXPLAIN VIRTUAL SELECT * FROM VSDAB_VIRTUAL_SCHEMA.<table>
 
 ## Known Limitations
 
-* Currently, the virtual schema only supports token authentication. M2M Principal authentication (OAuth M2M) will be added later, see [issue #3](https://github.com/exasol/databricks-virtual-schema/issues/3).
 * Currently, the virtual schema supports at most 50 tables per virtual schema, see [issue #8](https://github.com/exasol/databricks-virtual-schema/issues/8).
 * The `TABLE_FILTER` option is not yet supported, see [issue #14](https://github.com/exasol/databricks-virtual-schema/issues/14).
