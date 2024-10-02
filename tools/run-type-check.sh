@@ -25,9 +25,10 @@ fi
 readonly architecture
 readonly language_server_version_sha256
 
-readonly language_server_url="https://github.com/LuaLS/lua-language-server/releases/download/${language_server_version}/lua-language-server-${language_server_version}-${architecture}.tar.gz"
+readonly language_server_archive_name="lua-language-server-${language_server_version}-${architecture}.tar.gz"
+readonly language_server_url="https://github.com/LuaLS/lua-language-server/releases/download/${language_server_version}/${language_server_archive_name}"
 readonly target_dir="$base_dir/target"
-readonly language_server_archive="$target_dir/luals-$language_server_version-$architecture.tar.gz"
+readonly language_server_archive="$target_dir/${language_server_archive_name}"
 readonly language_server_dir="$target_dir/lua-ls-$language_server_version-$architecture"
 readonly language_server_executable="$language_server_dir/bin/lua-language-server"
 readonly type_check_log_dir="$target_dir/type-checker-logs"
