@@ -1,16 +1,16 @@
 local ExaError = require("ExaError")
 local log = require("remotelog")
 
---- This class abstracts access to the user-defined properties of the Virtual Schema.
+---This class abstracts access to the user-defined properties of the Virtual Schema.
 ---@class DatabricksAdapterProperties
 local DatabricksAdapterProperties = {}
 DatabricksAdapterProperties.__index = DatabricksAdapterProperties
 local AdapterProperties = require("exasol.vscl.AdapterProperties")
 setmetatable(DatabricksAdapterProperties, AdapterProperties)
 
---- Create a new `ExasolAdapterProperties` instance
--- @param raw_properties unparsed user-defined properties
--- @return new instance
+---Create a new `ExasolAdapterProperties` instance
+---@param raw_properties any unparsed user-defined properties
+---@return DatabricksAdapterProperties new_instance
 function DatabricksAdapterProperties:new(raw_properties)
     local instance = setmetatable({}, self)
     instance:_init(raw_properties)
@@ -21,8 +21,8 @@ function DatabricksAdapterProperties:_init(raw_properties)
     AdapterProperties._init(self, raw_properties)
 end
 
---- Get the class of the object
--- @return class
+---Get the class of the object
+---@return DatabricksAdapterProperties class
 function DatabricksAdapterProperties:class()
     return DatabricksAdapterProperties
 end
@@ -33,7 +33,7 @@ local SCHEMA_NAME_PROPERTY<const> = "SCHEMA_NAME"
 
 local MANDATORY_PROPERTY_NAMES<const> = {CONNECTION_NAME_PROPERTY, CATALOG_NAME_PROPERTY, SCHEMA_NAME_PROPERTY}
 
---- Validate the adapter properties.
+---Validate the adapter properties.
 ---@raise validation error
 function DatabricksAdapterProperties:validate()
     AdapterProperties.validate(self) -- super call

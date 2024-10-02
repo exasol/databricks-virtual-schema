@@ -27,19 +27,19 @@ function DatabricksAdapter:_init(metadata_reader)
     self._metadata_reader = metadata_reader
 end
 
---- Get the version number of the Virtual Schema adapter.
--- @return Virtual Schema adapter version
+---Get the version number of the Virtual Schema adapter.
+---@return string adapter_version Virtual Schema adapter version
 function DatabricksAdapter:get_version()
     return VERSION
 end
 
---- Get the name of the Virtual Schema adapter.
--- @return Virtual Schema adapter name
+---Get the name of the Virtual Schema adapter.
+---@return string adapter_name Virtual Schema adapter name
 function DatabricksAdapter:get_name()
     return "Databricks Virtual Schema (Lua)"
 end
 
---- Create a virtual schema.
+---Create a virtual schema.
 ---@param request unknown virtual schema request
 ---@param properties DatabricksAdapterProperties user-defined properties
 ---@return CreateVirtualSchemaResponse response containing the metadata for the virtual schema like table and column structure
@@ -56,10 +56,8 @@ function DatabricksAdapter:_handle_schema_scanning_request(_request, properties)
     return self._metadata_reader:read(properties)
 end
 
---- Refresh the metadata of the Virtual Schema.
---- <p>
---- Re-reads the structure and data types of the schema.
---- </p>
+---Refresh the metadata of the Virtual Schema.
+---Re-reads the structure and data types of the schema.
 ---@param request unknown virtual schema request
 ---@param properties DatabricksAdapterProperties user-defined properties
 ---@return RefreshVirtualSchemaResponse response containing the metadata for the virtual schema like table and column structure
@@ -69,7 +67,7 @@ function DatabricksAdapter:refresh(request, properties)
     return {type = "refresh", schemaMetadata = metadata}
 end
 
---- Alter the schema properties.
+---Alter the schema properties.
 ---This request provides two sets of user-defined properties. The old ones (i.e. the ones that where set before this
 ---request) and the properties that the user changed.
 ---@param request unknown virtual schema request
