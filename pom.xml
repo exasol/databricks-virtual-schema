@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.exasol</groupId>
     <artifactId>databricks-virtual-schema</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
     <name>Virtual Schema for Databricks</name>
     <description>Virtual Schema for MySQL</description>
     <url>https://github.com/exasol/databricks-virtual-schema/</url>
@@ -208,7 +208,7 @@
     <parent>
         <artifactId>databricks-virtual-schema-generated-parent</artifactId>
         <groupId>com.exasol</groupId>
-        <version>0.2.0</version>
+        <version>0.3.0</version>
         <relativePath>pk_generated_parent.pom</relativePath>
     </parent>
 </project>

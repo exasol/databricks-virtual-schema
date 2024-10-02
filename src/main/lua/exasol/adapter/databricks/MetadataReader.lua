@@ -290,17 +290,17 @@ local function convert_data_type(databricks_column)
     return mapped_type
 end
 
----@param databricks_colum DatabricksColumn
+---@param databricks_column DatabricksColumn
 ---@return ExasolColumnMetadata exasol_column_metadata
-local function convert_column_metadata(databricks_colum)
-    local adapter_notes = cjson.encode({databricks_metadata = databricks_colum.databricks_metadata})
+local function convert_column_metadata(databricks_column)
+    local adapter_notes = cjson.encode({databricks_metadata = databricks_column.databricks_metadata})
     return {
-        name = databricks_colum.name:upper(),
-        dataType = convert_data_type(databricks_colum),
-        isNullable = databricks_colum.nullable,
+        name = databricks_column.name:upper(),
+        dataType = convert_data_type(databricks_column),
+        isNullable = databricks_column.nullable,
         isIdentity = nil, -- Databricks does not support identity columns
         default = nil, -- Databricks does not support default values
-        comment = databricks_colum.comment,
+        comment = databricks_column.comment,
         adapterNotes = adapter_notes
     }
 end

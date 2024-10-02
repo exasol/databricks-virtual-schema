@@ -16,10 +16,6 @@ The release also converts the names of Databricks tables and columns to upper ca
 * #33: Store Databricks metadata in adapter notes
 * #18: Convert table and column names to upper case
 
-## Documentation
-
-* #32: Updated JDBC driver installation instructions in user guide
-
 ## Dependency Updates
 
 ### Test Dependency Updates
