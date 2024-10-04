@@ -100,43 +100,65 @@ describe("ConnectionReader", function()
         end)
     end)
     describe("handles invalid input", function()
-        it("fails for missing connection", function()
-            assert.has_error(function()
-                read_connection(nil)
-            end, "E-VSDAB-2: Connection 'my_connection' not found.")
-        end)
-        it("fails for missing address", function()
-            assert.has_error(function()
-                read_connection({})
-            end, "E-VSDAB-3: Connection 'my_connection' has no address.")
-        end)
-        it("fails for missing user", function()
-            assert.has_error(function()
-                read_connection({address = "jdbc:databricks://example.com:123"})
-            end, [[E-VSDAB-13: Connection 'my_connection' contains invalid user <missing value>.
+        local tests = {
+            {
+                name = "missing connection",
+                connection = nil,
+                expected_error = "E-VSDAB-2: Connection 'my_connection' not found."
+            }, {
+                name = "missing address",
+                connection = {address = nil},
+                expected_error = "E-VSDAB-3: Connection 'my_connection' has no address."
+            }, {
+                name = "missing AuthMech",
+                connection = {address = "jdbc:databricks://host:123"},
+                expected_error = [[E-VSDAB-21: Connection 'my_connection' contains JDBC URL 'jdbc:databricks://host:123' without AuthMech property.
 
 Mitigations:
 
-* Only token authentication is supported, please specify USER='token' and PASSWORD='<token>` in the connection.]])
-        end)
-        it("fails for any user that is not 'token'", function()
-            assert.has_error(function()
-                read_connection({address = "jdbc:databricks://example.com:123", user = "invalid"})
-            end, [[E-VSDAB-13: Connection 'my_connection' contains invalid user 'invalid'.
+* Specify one of the supported AuthMech values 3 (token auth) or 11 (M2M OAuth).]]
+            }, {
+                name = "unsupported AuthMech",
+                connection = {address = "jdbc:databricks://host:123;AuthMech=unsupported"},
+                expected_error = [[E-VSDAB-22: Connection 'my_connection' contains JDBC URL 'jdbc:databricks://host:123;AuthMech=unsupported' with unsupported AuthMech property value 'unsupported'.
 
 Mitigations:
 
-* Only token authentication is supported, please specify USER='token' and PASSWORD='<token>` in the connection.]])
-        end)
-        it("fails for missing password", function()
-            assert.has_error(function()
-                read_connection({address = "jdbc:databricks://example.com:123", user = "token"})
-            end, [[E-VSDAB-14: Connection 'my_connection' does not contain a valid token.
+* Use one of the supported AuthMech values 3 (token auth) or 11 (M2M OAuth).]]
+            }, {
+                name = "token auth: missing user",
+                connection = {address = "jdbc:databricks://host:123;AuthMech=3"},
+                expected_error = [[E-VSDAB-13: Connection 'my_connection' contains invalid user <missing value>.
 
 Mitigations:
 
-* Please specify PASSWORD='<token>` in the connection.]])
-        end)
+* Only token authentication is supported, please specify USER='token' and PASSWORD='<token>` in the connection.]]
+            }, {
+                name = "token auth: invalid user",
+                connection = {address = "jdbc:databricks://host:123;AuthMech=3", user = "wrong_user"},
+                expected_error = [[E-VSDAB-13: Connection 'my_connection' contains invalid user 'wrong_user'.
+
+Mitigations:
+
+* Only token authentication is supported, please specify USER='token' and PASSWORD='<token>` in the connection.]]
+            }, {
+                name = "token auth: missing password",
+                connection = {address = "jdbc:databricks://host:123;AuthMech=3", user = "token", password = nil},
+                expected_error = [[E-VSDAB-14: Connection 'my_connection' does not contain a valid token.
+
+Mitigations:
+
+* Please specify PASSWORD='<token>` in the connection.]]
+            }
+        }
+        for _, test in ipairs(tests) do
+            it(test.name, function()
+                assert.has_error(function()
+                    read_connection(test.connection)
+                end, test.expected_error)
+            end)
+        end
+
     end)
 
     describe("parsing invalid jdbc url fails for", function()
@@ -149,30 +171,30 @@ Mitigations:
             end)
         end
     end)
-    describe("parsing valid jdbc url succeeds for", function()
+    describe("parsing valid jdbc url succeeds for token auth", function()
         local test_cases = {
             {
-                url = "jdbc:databricks://example.com:8080",
+                url = "jdbc:databricks://example.com:8080;AuthMech=3",
                 user = "token",
                 password = "myToken",
                 expected = {url = "https://example.com:8080", token = "myToken"}
             }, {
-                url = "jdbc:databricks://123.0.0.1:443",
+                url = "jdbc:databricks://123.0.0.1:443;AuthMech=3",
                 user = "token",
                 password = "myToken",
                 expected = {url = "https://123.0.0.1:443", token = "myToken"}
             }, {
-                url = "jdbc:databricks://abc-123def-456.cloud.databricks.com:443",
+                url = "jdbc:databricks://abc-123def-456.cloud.databricks.com:443;AuthMech=3",
                 user = "token",
                 password = "myToken",
                 expected = {url = "https://abc-123def-456.cloud.databricks.com:443", token = "myToken"}
             }, {
-                url = "jdbc:databricks://example.com:443;unknown=value",
+                url = "jdbc:databricks://example.com:443;AuthMech=3;unknown=value",
                 user = "token",
                 password = "myToken",
                 expected = {url = "https://example.com:443", token = "myToken"}
             }, {
-                url = "jdbc:databricks://example.com:443;PWD=token",
+                url = "jdbc:databricks://example.com:443;PWD=token;AuthMech=3",
                 user = "token",
                 password = "myToken",
                 expected = {url = "https://example.com:443", token = "myToken"}
