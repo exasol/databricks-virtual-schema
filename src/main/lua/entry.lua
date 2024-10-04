@@ -5,13 +5,12 @@ local DatabricksRestClient = require("exasol.adapter.databricks.DatabricksRestCl
 local DatabricksAdapterProperties = require("exasol.adapter.databricks.DatabricksAdapterProperties")
 local MetadataReader = require("exasol.adapter.databricks.MetadataReader")
 local RequestDispatcher = require("exasol.vscl.RequestDispatcher")
+local authentication = require("exasol.adapter.databricks.authentication")
 
 ---@param config DatabricksConnectionDetails
 ---@return DatabricksRestClient
 local function databricks_client_factory(config)
-    local function token_provider()
-        return config.token
-    end
+    local token_provider = authentication.create_token_provider(config)
     return DatabricksRestClient:new(config.url, token_provider)
 end
 

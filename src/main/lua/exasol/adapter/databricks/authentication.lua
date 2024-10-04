@@ -8,24 +8,34 @@ local M = {}
 
 ---@alias TokenProvider fun(): string
 
+---@param user string?
+---@param password string?
+---@return string header_value
+local function basic_auth_header(user, password)
+    return "Basic " .. util.base64_encode(string.format("%s:%s", user, password))
+end
+
+---Fetch Databricks OAuth token.
+---See https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html#manually-generate-and-use-access-tokens-for-oauth-m2m-authentication
 ---@param connection_details DatabricksConnectionDetails
 ---@return string
 local function fetch_oauth_token(connection_details)
-    log.info("Fetching new OAuth M2M token for client id %q", connection_details.oauth_client_id)
+    local url = connection_details.url .. "/oidc/v1/token"
+    log.info("Fetching OAuth M2M token for client id %q from %q", connection_details.oauth_client_id, url)
     local body = http_client.request({
-        url = connection_details.url .. "/oidc/v1/token",
+        url = url,
         method = "POST",
         headers = {
             ["Content-Type"] = "application/x-www-form-urlencoded",
-            Authorization = "Basic "
-                    .. util.base64_encode(
-                            string.format("%s:%s", connection_details.oauth_client_id,
-                                          connection_details.oauth_client_secret))
+            Authorization = basic_auth_header(connection_details.oauth_client_id, connection_details.oauth_client_secret)
         },
         request_body = "grant_type=client_credentials&scope=all-apis",
         verify_tls_certificate = false
     })
+    ---@type DatabricksTokenResponse
     local data = cjson.decode(body)
+    log.debug("Received token of length %d of type %q, expires in %d", #data.access_token, data.token_type,
+              data.expires_in)
     return data.access_token
 end
 
@@ -56,6 +66,7 @@ end
 ---@return TokenProvider token_provider
 function M.create_token_provider(connection_details)
     local auth_mode = connection_details.auth
+    log.debug("Creating token provider for auth mode %q", auth_mode)
     if auth_mode == "token" then
         return create_bearer_token_provider(connection_details.token)
     end

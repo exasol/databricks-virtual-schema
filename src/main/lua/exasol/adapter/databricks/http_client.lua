@@ -108,12 +108,15 @@ local function create_source(data)
             local chunk = string.sub(data, i, i + BLOCKSIZE - 1)
             i = i + BLOCKSIZE
             if chunk ~= "" then
+                log.trace("Sending request body until byte #%d: %q", i, chunk)
                 return chunk
             else
+                log.trace("No remaining data for body until byte #%d", i)
                 return nil
             end
         end
     else
+        log.trace("Send no request body")
         return nil
     end
 end
@@ -125,7 +128,7 @@ function M.request(args)
     local method = args.method or "GET"
     local headers = args.headers or {}
 
-    log.trace("Sending %s request to %s with %d headers", method, url, #headers)
+    log.trace("Sending %s request to %q", method, url)
     local sink, get_body = table_sink()
     local start_time = socket.gettime()
     local result, status_code, _response_headers, status_line = http.request({

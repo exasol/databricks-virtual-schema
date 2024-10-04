@@ -5,6 +5,8 @@ local log = require("remotelog")
 local utils = require("exasol.adapter.databricks.test_utils")
 local authentication = require("exasol.adapter.databricks.authentication")
 
+log.set_level("INFO")
+
 ---@return DatabricksConnectionDetails
 local function read_oauth_credentials()
     local config = utils.read_test_config()

@@ -30,12 +30,20 @@ end
 ---@return table response body
 ---@private
 function DatabricksRestClient:_get_request(path)
+    log.debug("Fetching token for Databricks API...")
+    local token = self._token_provider()
+    if not token then
+        local exa_error = tostring(ExaError:new("E-VSDAB-27", "Did receive authentication token")
+                :add_ticket_mitigation())
+        log.error(exa_error)
+        error(exa_error)
+    end
     local url = self._base_url .. path
-    log.debug("Sending GET request to " .. url)
+    log.debug("Sending GET request to %q...", url)
     local body = http_client.request({
         url = url,
         method = "GET",
-        headers = {Authorization = "Bearer " .. self._token_provider()},
+        headers = {Authorization = "Bearer " .. token},
         verify_tls_certificate = false
     })
     local data = cjson.decode(body)
