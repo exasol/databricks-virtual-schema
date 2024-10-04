@@ -21,4 +21,5 @@ The release also implement OAuth M2M authentication, see the [user guide](../use
 ### Test Dependency Updates
 
 * Updated `com.databricks:databricks-sdk-java:0.32.0` to `0.32.1`
+* Added `commons-io:commons-io:2.17.0`
 * Updated `org.junit.jupiter:junit-jupiter:5.11.1` to `5.11.2`
