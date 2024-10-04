@@ -12,6 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture;
+import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture.AuthMode;
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.CleanupActions;
 import com.exasol.bucketfs.BucketAccessException;
@@ -47,7 +48,7 @@ public class ExasolFixture implements AutoCloseable {
     private final CleanupActions cleanupAfterTest = new CleanupActions();
     private final CleanupActions cleanupAfterAll = new CleanupActions();
     private AdapterScript adapterScript;
-    private ConnectionDefinition connectionDefinition;
+    private final Map<AuthMode, ConnectionDefinition> connectionDefinition = new HashMap<>();
 
     private ExasolFixture(final ExasolContainer<? extends ExasolContainer<?>> exasol, final Connection connection,
             final ExasolObjectFactory objectFactory, final UdfLogCapturer udfLogCapturer,
@@ -141,11 +142,17 @@ public class ExasolFixture implements AutoCloseable {
 
     public ExasolVirtualSchema createVirtualSchema(final DatabricksSchema databricksSchema,
             final Map<String, String> properties) {
-        return createVirtualSchema(databricksSchema.getParent().getName(), databricksSchema.getName(), properties);
+        return createVirtualSchema(databricksSchema.getParent().getName(), properties, AuthMode.TOKEN);
+    }
+
+    public ExasolVirtualSchema createVirtualSchema(final DatabricksSchema databricksSchema,
+            final Map<String, String> properties, final AuthMode authMode) {
+        return createVirtualSchema(databricksSchema.getParent().getName(), databricksSchema.getName(), properties,
+                authMode);
     }
 
     public ExasolVirtualSchema createVirtualSchema(final String databricksCatalog, final String databricksSchema,
-            final Map<String, String> additionalProperties) {
+            final Map<String, String> additionalProperties, final AuthMode authMode) {
         final Map<String, String> properties = new HashMap<>();
         properties.putAll(additionalProperties);
         if (databricksCatalog != null) {
@@ -154,17 +161,17 @@ public class ExasolFixture implements AutoCloseable {
         if (databricksSchema != null) {
             properties.put("SCHEMA_NAME", databricksSchema);
         }
-        return createVirtualSchema(properties);
+        return createVirtualSchema(properties, authMode);
     }
 
-    private ExasolVirtualSchema createVirtualSchema(final Map<String, String> properties) {
-        return createVirtualSchema("DATABRICKS_VS", properties);
+    private ExasolVirtualSchema createVirtualSchema(final Map<String, String> properties, final AuthMode authMode) {
+        return createVirtualSchema("DATABRICKS_VS", properties, authMode);
     }
 
-    private ExasolVirtualSchema createVirtualSchema(final String vsName,
-            final Map<String, String> additionalProperties) {
+    private ExasolVirtualSchema createVirtualSchema(final String vsName, final Map<String, String> additionalProperties,
+            final AuthMode authMode) {
         LOG.fine("Creating virtual schema '" + vsName + "'' with properties " + additionalProperties);
-        final Map<String, String> properties = createVirtualSchemaProperties(getConnectionDefinition());
+        final Map<String, String> properties = createVirtualSchemaProperties(getConnectionDefinition(authMode));
         properties.putAll(additionalProperties);
         final VirtualSchema virtualSchema = objectFactory.createVirtualSchemaBuilder(vsName) //
                 .adapterScript(getAdapterScript()) //
@@ -181,15 +188,16 @@ public class ExasolFixture implements AutoCloseable {
         return this.adapterScript;
     }
 
-    public ConnectionDefinition getConnectionDefinition() {
-        if (this.connectionDefinition == null) {
-            this.connectionDefinition = objectFactory.createConnectionDefinition("DATABRICKS_CONNECTION",
-                    databricksFixture.getJdbcUrl(), databricksFixture.getJdbcUsername(),
-                    databricksFixture.getJdbcPassword());
-            this.cleanupAfterAll.add("Drop connection " + this.connectionDefinition.getName(),
-                    () -> this.connectionDefinition.drop());
+    public ConnectionDefinition getConnectionDefinition(final AuthMode authMode) {
+        if (!this.connectionDefinition.containsKey(authMode)) {
+            final ConnectionDefinition connectionDef = objectFactory.createConnectionDefinition(
+                    "DATABRICKS_CONNECTION_" + authMode.toString().toUpperCase(),
+                    databricksFixture.getJdbcUrl(authMode), databricksFixture.getJdbcUsername(authMode),
+                    databricksFixture.getJdbcPassword(authMode));
+            this.cleanupAfterAll.add("Drop connection " + connectionDef.getName(), () -> connectionDef.drop());
+            this.connectionDefinition.put(authMode, connectionDef);
         }
-        return this.connectionDefinition;
+        return this.connectionDefinition.get(authMode);
     }
 
     private Map<String, String> createVirtualSchemaProperties(final ConnectionDefinition connectionDefinition) {

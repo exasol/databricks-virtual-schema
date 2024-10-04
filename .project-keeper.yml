@@ -67,6 +67,7 @@ build:
               databricks.storageRoot = ${{ secrets.DATABRICKS_STORAGE_ROOT }}
               databricks.oauth.secret = ${{ secrets.DATABRICKS_OAUTH_SECRET }}
               databricks.oauth.clientId = ${{ secrets.DATABRICKS_OAUTH_CLIENT_ID }}
+              databricks.oauth.servicePrincipalUuid = ${{ secrets.DATABRICKS_OAUTH_SERVICE_PRINCIPAL_UUID }}
               EOL
 
         - action: INSERT_AFTER
@@ -165,6 +166,7 @@ build:
               databricks.storageRoot = ${{ secrets.DATABRICKS_STORAGE_ROOT }}
               databricks.oauth.secret = ${{ secrets.DATABRICKS_OAUTH_SECRET }}
               databricks.oauth.clientId = ${{ secrets.DATABRICKS_OAUTH_CLIENT_ID }}
+              databricks.oauth.servicePrincipalUuid = ${{ secrets.DATABRICKS_OAUTH_SERVICE_PRINCIPAL_UUID }}
               EOL
         # Generate dummy error code reports. Error code crawler does not support Lua projects yet.
         - action: INSERT_AFTER

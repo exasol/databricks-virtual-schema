@@ -13,7 +13,10 @@ import java.util.stream.Stream;
 
 import org.itsallcode.matcher.auto.AutoMatcher;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
+import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture.AuthMode;
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
 import com.exasol.adapter.databricks.fixture.exasol.MetadataDao.ExaColumn;
@@ -44,7 +47,7 @@ class AdapterIT extends AbstractIntegrationTestBase {
     @Test
     void schemaMetadataAvailable() {
         final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema("system", "information_schema",
-                emptyMap());
+                emptyMap(), AuthMode.TOKEN);
         testSetup.exasol().assertions().virtualSchemaExists(vs);
     }
 
@@ -63,6 +66,17 @@ class AdapterIT extends AbstractIntegrationTestBase {
                         allOf(containsString("\"databricks_metadata\":{\""), containsString("\"name\":\"col1\""),
                                 containsString("\"type_name\":\"STRING\""),
                                 containsString("\"type_text\":\"varchar(5)\""))));
+    }
+
+    @ParameterizedTest
+    @EnumSource(AuthMode.class)
+    void databricksAuthentication(final AuthMode authMode) {
+        final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
+        final Table table = databricksSchema.createTable("tab1", "id", "INT", "name", "VARCHAR(5)")
+                .bulkInsert(Stream.of(List.of(1, "a"), List.of(2, "b"), List.of(3, "c")));
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema, emptyMap(), authMode);
+        testSetup.exasol().assertions().query("select * from " + vs.qualifyTableName(table) + " order by id",
+                table("BIGINT", "VARCHAR").row(1L, "a").row(2L, "b").row(3L, "c").matches());
     }
 
     @Test

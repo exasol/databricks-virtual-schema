@@ -139,7 +139,23 @@ We write integration tests for the VS in Java:
 * `+` Using Maven allows generating build scripts etc. with `project-keeper`
 * `-` Mixing of two languages in a single project
 
-### Integration Tests Using Dynamic Junit Jupiter Tests
+### Convert Table and Column Names to Upper Case
+
+VSDAB converts Databricks table and columns to upper case.
+
+Rationale: Exasol converts unquoted identifiers to upper case. If a table or column contains lower case characters, users need to specify the exact case and quote the identifier in double quotes `"`. This is inconvenient and a potential source of errors.
+
+Converting all names to upper case introduces the risk of conflicts, e.g. when a Databricks table contains columns with the same name but different case, e.g. `COL` and `col`. However this is a problem, because creating such tables in Databricks is not possible and fails with the following error:
+
+```
+Failed to write to object: 'CREATE TABLE `vs-test-cat-1727789463981`.`schema-1727789465842`.`tab1` (`col` VARCHAR(5), `COL` INT)'. Cause: '[Databricks][JDBCDriver](500051) ERROR processing query/statement. Error Code: 0, SQL state: 42711, Query: CREATE TAB***, Error message from Server: org.apache.hive.service.cli.HiveSQLException: Error running query: [COLUMN_ALREADY_EXISTS] org.apache.spark.sql.AnalysisException: [COLUMN_ALREADY_EXISTS] The column `col` already exists. Choose another name or rename the existing column. SQLSTATE: 42711
+```
+
+Databricks tables are all in lower case, so tables names cannot create conflicts either.
+
+### Integration Tests
+
+#### Using Dynamic Junit Jupiter Tests
 
 We use [dynamic tests](https://junit.org/junit5/docs/current/user-guide/#writing-tests-dynamic-tests) using `@TestFactory` for verifying that a virtual schema returns the expected data types and maps values as expected.
 
@@ -156,16 +172,16 @@ Considered alternatives:
   * `-` Would require `@Nested` test classes or only a single `@Test` per class
   * `-` Test failures harder to read, need to read assertion stack traces
 
-### Convert Table and Column Names to Upper Case
+#### Databricks Service Principal
 
-VSDAB converts Databricks table and columns to upper case.
+In order to verify that M2M OAuth authentication works, integration tests need a Databricks Service Principal with OAuth Client ID and Client Secret. The best way would be that tests automatically create a new service principal incl. OAuth credentials to avoid manual effort for creating and configuring it.
 
-Rationale: Exasol converts unquoted identifiers to upper case. If a table or column contains lower case characters, users need to specify the exact case and quote the identifier in double quotes `"`. This is inconvenient and a potential source of errors.
+Databricks manages Service Credentials on account level, not on Workspace level. That's why we can't use the existing Workspace-level user token already configured for tests to create a new Service Principal.
 
-Converting all names to upper case introduces the risk of conflicts, e.g. when a Databricks table contains columns with the same name but different case, e.g. `COL` and `col`. However this is a problem, because creating such tables in Databricks is not possible and fails with the following error:
+It seems that it's not possible to create Account-level credentials that allow API access. The only authentication mechanism is to manually login via email address and one-time code sent via email. That's why we decided to create the Service Principal manually and configure Client ID and Client Secret for integration tests.
 
-```
-Failed to write to object: 'CREATE TABLE `vs-test-cat-1727789463981`.`schema-1727789465842`.`tab1` (`col` VARCHAR(5), `COL` INT)'. Cause: '[Databricks][JDBCDriver](500051) ERROR processing query/statement. Error Code: 0, SQL state: 42711, Query: CREATE TAB***, Error message from Server: org.apache.hive.service.cli.HiveSQLException: Error running query: [COLUMN_ALREADY_EXISTS] org.apache.spark.sql.AnalysisException: [COLUMN_ALREADY_EXISTS] The column `col` already exists. Choose another name or rename the existing column. SQLSTATE: 42711
-```
+#### Service Principal UUID
 
-Databricks tables are all in lower case, so tables names cannot create conflicts either.
+Integration tests create a new Databricks Catalog for each test class. The Service Principal needs read access to this catalog. We could give the Service Principal Admin access, so that it automatically can read all catalogs. However we want to use minimal permissions for the Service Principal.
+
+That's why integration tests need to grant the Service Principal read access to the newly created catalog and all its schemas and tables. We can do this with a `GRANT` statement in Databricks, but this requires configuring the Service Credentials UUID in `test.properties`.

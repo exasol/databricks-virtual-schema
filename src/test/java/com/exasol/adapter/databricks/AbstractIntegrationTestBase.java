@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.*;
 
+import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture.AuthMode;
 import com.exasol.adapter.databricks.fixture.TestSetup;
 import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
 
@@ -36,7 +37,7 @@ class AbstractIntegrationTestBase {
     }
 
     protected ExasolVirtualSchema createVirtualSchema(final String databricksCatalog, final String databricksSchema) {
-        return testSetup.exasol().createVirtualSchema(databricksCatalog, databricksSchema, emptyMap());
+        return testSetup.exasol().createVirtualSchema(databricksCatalog, databricksSchema, emptyMap(), AuthMode.TOKEN);
     }
 
     protected void assertCreateVirtualSchemaFails(final String databricksCatalog, final String databricksSchema,
