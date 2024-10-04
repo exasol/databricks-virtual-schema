@@ -100,7 +100,7 @@ function M.request(args)
     local url = args.url
     local method = args.method or "GET"
     local headers = args.headers or {}
-
+    local source = args.request_body and ltn12.source.string(args.request_body) or nil
     log.trace("Sending %s request to %q", method, url)
     local sink, get_body = table_sink()
     local start_time = socket.gettime()
@@ -109,7 +109,7 @@ function M.request(args)
         method = method,
         headers = headers,
         redirect = true,
-        source = ltn12.source.string(args.request_body),
+        source = source,
         sink = sink,
         create = M._create_socket_factory(args)
     })
