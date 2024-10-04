@@ -94,33 +94,6 @@ function M._create_socket_factory(args)
     end
 end
 
----@alias BodySource fun(): string?
-
----Creates an ltn12 source for the given string data or `nil` if the data is nil.
----Based on https://github.com/lunarmodules/luasocket/blob/master/src/ltn12.lua#L118
----@param data string?
----@return BodySource? source
-local function create_source(data)
-    local BLOCKSIZE<const> = 2048
-    if data then
-        local i = 1
-        return function()
-            local chunk = string.sub(data, i, i + BLOCKSIZE - 1)
-            i = i + BLOCKSIZE
-            if chunk ~= "" then
-                log.trace("Sending request body until byte #%d: %q", i, chunk)
-                return chunk
-            else
-                log.trace("No remaining data for body until byte #%d", i)
-                return nil
-            end
-        end
-    else
-        log.trace("Send no request body")
-        return nil
-    end
-end
-
 ---@param args RequestArgs
 ---@return string response_body
 function M.request(args)
@@ -136,7 +109,7 @@ function M.request(args)
         method = method,
         headers = headers,
         redirect = true,
-        source = create_source(args.request_body),
+        source = ltn12.source.string(args.request_body),
         sink = sink,
         create = M._create_socket_factory(args)
     })
