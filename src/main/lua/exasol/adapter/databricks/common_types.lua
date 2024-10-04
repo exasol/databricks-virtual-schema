@@ -2,6 +2,7 @@
 ---Connection details for Databricks.
 ---@class DatabricksConnectionDetails
 ---@field url string HTTP URL of the Databricks workspace
+---@field auth "token"|"m2m"
 ---@field token string? Token
 ---@field oauth_client_id string? OAuth M2M client ID
 ---@field oauth_client_secret string? OAuth M2M client secret

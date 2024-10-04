@@ -27,7 +27,7 @@ end
 local function parse_properties(jdbc_url_args)
     local args = {}
     if jdbc_url_args then
-        for k, v in jdbc_url_args:gmatch("([^;=%s]+)%s*=([^;=]+)") do
+        for k, v in jdbc_url_args:gmatch("([^;=%s]+)%s*=([^;=]*)") do
             args[k] = v
         end
     end
@@ -54,6 +54,34 @@ end
 ---@param url_properties table<string,string>
 ---@return DatabricksConnectionDetails
 local function m2m_auth_credentials(connection_name, connection_details, url, url_properties)
+    if (connection_details.user and #connection_details.user > 0)
+            or (connection_details.password and #connection_details.password > 0) then
+        error(tostring(ExaError:new("E-VSDAB-23",
+                                    "Connection {{connection_name}} uses M2M OAuth but 'USER' or 'IDENTIFIED BY' fields are not empty.",
+                                    {connection_name = connection_name}):add_mitigations(
+                "Specify Client ID and Client Secret as 'OAuth2ClientId' and 'OAuth2Secret' in JDBC URL.")))
+    end
+    if url_properties.Auth_Flow ~= "1" then
+        error(tostring(ExaError:new("E-VSDAB-24",
+                                    "Connection {{connection_name}} uses M2M OAuth but does not contain property 'Auth_Flow' or property has wrong value.",
+                                    {connection_name = connection_name}):add_mitigations(
+                "Specify property 'Auth_Flow=1' in JDBC URL.")))
+    end
+    local client_id = url_properties.OAuth2ClientId
+    if client_id == nil or #client_id == 0 then
+        error(tostring(ExaError:new("E-VSDAB-25",
+                                    "Connection {{connection_name}} uses M2M OAuth but does not contain property 'OAuth2ClientId'.",
+                                    {connection_name = connection_name}):add_mitigations(
+                "Specify property 'OAuth2ClientId' in JDBC URL.")))
+    end
+    local client_secret = url_properties.OAuth2Secret
+    if client_secret == nil or #client_secret == 0 then
+        error(tostring(ExaError:new("E-VSDAB-26",
+                                    "Connection {{connection_name}} uses M2M OAuth but does not contain property 'OAuth2Secret'.",
+                                    {connection_name = connection_name}):add_mitigations(
+                "Specify property 'OAuth2Secret' in JDBC URL.")))
+    end
+    return {url = url, auth = "m2m", oauth_client_id = client_id, oauth_client_secret = client_secret}
 end
 
 ---Create connection info for token authentication
@@ -75,7 +103,7 @@ local function token_auth_credentials(connection_name, connection_details, url, 
                 "Please specify PASSWORD='<token>` in the connection.")))
     end
     log.trace("Extracted Databricks URL '%s' from JDBC URL", url)
-    return {url = url, token = connection_details.password}
+    return {url = url, auth = "token", token = connection_details.password}
 end
 
 ---Read the details for the connection object with the given name

@@ -11,7 +11,7 @@ local M = {}
 ---@param connection_details DatabricksConnectionDetails
 ---@return string
 local function fetch_oauth_token(connection_details)
-    log.info("Fetching new OAuth M2M token")
+    log.info("Fetching new OAuth M2M token for client id %q", connection_details.oauth_client_id)
     local body = http_client.request({
         url = connection_details.url .. "/oidc/v1/token",
         method = "POST",
@@ -55,14 +55,15 @@ end
 ---@param connection_details DatabricksConnectionDetails
 ---@return TokenProvider token_provider
 function M.create_token_provider(connection_details)
-    if connection_details.token then
+    local auth_mode = connection_details.auth
+    if auth_mode == "token" then
         return create_bearer_token_provider(connection_details.token)
     end
-    if connection_details.oauth_client_id and connection_details.oauth_client_secret then
+    if auth_mode == "m2m" then
         return create_m2m_token_provider(connection_details)
     end
-    local exa_error = tostring(ExaError:new("E-VSDAB-20", "No Databricks credentials found."):add_mitigations(
-            "Specify token or OAuth M2 credentials as specified in the user guide."))
+    local exa_error = tostring(ExaError:new("E-VSDAB-20", "Unsupported auth mode {{auth_mode}}.",
+                                            {auth_mode = {value = auth_mode}}):add_ticket_mitigation())
     log.error(exa_error)
     error(exa_error)
 end
