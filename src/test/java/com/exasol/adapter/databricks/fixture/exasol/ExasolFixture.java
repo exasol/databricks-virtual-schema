@@ -136,13 +136,15 @@ public class ExasolFixture implements AutoCloseable {
         }
     }
 
-    public ExasolVirtualSchema createVirtualSchema(final DatabricksSchema databricksSchema) {
-        return createVirtualSchema(databricksSchema, emptyMap());
+    public static String sanitizeExasolId(String value) {
+        for (final String specialChar : List.of(" ", ",", "'", "(", ")", "[", "]", "<", ">", ":")) {
+            value = value.replace(specialChar, "_");
+        }
+        return value;
     }
 
-    public ExasolVirtualSchema createVirtualSchema(final DatabricksSchema databricksSchema,
-            final Map<String, String> properties) {
-        return createVirtualSchema(databricksSchema.getParent().getName(), properties, AuthMode.TOKEN);
+    public ExasolVirtualSchema createVirtualSchema(final DatabricksSchema databricksSchema, final AuthMode authMode) {
+        return createVirtualSchema(databricksSchema, emptyMap(), authMode);
     }
 
     public ExasolVirtualSchema createVirtualSchema(final DatabricksSchema databricksSchema,

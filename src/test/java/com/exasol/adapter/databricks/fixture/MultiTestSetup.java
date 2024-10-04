@@ -16,7 +16,9 @@ import java.util.stream.Stream;
 import org.itsallcode.matcher.auto.AutoMatcher;
 import org.junit.jupiter.api.*;
 
+import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture.AuthMode;
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
+import com.exasol.adapter.databricks.fixture.exasol.ExasolFixture;
 import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
 import com.exasol.adapter.databricks.fixture.exasol.MetadataDao.ExaColumn;
 import com.exasol.adapter.databricks.fixture.exasol.MetadataDao.TableData;
@@ -66,7 +68,7 @@ public class MultiTestSetup {
     private MultiTestSetup addTypeTest(final String databricksType, final String expectedExasolType,
             final Long expectedMaxSize, final Long expectedPrecision, final Long expectedScale) {
         final int colId = this.columnTests.size();
-        final String columnName = String.format("col%02d_%s", colId, sanitizeColumnName(databricksType));
+        final String columnName = String.format("col%02d_%s", colId, ExasolFixture.sanitizeExasolId(databricksType));
         final ColumnTypeTest columnTest = new ColumnTypeTest(columnName, databricksType,
                 new ExpectedExasolType(expectedExasolType, expectedMaxSize, expectedPrecision, expectedScale),
                 emptyList(), emptyList());
@@ -148,24 +150,18 @@ public class MultiTestSetup {
 
     private MultiTestSetup addValueTest(final ValueMappingBuilder builder) {
         final int colId = this.columnTests.size();
-        final String columnName = String.format("col%02d_%s", colId, sanitizeColumnName(builder.databricksType));
+        final String columnName = String.format("col%02d_%s", colId,
+                ExasolFixture.sanitizeExasolId(builder.databricksType));
         final ColumnTypeTest columnTest = new ColumnTypeTest(columnName, builder.databricksType,
                 builder.expectedExasolType, builder.databricksValues, builder.expectedExasolValues);
         this.columnTests.add(columnTest);
         return this;
     }
 
-    private String sanitizeColumnName(String value) {
-        for (final String specialChar : List.of(" ", ",", "'", "(", ")", "[", "]", "<", ">", ":")) {
-            value = value.replace(specialChar, "_");
-        }
-        return value;
-    }
-
     public Stream<DynamicNode> buildTests() {
         final DatabricksSchema databricksSchema = this.testSetup.databricks().createSchema();
         final Table databricksTable = createDatabricksTable(databricksSchema);
-        final ExasolVirtualSchema vs = this.testSetup.exasol().createVirtualSchema(databricksSchema);
+        final ExasolVirtualSchema vs = this.testSetup.exasol().createVirtualSchema(databricksSchema, AuthMode.TOKEN);
         return verifyColumnMetadata(databricksTable, vs);
     }
 
@@ -224,8 +220,8 @@ public class MultiTestSetup {
             if (expectedType == null) {
                 return Stream.empty();
             }
-            final ExaColumn expected = new ExaColumn(databricksTable.getName().toUpperCase(), columnName.toUpperCase(), expectedType.exasolType,
-                    expectedType.maxSize, expectedType.precision, expectedType.scale);
+            final ExaColumn expected = new ExaColumn(databricksTable.getName().toUpperCase(), columnName.toUpperCase(),
+                    expectedType.exasolType, expectedType.maxSize, expectedType.precision, expectedType.scale);
             return Stream.of(DynamicTest.dynamicTest("Exasol type " + expected.type(),
                     () -> assertThat(actual, AutoMatcher.equalTo(expected))));
         }
@@ -234,7 +230,8 @@ public class MultiTestSetup {
             if (expectedValues.isEmpty()) {
                 return Stream.empty();
             }
-            final List<Object> actualColumnData = actualData.getColumnData(columnName.toUpperCase(), expectedValues.size());
+            final List<Object> actualColumnData = actualData.getColumnData(columnName.toUpperCase(),
+                    expectedValues.size());
             final List<DynamicNode> tests = new ArrayList<>(expectedValues.size());
             for (int i = 0; i < expectedValues.size(); i++) {
                 final Object expectedValue = expectedValues.get(i);

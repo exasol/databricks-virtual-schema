@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.util.*;
 import java.util.stream.Stream;
 
+import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.DynamicNode;
 
@@ -32,7 +33,7 @@ public class PushdownTestSetup {
         final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
         final List<Table> databricksTables = createDatabricksTables(databricksSchema, tableFactories);
         final ExasolVirtualSchema virtualSchema = testSetup.exasol().createVirtualSchema(databricksSchema,
-                Map.of("LOG_LEVEL", VIRTUAL_SCHEM_LOG_LEVEL));
+                Map.of("LOG_LEVEL", VIRTUAL_SCHEM_LOG_LEVEL), DatabricksFixture.AuthMode.TOKEN);
         return new PushdownTestFactory(testSetup, virtualSchema, databricksTables);
     }
 

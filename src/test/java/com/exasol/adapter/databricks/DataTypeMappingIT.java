@@ -12,6 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junitpioneer.jupiter.DefaultTimeZone;
 
+import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture.AuthMode;
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
 import com.exasol.dbbuilder.dialects.Table;
@@ -149,7 +150,7 @@ class DataTypeMappingIT extends AbstractIntegrationTestBase {
         final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
         final String tooLongExasolCharValue = "a".repeat(2001);
         final Table table = databricksSchema.createTable("tab", "col", "char(3000)").insert(tooLongExasolCharValue);
-        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema);
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema, AuthMode.TOKEN);
         testSetup.exasol().assertions().assertQueryFails("select * from " + vs.qualifyTableName(table), startsWith(
                 "ETL-3003: [Column=0 Row=0] [String data right truncation. String length exceeds limit of 2000 characters]"));
     }
@@ -166,7 +167,7 @@ class DataTypeMappingIT extends AbstractIntegrationTestBase {
         final Table tab = databricksSchema.createTable("tab", "col", databricksType);
         testSetup.databricks()
                 .executeStatement("INSERT INTO %s VALUES (%s)".formatted(tab.getFullyQualifiedName(), insertSql));
-        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema);
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema, AuthMode.TOKEN);
         testSetup.exasol().assertions().query("select * from " + vs.qualifyTableName(tab),
                 table("VARCHAR").row(expectedValue).matches());
     }

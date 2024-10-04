@@ -40,7 +40,7 @@ public class DatabricksFixture implements AutoCloseable {
     }
 
     public DatabricksSchema createSchema() {
-        final DatabricksSchema schema = getCatalog().createSchema("schema-" + System.currentTimeMillis());
+        final DatabricksSchema schema = getCatalog().createSchema("schema_" + System.currentTimeMillis());
         LOG.fine(() -> "Created Databricks schema " + schema.getFullyQualifiedName());
         return schema;
     }
