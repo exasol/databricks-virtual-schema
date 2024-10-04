@@ -16,3 +16,9 @@ The release also implement OAuth M2M authentication, see the [user guide](../use
 ## Documentation
 
 * #32: Updated JDBC driver installation instructions in user guide
+## Dependency Updates
+
+### Test Dependency Updates
+
+* Updated `com.databricks:databricks-sdk-java:0.32.0` to `0.32.1`
+* Updated `org.junit.jupiter:junit-jupiter:5.11.1` to `5.11.2`
