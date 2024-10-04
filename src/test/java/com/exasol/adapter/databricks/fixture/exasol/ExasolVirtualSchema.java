@@ -33,7 +33,8 @@ public class ExasolVirtualSchema {
      * @return fully qualified table name in the virtual schema
      */
     public String qualifyTableName(final Table table) {
-        return this.virtualSchema.getFullyQualifiedName() + "." + ExasolIdentifier.of(table.getName()).quote();
+        return this.virtualSchema.getFullyQualifiedName() + "."
+                + ExasolIdentifier.of(table.getName().toUpperCase()).quote();
     }
 
     public void setProperties(final Map<String, String> properties) {

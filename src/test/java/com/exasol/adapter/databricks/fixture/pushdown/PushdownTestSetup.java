@@ -14,6 +14,7 @@ import com.exasol.dbbuilder.dialects.Table;
 import com.exasol.matcher.ResultSetStructureMatcher;
 
 public class PushdownTestSetup {
+    public static final String VIRTUAL_SCHEM_LOG_LEVEL = "INFO";
     private final PushdownTestFactory testFactory;
     private final List<PushdownTestHolder> tests = new ArrayList<>();
 
@@ -31,7 +32,7 @@ public class PushdownTestSetup {
         final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
         final List<Table> databricksTables = createDatabricksTables(databricksSchema, tableFactories);
         final ExasolVirtualSchema virtualSchema = testSetup.exasol().createVirtualSchema(databricksSchema,
-                Map.of("LOG_LEVEL", "WARNING"));
+                Map.of("LOG_LEVEL", VIRTUAL_SCHEM_LOG_LEVEL));
         return new PushdownTestFactory(testSetup, virtualSchema, databricksTables);
     }
 

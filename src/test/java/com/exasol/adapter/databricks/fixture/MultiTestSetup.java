@@ -174,7 +174,7 @@ public class MultiTestSetup {
         assertThat("column count - probably some column types are not supported", actualColumns.size(),
                 equalTo(this.columnTests.size() + 1));
         final String query = "select * from " + vs.qualifyTableName(databricksTable) + " order by \""
-                + ROW_ORDER_COLUMN_NAME + "\" asc";
+                + ROW_ORDER_COLUMN_NAME.toUpperCase() + "\" asc";
         final TableData actualData = testSetup.exasol().metadata().getTableData(query);
         final List<DynamicNode> tests = new ArrayList<>();
         for (int i = 0; i < this.columnTests.size(); i++) {
@@ -224,7 +224,7 @@ public class MultiTestSetup {
             if (expectedType == null) {
                 return Stream.empty();
             }
-            final ExaColumn expected = new ExaColumn(databricksTable.getName(), columnName, expectedType.exasolType,
+            final ExaColumn expected = new ExaColumn(databricksTable.getName().toUpperCase(), columnName.toUpperCase(), expectedType.exasolType,
                     expectedType.maxSize, expectedType.precision, expectedType.scale);
             return Stream.of(DynamicTest.dynamicTest("Exasol type " + expected.type(),
                     () -> assertThat(actual, AutoMatcher.equalTo(expected))));
@@ -234,7 +234,7 @@ public class MultiTestSetup {
             if (expectedValues.isEmpty()) {
                 return Stream.empty();
             }
-            final List<Object> actualColumnData = actualData.getColumnData(columnName, expectedValues.size());
+            final List<Object> actualColumnData = actualData.getColumnData(columnName.toUpperCase(), expectedValues.size());
             final List<DynamicNode> tests = new ArrayList<>(expectedValues.size());
             for (int i = 0; i < expectedValues.size(); i++) {
                 final Object expectedValue = expectedValues.get(i);

@@ -21,31 +21,58 @@ function DatabricksQueryRewriter:new(connection_id, pushdown_metadata)
     return instance
 end
 
+---Adapt the given query structure element for pushdown to Databricks, e.g. by adding Databricks catalog and schema names.
 ---@param element any
----@return any
-function DatabricksQueryRewriter:_replace_source_table_name(element)
-    local extended_element = {}
-    if (type(element) == "table") then
-        for key, value in pairs(element) do
-            if (type(value) == "table") then
-                extended_element[key] = self:_replace_source_table_name(value)
-            else
-                extended_element[key] = value
-            end
-        end
-        if element.type == "table" then
-            local table_name = element.name
-            local table_notes = self._pushdown_metadata:get_table_notes(table_name)
-            local catalog_name = table_notes:get_databricks_catalog_name()
-            local schema_name = table_notes:get_databricks_schema_name()
-            log.debug("Extended table '%s' with source catalog %s and schema %s", table_name, catalog_name, schema_name)
-            extended_element.schema = schema_name
-            extended_element.catalog = catalog_name
-        end
-    else
+---@return any updated_element
+function DatabricksQueryRewriter:_recursive_patch_query_element(element)
+    if (type(element) ~= "table") then
         return element
     end
+    local extended_element = {}
+    for key, value in pairs(element) do
+        extended_element[key] = self:_recursive_patch_query_element(value)
+    end
+    self:_patch_query_element(extended_element)
     return extended_element
+end
+
+function DatabricksQueryRewriter:_patch_query_element(element)
+    local element_patcher = {table = self._patch_table, column = self._patch_column}
+    local patcher = element_patcher[element.type]
+    if patcher then
+        patcher(self, element)
+    end
+end
+
+---Update a table expression:
+--- * Insert Databricks catalog and schema
+--- * Replace Exasol table name (upper case) with original Databricks table name.
+---@param table_expression TableExpression
+function DatabricksQueryRewriter:_patch_table(table_expression)
+    local exasol_table_name = table_expression.name
+    local table_notes = self._pushdown_metadata:get_table_notes(exasol_table_name)
+    local databricks_catalog_name = table_notes:get_databricks_catalog_name()
+    local databricks_schema_name = table_notes:get_databricks_schema_name()
+    local databricks_table_name = table_notes:get_databricks_table_name()
+    log.debug("Extended original table %s to databricks table %s.%s.%s", exasol_table_name, databricks_catalog_name,
+              databricks_schema_name, databricks_table_name)
+    table_expression.name = databricks_table_name
+    table_expression.schema = databricks_schema_name
+    table_expression.catalog = databricks_catalog_name
+end
+
+---Replace Exasol table and column name (upper case) with original Databricks names.
+---@param column_expression ColumnReference
+function DatabricksQueryRewriter:_patch_column(column_expression)
+    local exasol_table_name = column_expression.tableName
+    local exasol_column_name = column_expression.name
+    local table_notes = self._pushdown_metadata:get_table_notes(exasol_table_name)
+    local databricks_table_name = table_notes:get_databricks_table_name()
+    local databricks_column_name = table_notes:get_databricks_column_name(exasol_column_name)
+    log.debug("Extended original column %s.%s to databricks %s.%s", exasol_table_name, column_expression.name,
+              databricks_table_name, databricks_column_name)
+    column_expression.name = databricks_column_name
+    column_expression.tableName = databricks_table_name
 end
 
 ---@param query SelectSqlStatement
@@ -60,7 +87,8 @@ end
 ---@param original_query SelectSqlStatement original query as specified by VS user
 ---@return string rewritten_query rewritten query to be fed into the ExaLoader for import
 function DatabricksQueryRewriter:rewrite(original_query)
-    local remote_query = self:_replace_source_table_name(original_query)
+    local remote_query = self:_recursive_patch_query_element(original_query)
+    log.trace("Rewritten query structure: %s", cjson.encode(remote_query))
     return self:_create_import(remote_query)
 end
 

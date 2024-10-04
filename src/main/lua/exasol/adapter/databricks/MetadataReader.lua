@@ -295,7 +295,7 @@ end
 local function convert_column_metadata(databricks_column)
     local adapter_notes = cjson.encode({databricks_metadata = databricks_column.databricks_metadata})
     return {
-        name = databricks_column.name,
+        name = databricks_column.name:upper(),
         dataType = convert_data_type(databricks_column),
         isNullable = databricks_column.nullable,
         isIdentity = nil, -- Databricks does not support identity columns
@@ -311,7 +311,7 @@ local function convert_table_metadata(databricks_table)
     local adapter_notes = TableAdapterNotes.create(databricks_table)
     return {
         type = exasol.OBJECT_TYPES.TABLE,
-        name = databricks_table.name,
+        name = databricks_table.name:upper(),
         comment = databricks_table.comment,
         columns = util.map(databricks_table.columns, convert_column_metadata),
         adapterNotes = adapter_notes:to_json()
