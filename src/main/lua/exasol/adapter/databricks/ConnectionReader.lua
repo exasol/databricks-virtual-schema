@@ -24,10 +24,12 @@ end
 ---Parse the JDBC URL arguments into a table
 ---@param jdbc_url_args string JDBC URL arguments
 ---@return table<string, string> arguments
-local function parse_args(jdbc_url_args)
+local function parse_properties(jdbc_url_args)
     local args = {}
-    for k, v in jdbc_url_args:gmatch("([^;=]+)=([^;=]+)") do
-        args[k] = v
+    if jdbc_url_args then
+        for k, v in jdbc_url_args:gmatch("([^;=%s]+)%s*=([^;=]+)") do
+            args[k] = v
+        end
     end
     return args
 end
@@ -36,12 +38,13 @@ end
 ---@param jdbc_url string JDBC URL to be parsed
 ---@return string? host
 ---@return number? port
-local function parse_jdbc_url(jdbc_url)
-    local host, port, jdbc_url_args = jdbc_url:match("jdbc:databricks://([^:]+):(%d+)(.*)")
-    if jdbc_url_args then
-        local args = parse_args(jdbc_url_args)
+---@return table<string,string>? jdbc_url_properties
+function ConnectionReader._parse_jdbc_url(jdbc_url)
+    if not jdbc_url then
+        return nil, nil, {}
     end
-    return host, tonumber(port)
+    local host, port, jdbc_url_args = jdbc_url:match("^jdbc:databricks://([^:]+):(%d+)(.*)$")
+    return host, tonumber(port), parse_properties(jdbc_url_args)
 end
 
 ---Read the details for the connection object with the given name
@@ -59,7 +62,7 @@ function ConnectionReader:read(connection_name)
         error(tostring(ExaError:new("E-VSDAB-3", "Connection {{connection_name}} has no address.",
                                     {connection_name = connection_name})))
     end
-    local host, port = parse_jdbc_url(jdbc_url)
+    local host, port = ConnectionReader._parse_jdbc_url(jdbc_url)
     if not host then
         error(tostring(ExaError:new("E-VSDAB-4",
                                     "Connection {{connection_name}} contains invalid JDBC URL {{jdbc_url}}.",
