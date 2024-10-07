@@ -10,7 +10,7 @@ http.USERAGENT = "Exasol Databricks Virtual Schema"
 ---@class RequestArgs
 ---@field url string
 ---@field method "GET" | "POST" | nil
----@field headers table<string, string> | nil
+---@field headers table<string, any> | nil
 ---@field request_body string?
 ---@field verify_tls_certificate boolean | nil default: true
 
@@ -134,6 +134,9 @@ function M.request(args)
     local url = args.url
     local method = args.method or "GET"
     local headers = args.headers or {}
+    if args.request_body then
+        headers["Content-Length"] = #args.request_body
+    end
     log.trace("Sending %s request to %q", method, url)
     local sink, get_body = table_sink()
     local start_time = socket.gettime()
