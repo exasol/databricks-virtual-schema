@@ -8,6 +8,10 @@ This release converts the names of Databricks tables and columns to upper case i
 
 The release also implement OAuth M2M authentication, see the [user guide](../user_guide/user_guide.md#service-principal-oauth-m2m) for details.
 
+## Security
+
+* #41: Fixed CVE-2024-47554 in `commons-io:commons-io:jar:2.13.0:test`
+
 ## Features
 
 * #18: Convert table and column names to upper case
@@ -16,6 +20,7 @@ The release also implement OAuth M2M authentication, see the [user guide](../use
 ## Documentation
 
 * #32: Updated JDBC driver installation instructions in user guide
+
 ## Dependency Updates
 
 ### Test Dependency Updates
