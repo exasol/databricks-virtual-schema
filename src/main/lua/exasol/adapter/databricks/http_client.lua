@@ -14,8 +14,6 @@ http.USERAGENT = "Exasol Databricks Virtual Schema"
 ---@field request_body string?
 ---@field verify_tls_certificate boolean | nil default: true
 
----@alias SocketFactory fun(args: table<string, any>): TCPSocket
-
 local M = {}
 
 ---@alias ResponseBodySink fun(string, string): integer
@@ -24,7 +22,8 @@ local M = {}
 ---Creates an ltn12 sink for reading the response body as a string.
 ---Based on https://github.com/lunarmodules/luasocket/blob/master/src/ltn12.lua#L224
 ---@return ResponseBodySink, ResponseBodyGetter
-local function table_sink()
+---@private used in unit tests
+function M._table_sink()
     local result = {}
     local function sink(chunk, err)
         if err then
@@ -44,19 +43,23 @@ local function table_sink()
     return sink, result_getter
 end
 
+---An ltn12 source for sending request body.
 ---@alias BodySource fun(): string?
 
 ---Creates an ltn12 source for the given string data or `nil` if the data is nil.
 ---Based on https://github.com/lunarmodules/luasocket/blob/master/src/ltn12.lua#L118
----@param data string?
----@return BodySource? source
-local function create_source(data)
-    local BLOCKSIZE<const> = 2048
+---@param data string? optional body content
+---@param block_size integer? optional block size, defaults to 2048
+---@return BodySource? source the source or `nil` if the body is `nil`
+---@private used in unit tests
+function M._create_source(data, block_size)
+    local DEFAULT_BLOCKSIZE<const> = 2048
+    block_size = block_size or DEFAULT_BLOCKSIZE
     if data then
         local i = 1
         return function()
-            local chunk = string.sub(data, i, i + BLOCKSIZE - 1)
-            i = i + BLOCKSIZE
+            local chunk = string.sub(data, i, i + block_size - 1)
+            i = i + block_size
             if chunk ~= "" then
                 log.trace("Sending request body until byte #%d: %q", i, chunk)
                 return chunk
@@ -71,10 +74,13 @@ local function create_source(data)
     end
 end
 
+---A factory for TCP sockets.
+---@alias SocketFactory fun(args: table<string, any>): TCPSocket
+
 ---Create a new TCP socket factory configured with the given parameters.
 ---Adapted from https://stackoverflow.com/a/43067952
----@param params table
----@return SocketFactory socket_factory
+---@param params table socket parameters
+---@return SocketFactory socket_factory new TCP socket factory
 local function new_socket_factory(params)
     return function()
         local t = {c = socket.try(socket.tcp())}
@@ -100,36 +106,43 @@ local function new_socket_factory(params)
     end
 end
 
+---Check if the given URL is unencrypted, i.e. starts with `http://`
 ---@param url string
----@return boolean is_unencrypted
+---@return boolean is_unencrypted `true` if the URL is unencrypted
 local function is_unencrypted(url)
     return url:match("^http://") ~= nil
 end
 
----@param verify_tls_certificate boolean
----@return table<string, any> args
+---Create parameters for the TCP socket factory.
+---@param verify_tls_certificate boolean `true` if the socket factory should verify the TLS certificate
+---@return table<string, any> parameters socket factory parameters
 local function get_socket_params(verify_tls_certificate)
     local verify_mode = verify_tls_certificate and "peer" or "none"
     return {protocol = "tlsv1_2", mode = "client", verify = verify_mode, options = "all"}
 end
 
----@param args RequestArgs
----@return SocketFactory | nil socket_factory
----@private
+---Create a new custom TCP socket factory depending ono request arguments.
+---@param args RequestArgs request arguments
+---@return SocketFactory? socket_factory the custom socket factory or `nil` if the default socket factory should be used
+---@private used in unit tests
 function M._create_socket_factory(args)
     if is_unencrypted(args.url) then
+        -- No custom socket factory required for unencrypted requests.
         return nil
     end
     local verify_tls_certificate = args.verify_tls_certificate == nil or args.verify_tls_certificate
     if verify_tls_certificate then
+        -- TLS certificate should be verified. We can use the default socket factory.
         return nil
     else
+        -- TLS certificate should be ignored. We need a custom socket factory.
         return new_socket_factory(get_socket_params(false))
     end
 end
 
----@param args RequestArgs
----@return string response_body
+---Execute an HTTP request with the given arguments
+---@param args RequestArgs arguments for the HTTP request
+---@return string response_body response body
 function M.request(args)
     local url = args.url
     local method = args.method or "GET"
@@ -138,14 +151,14 @@ function M.request(args)
         headers["Content-Length"] = #args.request_body
     end
     log.trace("Sending %s request to %q", method, url)
-    local sink, get_body = table_sink()
+    local sink, get_body = M._table_sink()
     local start_time = socket.gettime()
     local result, status_code, _response_headers, status_line = http.request({
         url = url,
         method = method,
         headers = headers,
         redirect = true,
-        source = create_source(args.request_body),
+        source = M._create_source(args.request_body),
         sink = sink,
         create = M._create_socket_factory(args)
     })
