@@ -34,8 +34,8 @@ local function fetch_oauth_token(connection_details)
     })
     ---@type DatabricksTokenResponse
     local data = cjson.decode(body)
-    log.debug("Received token of length %d of type %q, expires in %d", #data.access_token, data.token_type,
-              data.expires_in)
+    log.debug("Received token of length %d of type %q with scope %q, expires in %d", #data.access_token,
+              data.token_type, data.scope, data.expires_in)
     return data.access_token
 end
 

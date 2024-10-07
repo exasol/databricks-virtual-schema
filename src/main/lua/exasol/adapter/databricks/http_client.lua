@@ -3,7 +3,6 @@ local ExaError = require("ExaError")
 local http = require("socket.http")
 local socket = require("socket")
 local ssl = require("ssl")
-local ltn12 = require("ltn12")
 
 http.PROXY = nil
 http.USERAGENT = "Exasol Databricks Virtual Schema"
@@ -19,11 +18,19 @@ http.USERAGENT = "Exasol Databricks Virtual Schema"
 
 local M = {}
 
+---@alias ResponseBodySink fun(string, string): integer
+---@alias ResponseBodyGetter fun(): string
+
+---Creates an ltn12 sink for reading the response body as a string.
+---Based on https://github.com/lunarmodules/luasocket/blob/master/src/ltn12.lua#L224
+---@return ResponseBodySink, ResponseBodyGetter
 local function table_sink()
     local result = {}
     local function sink(chunk, err)
         if err then
-            log.error("Error while receiving response: %s", err)
+            local exa_error =
+                    ExaError:new("E-VSDAB-28", "Error while receiving HTTP response: {{error}}", {error = err})
+            log.error(tostring(exa_error))
             return 0
         end
         if chunk then
@@ -35,6 +42,33 @@ local function table_sink()
         return table.concat(result, "")
     end
     return sink, result_getter
+end
+
+---@alias BodySource fun(): string?
+
+---Creates an ltn12 source for the given string data or `nil` if the data is nil.
+---Based on https://github.com/lunarmodules/luasocket/blob/master/src/ltn12.lua#L118
+---@param data string?
+---@return BodySource? source
+local function create_source(data)
+    local BLOCKSIZE<const> = 2048
+    if data then
+        local i = 1
+        return function()
+            local chunk = string.sub(data, i, i + BLOCKSIZE - 1)
+            i = i + BLOCKSIZE
+            if chunk ~= "" then
+                log.trace("Sending request body until byte #%d: %q", i, chunk)
+                return chunk
+            else
+                log.trace("No remaining data for body until byte #%d", i)
+                return nil
+            end
+        end
+    else
+        log.trace("Send no request body")
+        return nil
+    end
 end
 
 ---Create a new TCP socket factory configured with the given parameters.
@@ -100,7 +134,6 @@ function M.request(args)
     local url = args.url
     local method = args.method or "GET"
     local headers = args.headers or {}
-    local source = args.request_body and ltn12.source.string(args.request_body) or nil
     log.trace("Sending %s request to %q", method, url)
     local sink, get_body = table_sink()
     local start_time = socket.gettime()
@@ -109,14 +142,14 @@ function M.request(args)
         method = method,
         headers = headers,
         redirect = true,
-        source = source,
+        source = create_source(args.request_body),
         sink = sink,
         create = M._create_socket_factory(args)
     })
     if result ~= 1 then
         local exa_error = tostring(ExaError:new("E-VSDAB-6",
-                                                "HTTP request for URL {{url}} failed with result {{result}}",
-                                                {url = url, result = status_code}))
+                                                "HTTP request {{method}} for URL {{url}} failed with result {{result}}",
+                                                {method = method, url = url, result = status_code}))
         log.error(exa_error)
         error(exa_error)
     end

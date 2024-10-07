@@ -47,7 +47,7 @@ describe("http_client #itest", function()
         it("fails for unknown host", function()
             assert.has_error(function()
                 http_client.request({url = "https://unknown-host.example"})
-            end, "E-VSDAB-6: HTTP request for URL 'https://unknown-host.example' failed with result "
+            end, "E-VSDAB-6: HTTP request 'GET' for URL 'https://unknown-host.example' failed with result "
                                      .. "'host or service not provided, or not known'")
         end)
 

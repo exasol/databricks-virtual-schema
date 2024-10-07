@@ -46,4 +46,5 @@ local DatabricksType = {}
 ---@class DatabricksTokenResponse
 ---@field access_token string Token
 ---@field token_type string Token type, e.g. `Bearer`
----@field expires_in integer Expiration time
+---@field scope string Token scope, e.g. `all-apis`
+---@field expires_in integer Expiration time, e.g. 3600
