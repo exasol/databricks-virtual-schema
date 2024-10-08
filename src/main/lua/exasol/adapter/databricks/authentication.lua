@@ -11,7 +11,7 @@ local M = {}
 ---@param connection_details DatabricksConnectionDetails
 ---@return string
 local function fetch_oauth_token(connection_details)
-    log.info("Fetching new OAuth M2M token")
+    log.trace("Fetching new OAuth M2M token")
     local body = http_client.request({
         url = connection_details.url .. "/oidc/v1/token",
         method = "POST",
@@ -37,13 +37,13 @@ local function create_m2m_token_provider(connection_details)
         if token == nil then
             token = fetch_oauth_token(connection_details)
         else
-            log.debug("Token already available, no need to fetch it again")
+            log.trace("Token already available, no need to fetch it again")
         end
         return token
     end
 end
 
----@param token string
+---@param token string bearer token
 ---@return TokenProvider
 local function create_bearer_token_provider(token)
     return function()
@@ -62,7 +62,7 @@ function M.create_token_provider(connection_details)
         return create_m2m_token_provider(connection_details)
     end
     local exa_error = tostring(ExaError:new("E-VSDAB-20", "No Databricks credentials found."):add_mitigations(
-            "Specify token or OAuth M2 credentials as specified in the user guide."))
+            "Please provide token or OAuth M2 credentials as specified in the user guide."))
     log.error(exa_error)
     error(exa_error)
 end

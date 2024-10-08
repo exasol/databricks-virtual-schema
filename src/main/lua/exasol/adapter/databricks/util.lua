@@ -16,8 +16,8 @@ end
 local BASE64_CHARS<const> = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 ---Base64 encode a given string.
 ---Based on https://stackoverflow.com/a/35303321
----@param data string
----@return string base64_encoded_data
+---@param data string original data
+---@return string base64_encoded_data data as Base64-encoded string
 function M.base64_encode(data)
     if data == nil then
         return ""

@@ -3,7 +3,6 @@ local ExaError = require("ExaError")
 local http = require("socket.http")
 local socket = require("socket")
 local ssl = require("ssl")
-local ltn12 = require("ltn12")
 
 http.PROXY = nil
 http.USERAGENT = "Exasol Databricks Virtual Schema"
@@ -98,10 +97,9 @@ end
 
 ---Creates an ltn12 source for the given string data or `nil` if the data is nil.
 ---Based on https://github.com/lunarmodules/luasocket/blob/master/src/ltn12.lua#L118
----@param data string?
----@return BodySource? source
+---@param data string? body data content
+---@return BodySource? source data iterator for body content blocks
 local function create_source(data)
-    local BLOCKSIZE<const> = 2048
     if data then
         local i = 1
         return function()
