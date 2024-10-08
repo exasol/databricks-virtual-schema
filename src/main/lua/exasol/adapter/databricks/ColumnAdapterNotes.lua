@@ -1,5 +1,3 @@
-local log = require("remotelog")
-
 ---This class holds parsed adapter notes for a column like the original Databricks column name.
 ---This information is required for rendering the pushdown query.
 ---@class ColumnAdapterNotes
