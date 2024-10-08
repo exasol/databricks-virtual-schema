@@ -1,5 +1,5 @@
 local http_client = require("exasol.adapter.databricks.http_client")
-local util = require("exasol.adapter.databricks.util")
+local base64 = require("exasol.adapter.databricks.base64")
 local ExaError = require("ExaError")
 local cjson = require("cjson")
 local log = require("remotelog")
@@ -18,7 +18,7 @@ local function fetch_oauth_token(connection_details)
         headers = {
             ["Content-Type"] = "application/x-www-form-urlencoded",
             Authorization = "Basic "
-                    .. util.base64_encode(
+                    .. base64.encode(
                             string.format("%s:%s", connection_details.oauth_client_id,
                                           connection_details.oauth_client_secret))
         },
