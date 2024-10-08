@@ -10,7 +10,7 @@ setmetatable(DatabricksAdapterProperties, AdapterProperties)
 
 ---Create a new `ExasolAdapterProperties` instance
 ---@param raw_properties any unparsed user-defined properties
----@return DatabricksAdapterProperties new_instance
+---@return DatabricksAdapterProperties new instance of the Databricks Virtual Schema adapter properties
 function DatabricksAdapterProperties:new(raw_properties)
     local instance = setmetatable({}, self)
     instance:_init(raw_properties)

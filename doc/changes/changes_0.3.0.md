@@ -6,7 +6,7 @@ Code name: Convert names to upper case, M2M auth
 
 This release converts the names of Databricks tables and columns to upper case in Exasol to improve usability of the virtual schema. Quoting table and column names with double quotes `"` is no longer required as Exasol converts all names to upper case by default.
 
-The release also implement OAuth M2M authentication, see the [user guide](../user_guide/user_guide.md#service-principal-oauth-m2m) for details.
+The release also implement OAuth M2M (machine-to-machine) authentication, see the [user guide](../user_guide/user_guide.md#service-principal-oauth-m2m) for details.
 
 ## Security
 

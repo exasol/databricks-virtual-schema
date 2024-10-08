@@ -102,7 +102,7 @@ public class DatabricksFixture implements AutoCloseable {
         final String hostName = databricksUri.getHost();
         final int port = databricksUri.getPort() < 0 ? 443 : databricksUri.getPort();
         final String httpPath = "/sql/1.0/warehouses/" + getEndpoint().getId();
-        final String oauthCredentials = authMode == AuthMode.OAUTH_M2M
+        final String oauthCredentials = (authMode == AuthMode.OAUTH_M2M)
                 ? "OAuth2ClientId=%s;OAuth2Secret=%s;".formatted(config.getDatabricksOauthClientId(),
                         config.getDatabricksOauthSecret())
                 : "";

@@ -140,6 +140,29 @@ function M._create_socket_factory(args)
     end
 end
 
+---Creates an ltn12 source for the given string data or `nil` if the data is nil.
+---Based on https://github.com/lunarmodules/luasocket/blob/master/src/ltn12.lua#L118
+---See details about ltn12: http://lua-users.org/wiki/FiltersSourcesAndSinks
+---@param data string? body data content
+---@return BodySource? source data iterator for body content blocks
+local function create_source(data)
+    local BLOCKSIZE<const> = 2048
+    if data then
+        local i = 1
+        return function()
+            local chunk = string.sub(data, i, i + BLOCKSIZE - 1)
+            i = i + BLOCKSIZE
+            if chunk ~= "" then
+                return chunk
+            else
+                return nil
+            end
+        end
+    else
+        return nil
+    end
+end
+
 ---Execute an HTTP request with the given arguments
 ---@param args RequestArgs arguments for the HTTP request
 ---@return string response_body response body

@@ -54,6 +54,7 @@ local package_items = {
     "exasol.adapter.databricks.DatabricksRestClient",
     "exasol.adapter.databricks.authentication",
     "exasol.adapter.databricks.http_client",
+    "exasol.adapter.databricks.base64",
     "exasol.adapter.databricks.util",
     "exasol.adapter.databricks.common_types",
     "exasol.adapter.databricks.databricks_types",

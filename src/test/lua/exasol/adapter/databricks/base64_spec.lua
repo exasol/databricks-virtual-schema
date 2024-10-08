@@ -1,10 +1,10 @@
 require("busted.runner")()
 local assert = require("luassert")
 local mockagne = require("mockagne")
-local util = require("exasol.adapter.databricks.util")
+local base64 = require("exasol.adapter.databricks.base64")
 
-describe("util", function()
-    describe("base64_encode", function()
+describe("base64", function()
+    describe("encode()", function()
         local tests = {
             {data = nil, expected = ""}, --
             {data = "", expected = ""}, --
@@ -22,7 +22,7 @@ describe("util", function()
         }
         for _, test in ipairs(tests) do
             it(string.format("encodes %q to %q", test.data, test.expected), function()
-                assert.is.same(test.expected, util.base64_encode(test.data))
+                assert.is.same(test.expected, base64.encode(test.data))
             end)
         end
     end)

@@ -1,5 +1,5 @@
 local http_client = require("exasol.adapter.databricks.http_client")
-local util = require("exasol.adapter.databricks.util")
+local base64 = require("exasol.adapter.databricks.base64")
 local ExaError = require("ExaError")
 local cjson = require("cjson")
 local log = require("remotelog")
@@ -12,7 +12,7 @@ local M = {}
 ---@param password string?
 ---@return string header_value
 local function basic_auth_header(user, password)
-    return "Basic " .. util.base64_encode(string.format("%s:%s", user, password))
+    return "Basic " .. base64.encode(string.format("%s:%s", user, password))
 end
 
 ---Fetch Databricks OAuth token.
@@ -21,7 +21,7 @@ end
 ---@return string
 local function fetch_oauth_token(connection_details)
     local url = connection_details.url .. "/oidc/v1/token"
-    log.info("Fetching OAuth M2M token for client id %q from %q", connection_details.oauth_client_id, url)
+    log.trace("Fetching OAuth M2M token for client id %q from %q", connection_details.oauth_client_id, url)
     local body = http_client.request({
         url = url,
         method = "POST",
@@ -47,13 +47,13 @@ local function create_m2m_token_provider(connection_details)
         if token == nil then
             token = fetch_oauth_token(connection_details)
         else
-            log.debug("Token already available, no need to fetch it again")
+            log.trace("Token already available, no need to fetch it again")
         end
         return token
     end
 end
 
----@param token string
+---@param token string bearer token
 ---@return TokenProvider
 local function create_bearer_token_provider(token)
     return function()
