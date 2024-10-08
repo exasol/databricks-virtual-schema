@@ -3,49 +3,41 @@ name: Release
 on:
   workflow_call:
     inputs:
-      started-from-ci: {
-        description: 'Marks this release as started from CI, skipping precondition check',
-        type: boolean,
-        required: true,
-        default: false
-      }
+      started-from-ci:
+        {
+          description: "Marks this release as started from CI, skipping precondition check",
+          type: boolean,
+          required: true,
+          default: false,
+        }
   workflow_dispatch:
     inputs:
-      skip-maven-central: {
-        description: Skip deployment to Maven Central,
-        required: true,
-        type: boolean,
-        default: false
-      }
-      skip-github-release: {
-        description: Skip creating the GitHub release,
-        required: true,
-        type: boolean,
-        default: false
-      }
+      skip-maven-central:
+        {
+          description: Skip deployment to Maven Central,
+          required: true,
+          type: boolean,
+          default: false,
+        }
+      skip-github-release:
+        {
+          description: Skip creating the GitHub release,
+          required: true,
+          type: boolean,
+          default: false,
+        }
 jobs:
   release:
     runs-on: ubuntu-latest
     defaults:
-      run: {
-        shell: bash
-      }
-    concurrency: {
-      group: '${{ github.workflow }}',
-      cancel-in-progress: false
-    }
-    permissions: {
-      contents: write,
-      actions: read,
-      issues: read
-    }
+      run: { shell: bash }
+    concurrency: { group: "${{ github.workflow }}", cancel-in-progress: false }
+    permissions: { contents: write, actions: read, issues: read }
     steps:
       - name: Checkout the repository
         id: checkout
         uses: actions/checkout@v4
-        with: {
-          fetch-depth: 0
-        }
+        with: { fetch-depth: 0 }
       - name: Set up Maven Central Repository
         id: configure-maven-central-credentials
         if: ${{ false }}
@@ -74,15 +66,11 @@ jobs:
       - name: Install Lua
         id: install-lua
         uses: leafo/gh-actions-lua@v10
-        with: {
-          luaVersion: 5.4
-        }
+        with: { luaVersion: 5.4 }
       - name: Install LuaRocks
         id: install-luarocks
         uses: leafo/gh-actions-luarocks@v4
-        with: {
-          luaRocksVersion: 3.11.1
-        }
+        with: { luaRocksVersion: 3.11.1 }
       - name: Cache Lua dependencies
         id: cache-lua-dependencies
         uses: actions/cache@v4
@@ -92,10 +80,10 @@ jobs:
             ${{ runner.os }}-lua-${{ hashFiles('*.rockspec') }}
           restore-keys: ${{ runner.os }}-lua-
       - {
-        name: Install Lua dependencies,
-        id: install-lua-dependencies,
-        run: luarocks --local install *.rockspec --deps-only --force
-      }
+          name: Install Lua dependencies,
+          id: install-lua-dependencies,
+          run: luarocks --local install *.rockspec --deps-only --force,
+        }
       - name: Fail if not running on main branch
         id: check-main-branch
         if: ${{ github.ref != 'refs/heads/main' }}
@@ -117,18 +105,14 @@ jobs:
             cat $GITHUB_STEP_SUMMARY
             exit 1
           fi
-        env: {
-          COMMIT_SHA: '${{ github.sha }}',
-          GH_TOKEN: '${{ github.token }}'
-        }
+        env:
+          { COMMIT_SHA: "${{ github.sha }}", GH_TOKEN: "${{ github.token }}" }
       - name: Verify release preconditions
         id: verify-release
         run: |
           mvn --batch-mode com.exasol:project-keeper-maven-plugin:verify-release --projects .
           echo "$GITHUB_OUTPUT"
-        env: {
-          GITHUB_TOKEN: '${{ github.token }}'
-        }
+        env: { GITHUB_TOKEN: "${{ github.token }}" }
       - name: Configure Databricks credentials
         id: configure-databricks-credentials
         run: |
@@ -141,21 +125,21 @@ jobs:
           databricks.oauth.servicePrincipalUuid = ${{ secrets.DATABRICKS_OAUTH_SERVICE_PRINCIPAL_UUID }}
           EOL
       - {
-        name: Build project,
-        id: build,
-        run: mvn --batch-mode -DskipTests clean verify
-      }
+          name: Build project,
+          id: build,
+          run: mvn --batch-mode -DskipTests clean verify,
+        }
       - {
-        name: Generate dummy error code report,
-        id: generate-dummy-error-code-report,
-        run: 'echo ''{"$schema":"https://schemas.exasol.com/error_code_report-1.0.0.json","errorCodes":[]}'' > target/error_code_report.json'
-      }
+          name: Generate dummy error code report,
+          id: generate-dummy-error-code-report,
+          run: 'echo ''{"$schema":"https://schemas.exasol.com/error_code_report-1.0.0.json","errorCodes":[]}'' > target/error_code_report.json',
+        }
       - {
-        name: List secret GPG keys,
-        id: list-secret-gpg-keys,
-        if: '${{ false && (! inputs.skip-maven-central) }}',
-        run: gpg --list-secret-keys
-      }
+          name: List secret GPG keys,
+          id: list-secret-gpg-keys,
+          if: "${{ false && (! inputs.skip-maven-central) }}",
+          run: gpg --list-secret-keys,
+        }
       - name: Publish to Central Repository
         id: deploy-maven-central
         if: ${{ false && (! inputs.skip-maven-central) }}
@@ -163,11 +147,12 @@ jobs:
           echo "#### Maven Central Release" >> "$GITHUB_STEP_SUMMARY"
           mvn --batch-mode -Dgpg.skip=false -DskipTests deploy
           echo "Published to Maven Central ✅" >> "$GITHUB_STEP_SUMMARY"
-        env: {
-          MAVEN_USERNAME: '${{ secrets.OSSRH_USERNAME }}',
-          MAVEN_PASSWORD: '${{ secrets.OSSRH_PASSWORD }}',
-          MAVEN_GPG_PASSPHRASE: '${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}'
-        }
+        env:
+          {
+            MAVEN_USERNAME: "${{ secrets.OSSRH_USERNAME }}",
+            MAVEN_PASSWORD: "${{ secrets.OSSRH_PASSWORD }}",
+            MAVEN_GPG_PASSPHRASE: "${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}",
+          }
       - name: Calculate Artifact Checksums
         id: artifact-checksum
         if: ${{ ! inputs.skip-github-release }}
@@ -191,9 +176,8 @@ jobs:
           echo "EOF" >> "$GITHUB_OUTPUT"
           echo "Full artifact file list"
           cat "$GITHUB_OUTPUT"
-        env: {
-          ARTIFACTS: '${{ steps.verify-release.outputs.release-artifacts }}'
-        }
+        env:
+          { ARTIFACTS: "${{ steps.verify-release.outputs.release-artifacts }}" }
       - name: Create GitHub Release
         id: create-github-release
         if: ${{ ! inputs.skip-github-release }}
@@ -223,38 +207,43 @@ jobs:
           done
 
           git fetch --tags origin
-        env: {
-          GH_TOKEN: '${{ github.token }}',
-          TAG: '${{ steps.verify-release.outputs.release-tag }}',
-          ADDITIONAL_TAGS: '${{ steps.verify-release.outputs.additional-release-tags }}',
-          NOTES: '${{ steps.verify-release.outputs.release-notes }}',
-          TITLE: '${{ steps.verify-release.outputs.release-title }}',
-          ARTIFACTS: '${{ steps.artifact-checksum.outputs.artifacts }}'
-        }
+        env:
+          {
+            GH_TOKEN: "${{ github.token }}",
+            TAG: "${{ steps.verify-release.outputs.release-tag }}",
+            ADDITIONAL_TAGS: "${{ steps.verify-release.outputs.additional-release-tags }}",
+            NOTES: "${{ steps.verify-release.outputs.release-notes }}",
+            TITLE: "${{ steps.verify-release.outputs.release-title }}",
+            ARTIFACTS: "${{ steps.artifact-checksum.outputs.artifacts }}",
+          }
       - name: Report failure Status to Slack channel
         id: report-failure-status-slack
         if: ${{ always() }}
         uses: ravsamhq/notify-slack-action@v2
-        with: {
-          status: '${{ job.status }}',
-          token: '${{ github.token }}',
-          notification_title: 'Release build in {repo} has {status_message}',
-          message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>',
-          notify_when: 'failure,cancelled,warnings,skipped'
-        }
-        env: {
-          SLACK_WEBHOOK_URL: '${{ secrets.INTEGRATION_TEAM_SLACK_NOTIFICATION_WEBHOOK }}'
-        }
+        with:
+          {
+            status: "${{ job.status }}",
+            token: "${{ github.token }}",
+            notification_title: "Release build in {repo} has {status_message}",
+            message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>",
+            notify_when: "failure,cancelled,warnings,skipped",
+          }
+        env:
+          {
+            SLACK_WEBHOOK_URL: "${{ secrets.INTEGRATION_TEAM_SLACK_NOTIFICATION_WEBHOOK }}",
+          }
       - name: Report new release to Slack channel
         id: report-new-release-slack
         if: ${{ steps.create-github-release.outputs.release-url }}
         uses: ravsamhq/notify-slack-action@v2
-        with: {
-          status: '${{ job.status }}',
-          token: '${{ github.token }}',
-          notification_title: 'Release build for {repo} created a new release',
-          message_format: '{workflow} created release ${{ steps.create-github-release.outputs.release-url }}'
-        }
-        env: {
-          SLACK_WEBHOOK_URL: '${{ secrets.INTEGRATION_TEAM_SLACK_NOTIFICATION_WEBHOOK }}'
-        }
+        with:
+          {
+            status: "${{ job.status }}",
+            token: "${{ github.token }}",
+            notification_title: "Release build for {repo} created a new release",
+            message_format: "{workflow} created release ${{ steps.create-github-release.outputs.release-url }}",
+          }
+        env:
+          {
+            SLACK_WEBHOOK_URL: "${{ secrets.INTEGRATION_TEAM_SLACK_NOTIFICATION_WEBHOOK }}",
+          }

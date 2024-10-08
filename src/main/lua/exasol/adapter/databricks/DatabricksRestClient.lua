@@ -30,9 +30,8 @@ end
 ---@return table response body
 ---@private
 function DatabricksRestClient:_get_request(path)
-    log.debug("Fetching token for Databricks API...")
     local url = self._base_url .. path
-    log.debug("Sending GET request to %q...", url)
+    log.trace("Sending GET request to %q", url)
     local body = http_client.request({
         url = url,
         method = "GET",
