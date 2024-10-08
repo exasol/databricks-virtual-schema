@@ -9,21 +9,20 @@ local util = require("exasol.adapter.databricks.util")
 ---@alias DatabricksRestClientFactory fun(connection_details: DatabricksConnectionDetails): DatabricksRestClient
 
 ---@class DatabricksRestClient
----@field _connection_details DatabricksConnectionDetails connection details
+---@field _base_url string base URL of the Databricks REST API
+---@field _token string Databricks REST API token
 local DatabricksRestClient = {}
 DatabricksRestClient.__index = DatabricksRestClient;
 
---- Create a new `DatabricksRestClient`.
----@param  connection_details DatabricksConnectionDetails connection details
+---Create a new `DatabricksRestClient`.
+---@param base_url string Databricks REST API base URL
+---@param token string Databricks REST API token
 ---@return DatabricksRestClient client
-function DatabricksRestClient:new(connection_details)
+function DatabricksRestClient:new(base_url, token)
     local instance = setmetatable({}, self)
-    instance:_init(connection_details)
+    instance._base_url = base_url
+    instance._token = token
     return instance
-end
-
-function DatabricksRestClient:_init(connection_details)
-    self._connection_details = connection_details
 end
 
 ---Send a GET request to the given path.
@@ -31,12 +30,12 @@ end
 ---@return table response body
 ---@private
 function DatabricksRestClient:_get_request(path)
-    local url = self._connection_details.url .. path
+    local url = self._base_url .. path
     log.debug("Sending GET request to " .. url)
     local body = http_client.request({
         url = url,
         method = "GET",
-        headers = {Authorization = "Bearer " .. self._connection_details.token},
+        headers = {Authorization = "Bearer " .. self._token},
         verify_tls_certificate = false
     })
     local data = cjson.decode(body)

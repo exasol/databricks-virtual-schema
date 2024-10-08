@@ -14,7 +14,7 @@ end
 local connection_details = read_databricks_test_config()
 
 local function testee()
-    return DatabricksRestClient:new(connection_details)
+    return DatabricksRestClient:new(connection_details.url, connection_details.token)
 end
 
 describe("DatabricksRestClient #itest", function()

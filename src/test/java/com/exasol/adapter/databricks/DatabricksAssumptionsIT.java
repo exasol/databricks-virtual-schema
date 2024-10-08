@@ -2,11 +2,15 @@ package com.exasol.adapter.databricks;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.sql.*;
 
 import org.junit.jupiter.api.*;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture;
+import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture.AuthMode;
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.TestConfig;
 import com.exasol.dbbuilder.dialects.DatabaseObjectException;
@@ -17,10 +21,11 @@ import com.exasol.dbbuilder.dialects.DatabaseObjectException;
 class DatabricksAssumptionsIT {
 
     private static DatabricksFixture databricks;
+    private static TestConfig config;
 
     @BeforeAll
     static void beforeAll() {
-        final TestConfig config = TestConfig.read();
+        config = TestConfig.read();
         databricks = DatabricksFixture.create(config);
     }
 
@@ -53,5 +58,22 @@ class DatabricksAssumptionsIT {
         assertThat(exception.getCause().getMessage(), containsString(
                 "[TABLE_OR_VIEW_ALREADY_EXISTS] Cannot create table or view `%s`.`TAB` because it already exists."
                         .formatted(databricksSchema.getName())));
+    }
+
+    @Test
+    void oauthM2mViaJdbc() throws SQLException {
+        assertJdbcConnectionWorks(databricks.getJdbcUrl(AuthMode.OAUTH_M2M), "", "");
+    }
+
+    @Test
+    void tokenAuthViaJdbc() throws SQLException {
+        assertJdbcConnectionWorks(databricks.getJdbcUrl(AuthMode.TOKEN), "token", config.getDatabricksToken());
+    }
+
+    private void assertJdbcConnectionWorks(final String jdbcUrl, final String user, final String password)
+            throws SQLException {
+        try (Connection connection = DriverManager.getConnection(jdbcUrl, user, password)) {
+            assertDoesNotThrow(() -> connection.createStatement().executeQuery("select 1"));
+        }
     }
 }

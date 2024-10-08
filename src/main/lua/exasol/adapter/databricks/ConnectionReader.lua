@@ -10,7 +10,7 @@ ConnectionReader.__index = ConnectionReader;
 
 --- Create a new `ConnectionReader`.
 ---@param  exasol_context ExasolUdfContext handle to local database functions and status
--- @return connection definition reader
+---@return ConnectionReader connection_definition_reader reader for Exasol's connection database objects
 function ConnectionReader:new(exasol_context)
     local instance = setmetatable({}, self)
     instance:_init(exasol_context)

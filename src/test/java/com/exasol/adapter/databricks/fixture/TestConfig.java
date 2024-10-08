@@ -47,6 +47,14 @@ public class TestConfig {
         return getMandatoryValue("databricks.token");
     }
 
+    public String getDatabricksOauthSecret() {
+        return getMandatoryValue("databricks.oauth.secret");
+    }
+
+    public String getDatabricksOauthClientId() {
+        return getMandatoryValue("databricks.oauth.clientId");
+    }
+
     public String getDatabricksHost() {
         return getMandatoryValue("databricks.host");
     }

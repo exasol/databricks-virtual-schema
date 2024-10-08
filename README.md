@@ -18,7 +18,6 @@ If you want to set up a Virtual Schema for a different database system, please h
 
 ## Known Limitations
 
-* Currently, the virtual schema only supports token authentication. M2M Principal authentication (OAuth M2M) will be added later, see [issue #3](https://github.com/exasol/databricks-virtual-schema/issues/3).
 * Currently, the virtual schema supports at most 50 tables per virtual schema, see [issue #8](https://github.com/exasol/databricks-virtual-schema/issues/8).
 * The `TABLE_FILTER` option is not yet supported, see [issue #14](https://github.com/exasol/databricks-virtual-schema/issues/14).
 

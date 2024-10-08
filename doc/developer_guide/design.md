@@ -123,7 +123,7 @@ Considered alternatives:
 
 ### Lua HTTP Client
 
-The VS needs to access the Databricks REST API via HTTPS. We decided to use the `request()` function from the `socket.http` module:
+The VS needs to access the Databricks REST API via HTTPS. We decided to use the `request()` function from the [`socket.http`](https://w3.impa.br/~diego/software/luasocket/http.html) module:
 * `+` Available to Exasol UDFs, recommended by [Exasol documentation](https://docs.exasol.com/db/latest/database_concepts/udf_scripts/lua.htm#Auxiliarylibraries).
 * `+` Allows using a custom socket factory with the `create` parameter. This allows customizing the TLS configuration if required.
 * `-` Does not allow using a custom TLS certificate store, uses the hard coded store included in Exasol.
