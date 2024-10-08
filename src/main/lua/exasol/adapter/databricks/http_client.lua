@@ -100,6 +100,7 @@ end
 ---@param data string? body data content
 ---@return BodySource? source data iterator for body content blocks
 local function create_source(data)
+    local BLOCKSIZE<const> = 2048
     if data then
         local i = 1
         return function()

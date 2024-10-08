@@ -9,10 +9,7 @@ local RequestDispatcher = require("exasol.vscl.RequestDispatcher")
 ---@param config DatabricksConnectionDetails
 ---@return DatabricksRestClient
 local function databricks_client_factory(config)
-    local function token_provider()
-        return config.token
-    end
-    return DatabricksRestClient:new(config.url, token_provider)
+    return DatabricksRestClient:new(config.url, config.token)
 end
 
 --- Handle a Virtual Schema request.

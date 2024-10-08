@@ -26,7 +26,7 @@ describe("authentication", function()
 
 Mitigations:
 
-* Specify token or OAuth M2 credentials as specified in the user guide.]])
+* Please provide token or OAuth M2 credentials as specified in the user guide.]])
         end)
         describe("token auth", function()
             it("returns bearer token", function()
