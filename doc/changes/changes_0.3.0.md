@@ -16,3 +16,8 @@ The release also implement OAuth M2M (machine-to-machine) authentication, see th
 ## Documentation
 
 * #32: Updated JDBC driver installation instructions in user guide
+## Dependency Updates
+
+### Test Dependency Updates
+
+* Added `commons-io:commons-io:2.17.0`
