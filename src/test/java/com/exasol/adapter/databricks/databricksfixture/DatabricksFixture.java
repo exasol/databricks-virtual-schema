@@ -59,20 +59,21 @@ public class DatabricksFixture implements AutoCloseable {
         final DatabricksCatalog newCatalog = writer.createCatalog(name);
         LOG.fine(() -> "Created Databricks catalog " + newCatalog.getFullyQualifiedName());
         this.cleanupTasks.add("Drop Databricks catalog " + newCatalog.getName(), newCatalog::drop);
-        grantAccessToServicePrincipal(newCatalog);
+        grantReadAccessToServicePrincipal(newCatalog);
         return newCatalog;
     }
 
-    private void grantAccessToServicePrincipal(final DatabricksCatalog newCatalog) {
-        executeStatement("grant use catalog, use schema, select on catalog " + newCatalog.getFullyQualifiedName()
-                + " to `" + config.getDatabricksOauthServicePrincipalUuid() + "`");
+    private void grantReadAccessToServicePrincipal(final DatabricksCatalog newCatalog) {
+        executeStatement("GRANT USE CATALOG, USE SCHEMA, SELECT ON CATALOG %s TO `%s`"
+                .formatted(newCatalog.getFullyQualifiedName(), config.getDatabricksOauthServicePrincipalUuid()));
     }
 
     public void executeStatement(final String statement) {
         final Instant start = Instant.now();
         final StatementResponse response = client.statementExecution().executeStatement(
                 new ExecuteStatementRequest().setWarehouseId(getWarehouseId()).setStatement(statement));
-        LOG.fine("Executed Databricks statement '" + statement + "' in " + Duration.between(start, Instant.now()));
+        LOG.fine(
+                () -> "Executed Databricks statement '" + statement + "' in " + Duration.between(start, Instant.now()));
         final ServiceError error = response.getStatus().getError();
         if (error != null) {
             throw new IllegalStateException("Error executing statement: '" + statement + "': " + error.getMessage());

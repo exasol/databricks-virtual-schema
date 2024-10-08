@@ -182,6 +182,8 @@ It seems that it's not possible to create Account-level credentials that allow A
 
 #### Service Principal UUID
 
-Integration tests create a new Databricks Catalog for each test class. The Service Principal needs read access to this catalog. We could give the Service Principal Admin access, so that it automatically can read all catalogs. However we want to use minimal permissions for the Service Principal.
+Integration tests create a new Databricks Catalog for each test class. The Service Principal used for accessing Databricks via M2M OAuth needs read access to this catalog. We could give the Service Principal Administrator access in Databricks, so that it automatically can read all catalogs. However we want to use minimal permissions for the Service Principal.
 
 That's why integration tests need to grant the Service Principal read access to the newly created catalog and all its schemas and tables. We can do this with a `GRANT` statement in Databricks, but this requires configuring the Service Credentials UUID in `test.properties`.
+
+Note: A better option would be to create a temporary service principal in the tests. This is not possible because Databricks manages service principals on Account level, not on Workspace level. It seems to be not possible to create long-term credentials on Account level. The only option are one-time codes sent via Email, which is not an option for automated tests.

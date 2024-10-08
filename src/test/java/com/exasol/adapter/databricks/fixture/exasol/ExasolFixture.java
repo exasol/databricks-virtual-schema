@@ -191,15 +191,15 @@ public class ExasolFixture implements AutoCloseable {
     }
 
     public ConnectionDefinition getConnectionDefinition(final AuthMode authMode) {
-        if (!this.connectionDefinition.containsKey(authMode)) {
-            final ConnectionDefinition connectionDef = objectFactory.createConnectionDefinition(
-                    "DATABRICKS_CONNECTION_" + authMode.toString().toUpperCase(),
-                    databricksFixture.getJdbcUrl(authMode), databricksFixture.getJdbcUsername(authMode),
-                    databricksFixture.getJdbcPassword(authMode));
-            this.cleanupAfterAll.add("Drop connection " + connectionDef.getName(), () -> connectionDef.drop());
-            this.connectionDefinition.put(authMode, connectionDef);
-        }
-        return this.connectionDefinition.get(authMode);
+        return this.connectionDefinition.computeIfAbsent(authMode, this::createConnectionDefinition);
+    }
+
+    private ConnectionDefinition createConnectionDefinition(final AuthMode authMode) {
+        final ConnectionDefinition connectionDef = objectFactory.createConnectionDefinition(
+                "DATABRICKS_CONNECTION_" + authMode.toString().toUpperCase(), databricksFixture.getJdbcUrl(authMode),
+                databricksFixture.getJdbcUsername(authMode), databricksFixture.getJdbcPassword(authMode));
+        this.cleanupAfterAll.add("Drop connection " + connectionDef.getName(), () -> connectionDef.drop());
+        return connectionDef;
     }
 
     private Map<String, String> createVirtualSchemaProperties(final ConnectionDefinition connectionDefinition) {

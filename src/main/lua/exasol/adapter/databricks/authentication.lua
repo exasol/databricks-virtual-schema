@@ -21,7 +21,7 @@ end
 ---@return string
 local function fetch_oauth_token(connection_details)
     local url = connection_details.url .. "/oidc/v1/token"
-    log.trace("Fetching OAuth M2M token for client id %q from %q", connection_details.oauth_client_id, url)
+    log.trace("Fetching OAuth M2M token from %q", url)
     local body = http_client.request({
         url = url,
         method = "POST",
@@ -66,7 +66,7 @@ end
 ---@return TokenProvider token_provider
 function M.create_token_provider(connection_details)
     local auth_mode = connection_details.auth
-    log.debug("Creating token provider for auth mode %q", auth_mode)
+    log.trace("Creating token provider for auth mode %q", auth_mode)
     if auth_mode == "token" then
         return create_bearer_token_provider(connection_details.token)
     end
