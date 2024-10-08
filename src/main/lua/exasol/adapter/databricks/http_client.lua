@@ -97,6 +97,7 @@ end
 
 ---Creates an ltn12 source for the given string data or `nil` if the data is nil.
 ---Based on https://github.com/lunarmodules/luasocket/blob/master/src/ltn12.lua#L118
+---See details about ltn12: http://lua-users.org/wiki/FiltersSourcesAndSinks
 ---@param data string? body data content
 ---@return BodySource? source data iterator for body content blocks
 local function create_source(data)
