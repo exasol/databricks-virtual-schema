@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.exasol</groupId>
     <artifactId>databricks-virtual-schema</artifactId>
-    <version>0.3.0</version>
+    <version>1.0.0</version>
     <name>Virtual Schema for Databricks</name>
     <description>Virtual Schema for MySQL</description>
     <url>https://github.com/exasol/databricks-virtual-schema/</url>
@@ -63,7 +63,7 @@
         <dependency>
             <groupId>com.databricks</groupId>
             <artifactId>databricks-sdk-java</artifactId>
-            <version>0.32.1</version>
+            <version>0.32.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -82,7 +82,7 @@
         <dependency>
             <groupId>org.junit-pioneer</groupId>
             <artifactId>junit-pioneer</artifactId>
-            <version>2.2.0</version>
+            <version>2.3.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -215,7 +215,7 @@
     <parent>
         <artifactId>databricks-virtual-schema-generated-parent</artifactId>
         <groupId>com.exasol</groupId>
-        <version>0.3.0</version>
+        <version>1.0.0</version>
         <relativePath>pk_generated_parent.pom</relativePath>
     </parent>
 </project>
