@@ -14,7 +14,7 @@ If you want to set up a Virtual Schema for a different database system, please h
 
 ## Known Limitations
 
-This section lists known issues and limitations. That will be fixed in a later version. If you need one of the features, please add a comment to the GitHub issue to help us prioritize it.
+This section lists known issues and limitations that will be fixed in a later version. If you need one of the features, please add a comment to the GitHub issue to help us prioritize it.
 
 ### Security
 
