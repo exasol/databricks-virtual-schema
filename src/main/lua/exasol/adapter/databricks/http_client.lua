@@ -126,6 +126,10 @@ end
 function M._create_source(data, block_size)
     local DEFAULT_BLOCKSIZE<const> = 2048
     block_size = block_size or DEFAULT_BLOCKSIZE
+    if block_size <= 0 then
+        log.warn("Block size %d must be greater than zero, using default %d", block_size, DEFAULT_BLOCKSIZE)
+        block_size = DEFAULT_BLOCKSIZE
+    end
     if data then
         local i = 1
         return function()
