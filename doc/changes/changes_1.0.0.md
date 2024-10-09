@@ -4,7 +4,7 @@ Code name: First Public Release
 
 ## Summary
 
-This is the first public release of the Databricks virtual schema.
+This is the first public release of the Databricks virtual schema. See the [readme](../../README.md#known-limitations) for known limitations.
 
 ## Documentation
 
