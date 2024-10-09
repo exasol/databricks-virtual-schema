@@ -11,8 +11,7 @@ local authentication = require("exasol.adapter.databricks.authentication")
 ---@return DatabricksRestClient
 local function databricks_client_factory(config)
     local token_provider = authentication.create_token_provider(config)
-    local token = token_provider()
-    return DatabricksRestClient:new(config.url, token)
+    return DatabricksRestClient:new(config.url, token_provider)
 end
 
 --- Handle a Virtual Schema request.

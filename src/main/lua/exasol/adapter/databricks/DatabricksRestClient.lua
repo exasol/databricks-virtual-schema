@@ -10,18 +10,18 @@ local util = require("exasol.adapter.databricks.util")
 
 ---@class DatabricksRestClient
 ---@field _base_url string base URL of the Databricks REST API
----@field _token string Databricks REST API token
+---@field _token_provider TokenProvider Databricks REST API token provider
 local DatabricksRestClient = {}
 DatabricksRestClient.__index = DatabricksRestClient;
 
 ---Create a new `DatabricksRestClient`.
 ---@param base_url string Databricks REST API base URL
----@param token string Databricks REST API token
+---@param token_provider TokenProvider Databricks REST API token provider
 ---@return DatabricksRestClient client
-function DatabricksRestClient:new(base_url, token)
+function DatabricksRestClient:new(base_url, token_provider)
     local instance = setmetatable({}, self)
     instance._base_url = base_url
-    instance._token = token
+    instance._token_provider = token_provider
     return instance
 end
 
@@ -35,7 +35,7 @@ function DatabricksRestClient:_get_request(path)
     local body = http_client.request({
         url = url,
         method = "GET",
-        headers = {Authorization = "Bearer " .. self._token},
+        headers = {Authorization = "Bearer " .. self._token_provider()},
         verify_tls_certificate = false
     })
     local data = cjson.decode(body)

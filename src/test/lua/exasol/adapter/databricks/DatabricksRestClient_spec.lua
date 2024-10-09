@@ -34,7 +34,7 @@ local function m2m_auth_provider()
 end
 
 local function testee_with_token_auth()
-    return DatabricksRestClient:new(test_config.url, test_config.token)
+    return DatabricksRestClient:new(test_config.url, token_auth_provider)
 end
 
 describe("DatabricksRestClient #itest", function()
@@ -46,7 +46,7 @@ describe("DatabricksRestClient #itest", function()
             }
             for _, test in ipairs(tests) do
                 it(test.name, function()
-                    local client = DatabricksRestClient:new(test_config.url, test.token_provider())
+                    local client = DatabricksRestClient:new(test_config.url, test.token_provider)
                     local tables = client:list_tables("system", "information_schema")
                     assert.is_table(tables)
                     assert.is_true(#tables > 0)
