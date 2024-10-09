@@ -8,7 +8,7 @@ local DatabricksAdapter = {}
 DatabricksAdapter.__index = DatabricksAdapter
 local AbstractVirtualSchemaAdapter = require("exasol.vscl.AbstractVirtualSchemaAdapter")
 setmetatable(DatabricksAdapter, {__index = AbstractVirtualSchemaAdapter})
-local VERSION<const> = "0.3.0"
+local VERSION<const> = "1.0.0"
 
 local adapter_capabilities = require("exasol.adapter.databricks.adapter_capabilities")
 local DatabricksQueryRewriter = require("exasol.adapter.databricks.DatabricksQueryRewriter")
