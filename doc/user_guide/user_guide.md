@@ -287,5 +287,6 @@ EXPLAIN VIRTUAL SELECT * FROM VSDAB_VIRTUAL_SCHEMA.<table>
 
 ## Known Limitations
 
+* Currently the virtual schema does not verify the TLS certificate of the Databricks server, see [issue #4](https://github.com/exasol/databricks-virtual-schema/issues/4).
 * Currently, the virtual schema supports at most 50 tables per virtual schema, see [issue #8](https://github.com/exasol/databricks-virtual-schema/issues/8).
 * The `TABLE_FILTER` option is not yet supported, see [issue #14](https://github.com/exasol/databricks-virtual-schema/issues/14).

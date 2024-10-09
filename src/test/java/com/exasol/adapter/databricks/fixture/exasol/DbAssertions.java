@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import org.hamcrest.Matcher;
 
+import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture.AuthMode;
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.dbbuilder.dialects.DatabaseObjectException;
 
@@ -54,7 +55,7 @@ public class DbAssertions {
     public void assertVirtualSchemaFails(final DatabricksSchema databricksSchema,
             final Matcher<String> errorMessageMatcher) {
         final RuntimeException exception = assertThrows(DatabaseObjectException.class,
-                () -> exasolFixture.createVirtualSchema(databricksSchema));
+                () -> exasolFixture.createVirtualSchema(databricksSchema, AuthMode.TOKEN));
         assertThat(extractLuaError(exception.getMessage()), errorMessageMatcher);
     }
 

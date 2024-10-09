@@ -13,7 +13,10 @@ import java.util.stream.Stream;
 
 import org.itsallcode.matcher.auto.AutoMatcher;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
+import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture.AuthMode;
 import com.exasol.adapter.databricks.databricksfixture.DatabricksSchema;
 import com.exasol.adapter.databricks.fixture.exasol.ExasolVirtualSchema;
 import com.exasol.adapter.databricks.fixture.exasol.MetadataDao.ExaColumn;
@@ -44,7 +47,7 @@ class AdapterIT extends AbstractIntegrationTestBase {
     @Test
     void schemaMetadataAvailable() {
         final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema("system", "information_schema",
-                emptyMap());
+                emptyMap(), AuthMode.TOKEN);
         testSetup.exasol().assertions().virtualSchemaExists(vs);
     }
 
@@ -52,7 +55,7 @@ class AdapterIT extends AbstractIntegrationTestBase {
     void databricksMetadataAvailableInAdapterNotes() {
         final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
         final Table table = databricksSchema.createTable("tab1", "col1", "VARCHAR(5)");
-        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema);
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema, AuthMode.TOKEN);
         assertAll(
                 () -> assertThat("table adapter notes", testSetup.exasol().metadata().getTableAdapterNotes(vs, table),
                         allOf(containsString("\"databricks_metadata\":{\""),
@@ -65,13 +68,24 @@ class AdapterIT extends AbstractIntegrationTestBase {
                                 containsString("\"type_text\":\"varchar(5)\""))));
     }
 
+    @ParameterizedTest
+    @EnumSource(AuthMode.class)
+    void databricksAuthentication(final AuthMode authMode) {
+        final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
+        final Table table = databricksSchema.createTable("tab1", "id", "INT", "name", "VARCHAR(5)")
+                .bulkInsert(Stream.of(List.of(1, "a"), List.of(2, "b"), List.of(3, "c")));
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema, emptyMap(), authMode);
+        testSetup.exasol().assertions().query("select * from " + vs.qualifyTableName(table) + " order by id",
+                table("BIGINT", "VARCHAR").row(1L, "a").row(2L, "b").row(3L, "c").matches());
+    }
+
     @Test
     void alterVirtualSchemaSetProperty() {
         final DatabricksSchema databricksSchema1 = testSetup.databricks().createSchema();
         final DatabricksSchema databricksSchema2 = testSetup.databricks().createSchema();
         databricksSchema1.createTable("tab1", "col1", "VARCHAR(5)");
         databricksSchema2.createTable("tab2", "col2", "INTEGER");
-        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema1);
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema1, AuthMode.TOKEN);
         assertThat(testSetup.exasol().metadata().getVirtualColumns(vs),
                 AutoMatcher.equalTo(List.of(new ExaColumn("TAB1", "COL1", "VARCHAR(5) UTF8", 5L, null, null))));
 
@@ -85,7 +99,7 @@ class AdapterIT extends AbstractIntegrationTestBase {
     void alterVirtualSchemaSetPropertyFailsForMissingSchema() {
         final DatabricksSchema databricksSchema1 = testSetup.databricks().createSchema();
         databricksSchema1.createTable("tab1", "col1", "VARCHAR(5)");
-        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema1);
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema1, AuthMode.TOKEN);
         assertThat(testSetup.exasol().metadata().getVirtualColumns(vs),
                 AutoMatcher.equalTo(List.of(new ExaColumn("TAB1", "COL1", "VARCHAR(5) UTF8", 5L, null, null))));
 
@@ -98,7 +112,7 @@ class AdapterIT extends AbstractIntegrationTestBase {
     void alterVirtualSchemaRefresh() {
         final DatabricksSchema databricksSchema = testSetup.databricks().createSchema();
         databricksSchema.createTable("tab1", "col1", "VARCHAR(5)");
-        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema);
+        final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema, AuthMode.TOKEN);
         assertThat(testSetup.exasol().metadata().getVirtualColumns(vs),
                 AutoMatcher.equalTo(List.of(new ExaColumn("TAB1", "COL1", "VARCHAR(5) UTF8", 5L, null, null))));
 
@@ -116,7 +130,7 @@ class AdapterIT extends AbstractIntegrationTestBase {
         final Table table = databricksSchema.createTable("tab", "ID", "INT", "NAME", "STRING")
                 .bulkInsert(Stream.of(List.of(1L, "a"), List.of(2, "b"), List.of(3, "c")));
         final ExasolVirtualSchema vs = testSetup.exasol().createVirtualSchema(databricksSchema,
-                Map.of("EXCLUDED_CAPABILITIES", "SELECTLIST_PROJECTION"));
+                Map.of("EXCLUDED_CAPABILITIES", "SELECTLIST_PROJECTION"), AuthMode.TOKEN);
         final String query = "SELECT id FROM " + vs.qualifyTableName(table);
         testSetup.exasol().assertions().query(query, table("BIGINT").row(1L).row(2L).row(3L).matchesInAnyOrder());
         final List<PushdownSql> explainVirtual = testSetup.exasol().metadata().explainVirtual(query);

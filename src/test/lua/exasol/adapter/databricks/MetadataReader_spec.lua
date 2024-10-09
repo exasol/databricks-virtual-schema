@@ -10,7 +10,7 @@ log.set_level("INFO")
 local function context_mock()
     return {
         get_connection = function(self, name)
-            return {address = "jdbc:databricks://host:443;PWD=token", user = "token", password = "myToken"}
+            return {address = "jdbc:databricks://host:443;AuthMech=3", user = "token", password = "myToken"}
         end
     }
 end

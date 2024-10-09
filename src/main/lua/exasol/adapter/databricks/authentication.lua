@@ -8,24 +8,34 @@ local M = {}
 
 ---@alias TokenProvider fun(): string
 
+---@param user string?
+---@param password string?
+---@return string header_value
+local function basic_auth_header(user, password)
+    return "Basic " .. base64.encode(string.format("%s:%s", user, password))
+end
+
+---Fetch Databricks OAuth token.
+---See https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html#manually-generate-and-use-access-tokens-for-oauth-m2m-authentication
 ---@param connection_details DatabricksConnectionDetails
 ---@return string
 local function fetch_oauth_token(connection_details)
-    log.trace("Fetching new OAuth M2M token")
+    local url = connection_details.url .. "/oidc/v1/token"
+    log.trace("Fetching OAuth M2M token from %q", url)
     local body = http_client.request({
-        url = connection_details.url .. "/oidc/v1/token",
+        url = url,
         method = "POST",
         headers = {
             ["Content-Type"] = "application/x-www-form-urlencoded",
-            Authorization = "Basic "
-                    .. base64.encode(
-                            string.format("%s:%s", connection_details.oauth_client_id,
-                                          connection_details.oauth_client_secret))
+            Authorization = basic_auth_header(connection_details.oauth_client_id, connection_details.oauth_client_secret)
         },
         request_body = "grant_type=client_credentials&scope=all-apis",
         verify_tls_certificate = false
     })
+    ---@type DatabricksTokenResponse
     local data = cjson.decode(body)
+    log.info("Received token of length %d of type %q with scope %q, expires in %d", #data.access_token,
+              data.token_type, data.scope, data.expires_in)
     return data.access_token
 end
 
@@ -55,14 +65,16 @@ end
 ---@param connection_details DatabricksConnectionDetails
 ---@return TokenProvider token_provider
 function M.create_token_provider(connection_details)
-    if connection_details.token then
+    local auth_mode = connection_details.auth
+    log.trace("Creating token provider for auth mode %q", auth_mode)
+    if auth_mode == "token" then
         return create_bearer_token_provider(connection_details.token)
     end
-    if connection_details.oauth_client_id and connection_details.oauth_client_secret then
+    if auth_mode == "m2m" then
         return create_m2m_token_provider(connection_details)
     end
-    local exa_error = tostring(ExaError:new("E-VSDAB-20", "No Databricks credentials found."):add_mitigations(
-            "Please provide token or OAuth M2 credentials as specified in the user guide."))
+    local exa_error = tostring(ExaError:new("E-VSDAB-20", "Unsupported auth mode {{auth_mode}}.",
+                                            {auth_mode = {value = auth_mode}}):add_ticket_mitigation())
     log.error(exa_error)
     error(exa_error)
 end

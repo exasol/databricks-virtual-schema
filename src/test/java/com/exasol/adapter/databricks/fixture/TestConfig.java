@@ -55,6 +55,10 @@ public class TestConfig {
         return getMandatoryValue("databricks.oauth.clientId");
     }
 
+    public String getDatabricksOauthServicePrincipalUuid() {
+        return getMandatoryValue("databricks.oauth.servicePrincipalUuid");
+    }
+
     public String getDatabricksHost() {
         return getMandatoryValue("databricks.host");
     }

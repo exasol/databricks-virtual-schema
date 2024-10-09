@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.sql.*;
 
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture;
 import com.exasol.adapter.databricks.databricksfixture.DatabricksFixture.AuthMode;
@@ -60,14 +62,11 @@ class DatabricksAssumptionsIT {
                         .formatted(databricksSchema.getName())));
     }
 
-    @Test
-    void oauthM2mViaJdbc() throws SQLException {
-        assertJdbcConnectionWorks(databricks.getJdbcUrl(AuthMode.OAUTH_M2M), "", "");
-    }
-
-    @Test
-    void tokenAuthViaJdbc() throws SQLException {
-        assertJdbcConnectionWorks(databricks.getJdbcUrl(AuthMode.TOKEN), "token", config.getDatabricksToken());
+    @ParameterizedTest
+    @EnumSource(AuthMode.class)
+    void jdbcConnectionWorks(final AuthMode authMode) throws SQLException {
+        assertJdbcConnectionWorks(databricks.getJdbcUrl(authMode), databricks.getJdbcUsername(authMode),
+                databricks.getJdbcPassword(authMode));
     }
 
     private void assertJdbcConnectionWorks(final String jdbcUrl, final String user, final String password)

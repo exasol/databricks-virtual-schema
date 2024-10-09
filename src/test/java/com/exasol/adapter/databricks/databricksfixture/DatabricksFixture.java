@@ -2,6 +2,8 @@ package com.exasol.adapter.databricks.databricksfixture;
 
 import java.net.URI;
 import java.sql.*;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -38,7 +40,7 @@ public class DatabricksFixture implements AutoCloseable {
     }
 
     public DatabricksSchema createSchema() {
-        final DatabricksSchema schema = getCatalog().createSchema("schema-" + System.currentTimeMillis());
+        final DatabricksSchema schema = getCatalog().createSchema("schema_" + System.currentTimeMillis());
         LOG.fine(() -> "Created Databricks schema " + schema.getFullyQualifiedName());
         return schema;
     }
@@ -52,15 +54,26 @@ public class DatabricksFixture implements AutoCloseable {
     }
 
     private DatabricksCatalog createCatalog(final String name) {
-        final DatabricksObjectWriter writer = new DatabricksObjectWriter(getJdbcConnection(), client, config);
+        final Connection jdbcConnection = getJdbcConnection(AuthMode.TOKEN);
+        final DatabricksObjectWriter writer = new DatabricksObjectWriter(jdbcConnection, client, config);
         final DatabricksCatalog newCatalog = writer.createCatalog(name);
+        LOG.fine(() -> "Created Databricks catalog " + newCatalog.getFullyQualifiedName());
         this.cleanupTasks.add("Drop Databricks catalog " + newCatalog.getName(), newCatalog::drop);
+        grantReadAccessToServicePrincipal(newCatalog);
         return newCatalog;
     }
 
+    private void grantReadAccessToServicePrincipal(final DatabricksCatalog newCatalog) {
+        executeStatement("GRANT USE CATALOG, USE SCHEMA, SELECT ON CATALOG %s TO `%s`"
+                .formatted(newCatalog.getFullyQualifiedName(), config.getDatabricksOauthServicePrincipalUuid()));
+    }
+
     public void executeStatement(final String statement) {
+        final Instant start = Instant.now();
         final StatementResponse response = client.statementExecution().executeStatement(
                 new ExecuteStatementRequest().setWarehouseId(getWarehouseId()).setStatement(statement));
+        LOG.fine(
+                () -> "Executed Databricks statement '" + statement + "' in " + Duration.between(start, Instant.now()));
         final ServiceError error = response.getStatus().getError();
         if (error != null) {
             throw new IllegalStateException("Error executing statement: '" + statement + "': " + error.getMessage());
@@ -71,11 +84,11 @@ public class DatabricksFixture implements AutoCloseable {
         return getEndpoint().getId();
     }
 
-    private Connection getJdbcConnection() {
-        final String jdbcUrl = getJdbcUrl();
+    private Connection getJdbcConnection(final AuthMode authMode) {
+        final String jdbcUrl = getJdbcUrl(authMode);
         final Properties properties = new Properties();
-        properties.put("user", getJdbcUsername());
-        properties.put("password", getJdbcPassword());
+        properties.put("user", getJdbcUsername(authMode));
+        properties.put("password", getJdbcPassword(authMode));
         LOG.fine("Connecting to '" + jdbcUrl + "'...");
         try {
             return DriverManager.getConnection(jdbcUrl, properties);
@@ -83,10 +96,6 @@ public class DatabricksFixture implements AutoCloseable {
             throw new IllegalStateException(
                     "Failed connecting to JDBC URL '" + jdbcUrl + "': " + exception.getMessage(), exception);
         }
-    }
-
-    public String getJdbcUrl() {
-        return getJdbcUrl(AuthMode.TOKEN);
     }
 
     public String getJdbcUrl(final AuthMode authMode) {
@@ -102,12 +111,12 @@ public class DatabricksFixture implements AutoCloseable {
                 .formatted(hostName, port, authMode.authMech, authMode.authFlow, httpPath, oauthCredentials);
     }
 
-    public String getJdbcUsername() {
-        return "token";
+    public String getJdbcUsername(final AuthMode authMode) {
+        return authMode == AuthMode.TOKEN ? "token" : null;
     }
 
-    public String getJdbcPassword() {
-        return config.getDatabricksToken();
+    public String getJdbcPassword(final AuthMode authMode) {
+        return authMode == AuthMode.TOKEN ? config.getDatabricksToken() : null;
     }
 
     private EndpointInfo getEndpoint() {

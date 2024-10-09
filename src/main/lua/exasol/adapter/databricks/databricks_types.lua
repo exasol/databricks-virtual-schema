@@ -40,3 +40,11 @@ local DatabricksColumn = {}
 ---@field precision? integer Precision of the type, seems to be always 0
 ---@field scale? integer Scale of the type, seems to be always 0
 local DatabricksType = {}
+
+---Databricks OAuth token response
+---See example data https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html#manually-generate-and-use-access-tokens-for-oauth-m2m-authentication
+---@class DatabricksTokenResponse
+---@field access_token string Token
+---@field token_type string Token type, e.g. `Bearer`
+---@field scope string Token scope, e.g. `all-apis`
+---@field expires_in integer Expiration time, e.g. 3600

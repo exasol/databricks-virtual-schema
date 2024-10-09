@@ -52,6 +52,7 @@ local package_items = {
     "exasol.adapter.databricks.ColumnAdapterNotes",
     "exasol.adapter.databricks.PushdownMetadata",
     "exasol.adapter.databricks.DatabricksRestClient",
+    "exasol.adapter.databricks.authentication",
     "exasol.adapter.databricks.http_client",
     "exasol.adapter.databricks.base64",
     "exasol.adapter.databricks.util",

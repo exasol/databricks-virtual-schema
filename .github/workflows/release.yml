@@ -138,6 +138,7 @@ jobs:
           databricks.storageRoot = ${{ secrets.DATABRICKS_STORAGE_ROOT }}
           databricks.oauth.secret = ${{ secrets.DATABRICKS_OAUTH_SECRET }}
           databricks.oauth.clientId = ${{ secrets.DATABRICKS_OAUTH_CLIENT_ID }}
+          databricks.oauth.servicePrincipalUuid = ${{ secrets.DATABRICKS_OAUTH_SERVICE_PRINCIPAL_UUID }}
           EOL
       - {
         name: Build project,
