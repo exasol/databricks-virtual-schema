@@ -221,7 +221,7 @@ Mitigations:
 
 * Specify property 'OAuth2ClientId' in JDBC URL.]]
             }, {
-                name = "m2m oauth: empty OAuth2ClientId",
+                name = "m2m oauth: empty OAuth2Secret",
                 connection = {address = "jdbc:databricks://host:123;AuthMech=11;Auth_Flow=1;OAuth2ClientId=client;"},
                 expected_error = [[E-VSDAB-26: Connection 'my_connection' uses M2M OAuth but does not contain property 'OAuth2Secret'.
 
@@ -229,7 +229,7 @@ Mitigations:
 
 * Specify property 'OAuth2Secret' in JDBC URL.]]
             }, {
-                name = "m2m oauth: empty OAuth2ClientId",
+                name = "m2m oauth: empty OAuth2Secret",
                 connection = {
                     address = "jdbc:databricks://host:123;AuthMech=11;Auth_Flow=1;OAuth2ClientId=client;OAuth2Secret=;"
                 },
