@@ -178,8 +178,6 @@ In order to verify that M2M OAuth authentication works, integration tests need a
 
 Databricks manages Service Credentials on account level, not on Workspace level. That's why we can't use the existing Workspace-level user token already configured for tests to create a new Service Principal.
 
-It seems that it's not possible to create Account-level credentials that allow API access. The only authentication mechanism is to manually login via email address and one-time code sent via email. That's why we decided to create the Service Principal manually and configure Client ID and Client Secret for integration tests.
-
 #### Service Principal UUID
 
 Integration tests create a new Databricks Catalog for each test class. The Service Principal used for accessing Databricks via M2M OAuth needs read access to this catalog. We could give the Service Principal Administrator access in Databricks, so that it automatically can read all catalogs. However we want to use minimal permissions for the Service Principal.

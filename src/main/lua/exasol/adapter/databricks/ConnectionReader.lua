@@ -59,7 +59,7 @@ local function m2m_auth_credentials(connection_name, connection_details, url, ur
         error(tostring(ExaError:new("E-VSDAB-23",
                                     "Connection {{connection_name}} uses M2M OAuth but 'USER' or 'IDENTIFIED BY' fields are not empty.",
                                     {connection_name = connection_name}):add_mitigations(
-                "Specify Client ID and Client Secret as 'OAuth2ClientId' and 'OAuth2Secret' in JDBC URL.")))
+                "Use empty user and password or choose another authentication method.")))
     end
     if url_properties.Auth_Flow ~= "1" then
         error(tostring(ExaError:new("E-VSDAB-24",
@@ -97,7 +97,7 @@ local function token_auth_credentials(connection_name, connection_details, url, 
                 :add_mitigations(
                         "Only token authentication is supported, please specify USER='token' and PASSWORD='<token>` in the connection.")))
     end
-    if not connection_details.password then
+    if not connection_details.password or #connection_details.password == 0 then
         error(tostring(ExaError:new("E-VSDAB-14", "Connection {{connection_name}} does not contain a valid token.",
                                     {connection_name = connection_name}):add_mitigations(
                 "Please specify PASSWORD='<token>` in the connection.")))

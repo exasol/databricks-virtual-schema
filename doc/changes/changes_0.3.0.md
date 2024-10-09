@@ -1,4 +1,4 @@
-# Virtual Schema for Databricks 0.3.0, released 2024-10-07
+# Virtual Schema for Databricks 0.3.0, released 2024-10-09
 
 Code name: Convert names to upper case, M2M auth
 

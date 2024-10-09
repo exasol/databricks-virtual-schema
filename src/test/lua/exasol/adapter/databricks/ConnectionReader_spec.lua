@@ -165,13 +165,21 @@ Mitigations:
 
 * Please specify PASSWORD='<token>` in the connection.]]
             }, {
+                name = "token auth: empty password",
+                connection = {address = "jdbc:databricks://host:123;AuthMech=3", user = "token", password = ""},
+                expected_error = [[E-VSDAB-14: Connection 'my_connection' does not contain a valid token.
+
+Mitigations:
+
+* Please specify PASSWORD='<token>` in the connection.]]
+            }, {
                 name = "m2m oauth: non-empty user",
                 connection = {address = "jdbc:databricks://host:123;AuthMech=11", user = "non-empty", password = nil},
                 expected_error = [[E-VSDAB-23: Connection 'my_connection' uses M2M OAuth but 'USER' or 'IDENTIFIED BY' fields are not empty.
 
 Mitigations:
 
-* Specify Client ID and Client Secret as 'OAuth2ClientId' and 'OAuth2Secret' in JDBC URL.]]
+* Use empty user and password or choose another authentication method.]]
             }, {
                 name = "m2m oauth: non-empty password",
                 connection = {address = "jdbc:databricks://host:123;AuthMech=11", user = "", password = "non-empty"},
@@ -179,7 +187,7 @@ Mitigations:
 
 Mitigations:
 
-* Specify Client ID and Client Secret as 'OAuth2ClientId' and 'OAuth2Secret' in JDBC URL.]]
+* Use empty user and password or choose another authentication method.]]
             }, {
                 name = "m2m oauth: missing property Auth_Flow",
                 connection = {address = "jdbc:databricks://host:123;AuthMech=11"},
