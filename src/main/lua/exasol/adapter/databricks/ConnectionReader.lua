@@ -43,8 +43,8 @@ function ConnectionReader._parse_jdbc_url(jdbc_url)
     if not jdbc_url then
         return nil, nil, {}
     end
-    local host, port, jdbc_url_args = jdbc_url:match("^jdbc:databricks://([^:]+):(%d+)(.*)$")
-    return host, tonumber(port), parse_properties(jdbc_url_args)
+    local host, port, jdbc_url_properties = jdbc_url:match("^jdbc:databricks://([^:]+):(%d+)(.*)$")
+    return host, tonumber(port), parse_properties(jdbc_url_properties)
 end
 
 ---Create connection info for M2M OAuth authentication
