@@ -6,8 +6,6 @@ sources:
     artifacts:
       - target/databricks-virtual-schema-dist-${version}.lua
 excludes:
-  # Project is written in Lua, no need to test with Java 17
-  - "E-PK-CORE-17: Missing required file: '.github/workflows/ci-build-next-java.yml'"
   # Project does not use Sonar and does not contain badges
   - regex: "E-PK-CORE-62: The project's README\\.md does not contain a valid badges block\\. Please add or replace the following badges:.*"
 linkReplacements:
@@ -127,6 +125,14 @@ build:
             name: Generate dummy error code report
             id: generate-dummy-error-code-report
             run: echo '{"$schema":"https://schemas.exasol.com/error_code_report-1.0.0.json","errorCodes":[]}' > target/error_code_report.json
+
+        - action: REPLACE
+          job: next-java-compatibility
+          stepId: build-next-java
+          content:
+            name: Skip next java build as project uses Lua
+            id: build-next-java
+            run: echo "Skipped"
 
     - name: release.yml
       stepCustomizations:
