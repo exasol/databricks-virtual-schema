@@ -7,16 +7,16 @@ set -o pipefail
 base_dir="$( cd "$(dirname "$0")/.." >/dev/null 2>&1 ; pwd -P )"
 readonly base_dir
 
-readonly language_server_version="3.11.0"
+readonly language_server_version="3.13.9"
 readonly type_check_level="Information" # Error, Warning, Information, Hint
 
 # Check if os is mac or linux
 if [[ "$OSTYPE" == "darwin"* ]]; then
     architecture="darwin-x64"
-    language_server_version_sha256="926fd1e6db6923bfd3052531dfe727d0afb8b716ec526c23dfc4d06dd40b066d"
+    language_server_version_sha256="14e4558a2b7bf27d81a78a0559f91113abe73f01fc6cde77b3ccca713e3e22a7"
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     architecture="linux-x64"
-    language_server_version_sha256="dda5bb03969b533c6c1562b999f6ea84e92af3683d3f17d07d381331bc79b4a2"
+    language_server_version_sha256="17642b2154446c0a15c7f6d335242f071d6910ce1e76c7cd95a29b64dfae1348"
 else
     echo "Unsupported OS: $OSTYPE"
     exit 1
