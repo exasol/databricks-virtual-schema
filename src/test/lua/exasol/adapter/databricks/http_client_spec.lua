@@ -131,7 +131,7 @@ describe("http_client #itest", function()
         it("fails for non-200 status code", function()
             assert.error_matches(function()
                 http_client.request({url = "https://example.com/invalidpath"})
-            end, "E%-VSDAB%-5: HTTP request for URL 'https://example.com/invalidpath' failed with status 500")
+            end, "E%-VSDAB%-5: HTTP request for URL 'https://example.com/invalidpath' failed with status 404")
         end)
 
         it("sends unencrypted GET request", function()
