@@ -8,7 +8,7 @@ base_dir="$( cd "$(dirname "$0")/.." >/dev/null 2>&1 ; pwd -P )"
 readonly base_dir
 
 readonly type_def_dir="$base_dir/target/lua-type-definitions"
-mkdir --parent "$type_def_dir"
+mkdir -p "$type_def_dir"
 
 function clone_repo() {
     local repo_url="$1"
