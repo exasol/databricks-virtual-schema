@@ -10,6 +10,16 @@ Code name:
 
 ## Dependency Updates
 
+### Test Dependency Updates
+
+* Updated `com.databricks:databricks-jdbc:2.6.40-patch-1` to `2.7.1`
+* Updated `com.databricks:databricks-sdk-java:0.32.2` to `0.42.0`
+* Updated `com.exasol:exasol-testcontainers:7.1.1` to `7.1.4`
+* Updated `com.exasol:maven-project-version-getter:1.2.0` to `1.2.1`
+* Removed `commons-io:commons-io:2.17.0`
+* Updated `org.itsallcode:hamcrest-auto-matcher:0.8.1` to `0.8.2`
+* Updated `org.slf4j:slf4j-jdk14:2.0.16` to `2.0.17`
+
 ### Plugin Dependency Updates
 
 * Updated `com.exasol:project-keeper-maven-plugin:4.3.3` to `5.0.0`
