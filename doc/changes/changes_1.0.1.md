@@ -1,12 +1,14 @@
-# Virtual Schema for Databricks 1.0.1, released 2025-??-??
+# Virtual Schema for Databricks 1.0.1, released 2025-03-14
 
-Code name:
+Code name: Fix CVE-2024-49194
 
 ## Summary
 
-## Features
+This release fixes CVE-2024-49194 by updating Databricks JDBC driver that was used in the integration tests.
 
-* ISSUE_NUMBER: description
+## Security
+
+* Fixed CVE-2024-49194 by updating snowflake driver to 3.23.1 (PR #15)
 
 ## Dependency Updates
 
