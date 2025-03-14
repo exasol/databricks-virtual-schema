@@ -20,6 +20,7 @@ build:
       stepCustomizations:
         # Install Lua & Luarocks
         - action: INSERT_AFTER
+          job: matrix-build
           stepId: setup-java
           content:
             name: Install Lua
@@ -28,6 +29,7 @@ build:
             with:
               luaVersion: 5.4
         - action: INSERT_AFTER
+          job: matrix-build
           stepId: install-lua
           content:
             name: Install LuaRocks
@@ -38,6 +40,7 @@ build:
 
         # Cache & install lua dependencies
         - action: INSERT_AFTER
+          job: matrix-build
           stepId: install-luarocks
           content:
             name: Cache Lua dependencies
@@ -49,6 +52,7 @@ build:
                 ${{ runner.os }}-lua-${{ hashFiles('*.rockspec') }}
               restore-keys: "${{ runner.os }}-lua-"
         - action: INSERT_AFTER
+          job: matrix-build
           stepId: cache-lua-dependencies
           content:
             name: Install Lua dependencies
@@ -56,6 +60,7 @@ build:
             run: luarocks --local install *.rockspec --deps-only --force
 
         - action: INSERT_AFTER
+          job: matrix-build
           stepId: enable-testcontainer-reuse
           content:
             name: Configure Databricks credentials
@@ -71,6 +76,7 @@ build:
               EOL
 
         - action: INSERT_AFTER
+          job: matrix-build
           stepId: build-pk-verify
           content:
             name: Archive code coverage results
@@ -82,6 +88,7 @@ build:
               if-no-files-found: error
 
         - action: INSERT_AFTER
+          job: matrix-build
           stepId: archive-luacov-report
           content:
             name: Run shellcheck
@@ -90,12 +97,14 @@ build:
 
         # Replace Sonar
         - action: REPLACE
+          job: matrix-build
           stepId: cache-sonar
           content:
             name: Skip SonarCloud cache
             id: cache-sonar
             run: echo "SonarCloud analysis is skipped because the project is written in Lua."
         - action: REPLACE
+          job: matrix-build
           stepId: sonar-analysis
           content:
             name: Skip SonarCloud analysis
@@ -112,6 +121,7 @@ build:
 
         # Generate dummy error code reports. Error code crawler does not support Lua projects yet.
         - action: INSERT_AFTER
+          job: matrix-build
           stepId: build-pk-verify
           content:
             name: Generate dummy error code report

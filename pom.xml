@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.exasol</groupId>
     <artifactId>databricks-virtual-schema</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <name>Virtual Schema for Databricks</name>
-    <description>Virtual Schema for MySQL</description>
+    <description>Virtual Schema for Databricks</description>
     <url>https://github.com/exasol/databricks-virtual-schema/</url>
     <properties>
         <!-- Java only used for tests, so we can use the latest Java features. -->
@@ -190,7 +190,7 @@
             <plugin>
                 <groupId>com.exasol</groupId>
                 <artifactId>project-keeper-maven-plugin</artifactId>
-                <version>4.3.3</version>
+                <version>5.0.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -215,7 +215,7 @@
     <parent>
         <artifactId>databricks-virtual-schema-generated-parent</artifactId>
         <groupId>com.exasol</groupId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
         <relativePath>pk_generated_parent.pom</relativePath>
     </parent>
 </project>
