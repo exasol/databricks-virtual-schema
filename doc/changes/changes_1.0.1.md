@@ -8,7 +8,7 @@ This release fixes CVE-2024-49194 by updating Databricks JDBC driver that was us
 
 ## Security
 
-* Fixed CVE-2024-49194 by updating snowflake driver to 3.23.1 (PR #15)
+* #48 Fix CVE-2024-49194 in `com.databricks:databricks-jdbc:2.6.40-patch-1`  
 
 ## Dependency Updates
 
