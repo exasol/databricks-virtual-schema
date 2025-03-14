@@ -15,7 +15,7 @@ http.USERAGENT = "Exasol Databricks Virtual Schema"
 ---@field verify_tls_certificate boolean | nil default: true
 
 ---A factory for TCP sockets.
----@alias SocketFactory fun(args: table<string, any>): TCPSocket
+---@alias SocketFactory fun(args: table<string, any>): TCPSocketClient
 
 local M = {}
 
