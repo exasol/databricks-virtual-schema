@@ -116,6 +116,12 @@ public class MultiTestSetup {
                             expectedPrecision, expectedPrecision, expectedScale));
         }
 
+        public ValueMappingBuilder expectTimestamp(final long expectedPrecision) {
+            return expectedExasolType(
+                    new ExpectedExasolType(String.format("TIMESTAMP(%d)", expectedPrecision),
+                            29L, expectedPrecision, null));
+        }
+
         private ValueMappingBuilder expectedExasolType(final ExpectedExasolType type) {
             this.expectedExasolType = type;
             return this;
