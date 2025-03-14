@@ -6,38 +6,39 @@ sources:
     artifacts:
       - target/databricks-virtual-schema-dist-${version}.lua
 excludes:
-  # Project is written in Lua, no need to test with Java 17
-  - "E-PK-CORE-17: Missing required file: '.github/workflows/ci-build-next-java.yml'"
   # Project does not use Sonar and does not contain badges
   - regex: "E-PK-CORE-62: The project's README\\.md does not contain a valid badges block\\. Please add or replace the following badges:.*"
 linkReplacements:
 build:
   freeDiskSpace: false
   exasolDbVersions:
-    - "8.31.0"
+    - "8.32.0"
   workflows:
     - name: ci-build.yml
       stepCustomizations:
         # Install Lua & Luarocks
         - action: INSERT_AFTER
+          job: matrix-build
           stepId: setup-java
           content:
             name: Install Lua
             id: install-lua
-            uses: leafo/gh-actions-lua@v10
+            uses: leafo/gh-actions-lua@v11
             with:
               luaVersion: 5.4
         - action: INSERT_AFTER
+          job: matrix-build
           stepId: install-lua
           content:
             name: Install LuaRocks
             id: install-luarocks
-            uses: leafo/gh-actions-luarocks@v4
+            uses: leafo/gh-actions-luarocks@v5
             with:
               luaRocksVersion: "3.11.1"
 
         # Cache & install lua dependencies
         - action: INSERT_AFTER
+          job: matrix-build
           stepId: install-luarocks
           content:
             name: Cache Lua dependencies
@@ -49,6 +50,7 @@ build:
                 ${{ runner.os }}-lua-${{ hashFiles('*.rockspec') }}
               restore-keys: "${{ runner.os }}-lua-"
         - action: INSERT_AFTER
+          job: matrix-build
           stepId: cache-lua-dependencies
           content:
             name: Install Lua dependencies
@@ -56,6 +58,7 @@ build:
             run: luarocks --local install *.rockspec --deps-only --force
 
         - action: INSERT_AFTER
+          job: matrix-build
           stepId: enable-testcontainer-reuse
           content:
             name: Configure Databricks credentials
@@ -71,6 +74,7 @@ build:
               EOL
 
         - action: INSERT_AFTER
+          job: matrix-build
           stepId: build-pk-verify
           content:
             name: Archive code coverage results
@@ -82,6 +86,7 @@ build:
               if-no-files-found: error
 
         - action: INSERT_AFTER
+          job: matrix-build
           stepId: archive-luacov-report
           content:
             name: Run shellcheck
@@ -90,12 +95,14 @@ build:
 
         # Replace Sonar
         - action: REPLACE
+          job: matrix-build
           stepId: cache-sonar
           content:
             name: Skip SonarCloud cache
             id: cache-sonar
             run: echo "SonarCloud analysis is skipped because the project is written in Lua."
         - action: REPLACE
+          job: matrix-build
           stepId: sonar-analysis
           content:
             name: Skip SonarCloud analysis
@@ -112,11 +119,20 @@ build:
 
         # Generate dummy error code reports. Error code crawler does not support Lua projects yet.
         - action: INSERT_AFTER
+          job: matrix-build
           stepId: build-pk-verify
           content:
             name: Generate dummy error code report
             id: generate-dummy-error-code-report
             run: echo '{"$schema":"https://schemas.exasol.com/error_code_report-1.0.0.json","errorCodes":[]}' > target/error_code_report.json
+
+        - action: REPLACE
+          job: next-java-compatibility
+          stepId: build-next-java
+          content:
+            name: Skip next java build as project uses Lua
+            id: build-next-java
+            run: echo "Skipped"
 
     - name: release.yml
       stepCustomizations:
@@ -125,7 +141,7 @@ build:
           content:
             name: Install Lua
             id: install-lua
-            uses: leafo/gh-actions-lua@v10
+            uses: leafo/gh-actions-lua@v11
             with:
               luaVersion: 5.4
         - action: INSERT_AFTER
@@ -133,7 +149,7 @@ build:
           content:
             name: Install LuaRocks
             id: install-luarocks
-            uses: leafo/gh-actions-luarocks@v4
+            uses: leafo/gh-actions-luarocks@v5
             with:
               luaRocksVersion: "3.11.1"
         - action: INSERT_AFTER

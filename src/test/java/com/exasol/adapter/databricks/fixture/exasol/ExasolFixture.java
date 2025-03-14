@@ -39,7 +39,7 @@ public class ExasolFixture implements AutoCloseable {
     private static final Path ADAPTER_PATH = TARGET_DIR.resolve("databricks-virtual-schema-dist-" + VERSION + ".lua");
     private static final Path JDBC_DRIVER_PATH = TARGET_DIR.resolve("databricks-jdbc-driver/databricks-jdbc.jar");
 
-    private static final String DEFAULT_EXASOL_VERSION = "8.31.0";
+    private static final String DEFAULT_EXASOL_VERSION = "8.32.0";
     private final ExasolContainer<? extends ExasolContainer<?>> exasol;
     private final Connection connection;
     private final ExasolObjectFactory objectFactory;

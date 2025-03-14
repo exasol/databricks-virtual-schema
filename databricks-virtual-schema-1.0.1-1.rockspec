@@ -2,7 +2,7 @@
 -- LuaFormatter off
 rockspec_format = "3.0"
 
-local tag = "1.0.0"
+local tag = "1.0.1"
 local project = "databricks-virtual-schema"
 local src = "src/main/lua"
 

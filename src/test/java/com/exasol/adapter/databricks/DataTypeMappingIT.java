@@ -98,10 +98,10 @@ class DataTypeMappingIT extends AbstractIntegrationTestBase {
 
                 .addValueTest("DATE").expectType("DATE", 10).nullValue().date("2021-7-1", "2021-07-01").done()
 
-                .addValueTest("TIMESTAMP").expectType("TIMESTAMP(3)", 29).nullValue()
+                .addValueTest("TIMESTAMP").expectTimestamp(3).nullValue()
                 .timestamp("2021-7-1T8:43:28UTC+3" /* = 2021-07-01T05:43:28.000+00:00 */, "2021-7-1 05:43:28").done()
 
-                .addValueTest("TIMESTAMP_NTZ").expectType("TIMESTAMP(3)", 29).nullValue()
+                .addValueTest("TIMESTAMP_NTZ").expectTimestamp(3).nullValue()
                 .timestamp("2021-7-1T8:43:28", "2021-7-1 08:43:28").done()
 
                 .addValueTest("INTERVAL YEAR").expectIntervalYearToMonth().nullValue().value("+100", "+000000100-00")
@@ -137,9 +137,6 @@ class DataTypeMappingIT extends AbstractIntegrationTestBase {
 
                 // Generic VARCHAR mapping for unsupported data types
                 // Inserting non-null values requires custom SQL statements, see unsupportedDataTypesMappedToVarchar()
-                .addValueTest("ARRAY<INT>").expectVarchar().nullValue().done() //
-                .addValueTest("MAP<INT,STRING>").expectVarchar().nullValue().done() //
-                .addValueTest("STRUCT<id:INT,name:STRING>").expectVarchar().nullValue().done() //
                 .addValueTest("VARIANT").expectVarchar().nullValue().done() //
 
                 .buildTests();

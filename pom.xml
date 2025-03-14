@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.exasol</groupId>
     <artifactId>databricks-virtual-schema</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <name>Virtual Schema for Databricks</name>
-    <description>Virtual Schema for MySQL</description>
+    <description>Virtual Schema for Databricks</description>
     <url>https://github.com/exasol/databricks-virtual-schema/</url>
     <properties>
         <!-- Java only used for tests, so we can use the latest Java features. -->
@@ -27,13 +27,13 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>maven-project-version-getter</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>exasol-testcontainers</artifactId>
-            <version>7.1.1</version>
+            <version>7.1.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -51,7 +51,7 @@
         <dependency>
             <groupId>org.itsallcode</groupId>
             <artifactId>hamcrest-auto-matcher</artifactId>
-            <version>0.8.1</version>
+            <version>0.8.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -63,20 +63,13 @@
         <dependency>
             <groupId>com.databricks</groupId>
             <artifactId>databricks-sdk-java</artifactId>
-            <version>0.32.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <!-- Fix CVE-2024-47554 in transitive dependency of databricks-sdk-java -->
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.17.0</version>
+            <version>0.42.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.databricks</groupId>
             <artifactId>databricks-jdbc</artifactId>
-            <version>2.6.40-patch-1</version>
+            <version>2.7.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -88,7 +81,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>2.0.16</version>
+            <version>2.0.17</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -190,7 +183,7 @@
             <plugin>
                 <groupId>com.exasol</groupId>
                 <artifactId>project-keeper-maven-plugin</artifactId>
-                <version>4.3.3</version>
+                <version>5.0.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -215,7 +208,7 @@
     <parent>
         <artifactId>databricks-virtual-schema-generated-parent</artifactId>
         <groupId>com.exasol</groupId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
         <relativePath>pk_generated_parent.pom</relativePath>
     </parent>
 </project>
