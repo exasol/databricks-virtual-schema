@@ -46,7 +46,7 @@
 
 [0]: http://hamcrest.org/JavaHamcrest/
 [1]: https://raw.githubusercontent.com/hamcrest/JavaHamcrest/master/LICENSE
-[2]: https://junit.org/junit5/
+[2]: https://junit.org/
 [3]: https://www.eclipse.org/legal/epl-v20.html
 [4]: https://github.com/exasol/maven-project-version-getter/
 [5]: https://github.com/exasol/maven-project-version-getter/blob/main/LICENSE
