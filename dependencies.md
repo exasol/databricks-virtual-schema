@@ -13,7 +13,7 @@
 | [Matcher for SQL Result Sets][10]             | [MIT License][11]                             |
 | [Hamcrest auto-matcher][12]                   | [GNU General Public License, Version 3.0][13] |
 | [virtual-schema-shared-integration-tests][14] | [MIT License][15]                             |
-| [databricks-sdk-java][16]                     | [Apache License, Version 2.0][17]             |
+| [Databricks SDK for Java][16]                 | [Apache License, Version 2.0][17]             |
 | [Databricks JDBC Driver][18]                  | [Databricks JDBC Driver License][19]          |
 | [junit-pioneer][20]                           | [Eclipse Public License v2.0][3]              |
 | [SLF4J JDK14 Provider][21]                    | [MIT][22]                                     |
@@ -46,7 +46,7 @@
 
 [0]: http://hamcrest.org/JavaHamcrest/
 [1]: https://raw.githubusercontent.com/hamcrest/JavaHamcrest/master/LICENSE
-[2]: https://junit.org/junit5/
+[2]: https://junit.org/
 [3]: https://www.eclipse.org/legal/epl-v20.html
 [4]: https://github.com/exasol/maven-project-version-getter/
 [5]: https://github.com/exasol/maven-project-version-getter/blob/main/LICENSE
