@@ -1,12 +1,20 @@
-# Virtual Schema for Databricks 1.0.2, released 2025-??-??
+# Virtual Schema for Databricks 1.0.2, released 2025-07-31
 
-Code name:
+Code name: Fixed test dependencies
 
 ## Summary
 
-## Features
+This release updates dependencies to fix CVE-2025-53864 and CVE-2025-48924 in transitive test dependencies
+`com.google.code.gson:gson:jar:2.10.1:test` and `org.apache.commons:commons-lang3:jar:3.17.0:test` respectively
 
-* ISSUE_NUMBER: description
+We also added an exception for the OSSIndex for CVE-2024-55551, which is a false positive in Exasol's JDBC driver.
+This issue has been fixed quite a while back now, but the OSSIndex unfortunately does not contain the fix version of 24.2.1 (2024-12-10) set.
+
+## Security
+
+* #49: Fix CVE-2024-55551 in `com.exasol:exasol-jdbc:jar:25.2.2:test`
+* #51: Fix CVE-2025-48924 in `org.apache.commons:commons-lang3:jar:3.16.0:test`
+* #53: Fix CVE-2025-53864 in `com.google.code.gson:gson:jar:2.10.1:test`
 
 ## Dependency Updates
 
