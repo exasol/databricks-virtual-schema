@@ -6,40 +6,41 @@
 | Dependency                                    | License                                       |
 | --------------------------------------------- | --------------------------------------------- |
 | [Hamcrest][0]                                 | [BSD-3-Clause][1]                             |
-| [JUnit Jupiter (Aggregator)][2]               | [Eclipse Public License v2.0][3]              |
+| [JUnit Jupiter Params][2]                     | [Eclipse Public License v2.0][3]              |
 | [Maven Project Version Getter][4]             | [MIT License][5]                              |
 | [Test containers for Exasol on Docker][6]     | [MIT License][7]                              |
 | [Test Database Builder for Java][8]           | [MIT License][9]                              |
 | [Matcher for SQL Result Sets][10]             | [MIT License][11]                             |
 | [Hamcrest auto-matcher][12]                   | [GNU General Public License, Version 3.0][13] |
 | [virtual-schema-shared-integration-tests][14] | [MIT License][15]                             |
-| [databricks-sdk-java][16]                     | [Apache License, Version 2.0][17]             |
+| [Databricks SDK for Java][16]                 | [Apache License, Version 2.0][17]             |
 | [Databricks JDBC Driver][18]                  | [Databricks JDBC Driver License][19]          |
 | [junit-pioneer][20]                           | [Eclipse Public License v2.0][3]              |
 | [SLF4J JDK14 Provider][21]                    | [MIT][22]                                     |
+| [JCL 1.2 implemented over SLF4J][21]          | [Apache-2.0][23]                              |
 
 ## Plugin Dependencies
 
 | Dependency                                              | License                                     |
 | ------------------------------------------------------- | ------------------------------------------- |
-| [Apache Maven Clean Plugin][23]                         | [Apache-2.0][24]                            |
-| [Apache Maven Install Plugin][25]                       | [Apache-2.0][24]                            |
-| [Apache Maven Resources Plugin][26]                     | [Apache-2.0][24]                            |
-| [Apache Maven Site Plugin][27]                          | [Apache-2.0][24]                            |
+| [Apache Maven Clean Plugin][24]                         | [Apache-2.0][23]                            |
+| [Apache Maven Install Plugin][25]                       | [Apache-2.0][23]                            |
+| [Apache Maven Resources Plugin][26]                     | [Apache-2.0][23]                            |
+| [Apache Maven Site Plugin][27]                          | [Apache-2.0][23]                            |
 | [SonarQube Scanner for Maven][28]                       | [GNU LGPL 3][29]                            |
-| [Apache Maven Toolchains Plugin][30]                    | [Apache-2.0][24]                            |
-| [Apache Maven Compiler Plugin][31]                      | [Apache-2.0][24]                            |
-| [Apache Maven Enforcer Plugin][32]                      | [Apache-2.0][24]                            |
-| [Maven Flatten Plugin][33]                              | [Apache Software Licenese][24]              |
-| [Apache Maven Dependency Plugin][34]                    | [Apache-2.0][24]                            |
-| [Exec Maven Plugin][35]                                 | [Apache License 2][24]                      |
+| [Apache Maven Toolchains Plugin][30]                    | [Apache-2.0][23]                            |
+| [Apache Maven Compiler Plugin][31]                      | [Apache-2.0][23]                            |
+| [Apache Maven Enforcer Plugin][32]                      | [Apache-2.0][23]                            |
+| [Maven Flatten Plugin][33]                              | [Apache Software Licenese][23]              |
+| [Apache Maven Dependency Plugin][34]                    | [Apache-2.0][23]                            |
+| [Exec Maven Plugin][35]                                 | [Apache License 2][23]                      |
 | [Project Keeper Maven plugin][36]                       | [The MIT License][37]                       |
 | [org.sonatype.ossindex.maven:ossindex-maven-plugin][38] | [ASL2][39]                                  |
-| [Maven Surefire Plugin][40]                             | [Apache-2.0][24]                            |
-| [Versions Maven Plugin][41]                             | [Apache License, Version 2.0][24]           |
+| [Maven Surefire Plugin][40]                             | [Apache-2.0][23]                            |
+| [Versions Maven Plugin][41]                             | [Apache License, Version 2.0][23]           |
 | [duplicate-finder-maven-plugin Maven Mojo][42]          | [Apache License 2.0][43]                    |
-| [Apache Maven Artifact Plugin][44]                      | [Apache-2.0][24]                            |
-| [Maven Failsafe Plugin][45]                             | [Apache-2.0][24]                            |
+| [Apache Maven Artifact Plugin][44]                      | [Apache-2.0][23]                            |
+| [Maven Failsafe Plugin][45]                             | [Apache-2.0][23]                            |
 | [JaCoCo :: Maven Plugin][46]                            | [EPL-2.0][47]                               |
 | [Quality Summarizer Maven Plugin][48]                   | [MIT License][49]                           |
 | [error-code-crawler-maven-plugin][50]                   | [MIT License][51]                           |
@@ -47,7 +48,7 @@
 
 [0]: http://hamcrest.org/JavaHamcrest/
 [1]: https://raw.githubusercontent.com/hamcrest/JavaHamcrest/master/LICENSE
-[2]: https://junit.org/junit5/
+[2]: https://junit.org/
 [3]: https://www.eclipse.org/legal/epl-v20.html
 [4]: https://github.com/exasol/maven-project-version-getter/
 [5]: https://github.com/exasol/maven-project-version-getter/blob/main/LICENSE
@@ -68,8 +69,8 @@
 [20]: https://junit-pioneer.org/
 [21]: http://www.slf4j.org
 [22]: https://opensource.org/license/mit
-[23]: https://maven.apache.org/plugins/maven-clean-plugin/
-[24]: https://www.apache.org/licenses/LICENSE-2.0.txt
+[23]: https://www.apache.org/licenses/LICENSE-2.0.txt
+[24]: https://maven.apache.org/plugins/maven-clean-plugin/
 [25]: https://maven.apache.org/plugins/maven-install-plugin/
 [26]: https://maven.apache.org/plugins/maven-resources-plugin/
 [27]: https://maven.apache.org/plugins/maven-site-plugin/
