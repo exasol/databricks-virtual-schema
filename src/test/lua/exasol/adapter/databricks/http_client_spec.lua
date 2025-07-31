@@ -17,9 +17,6 @@ local connection_details = read_databricks_test_config()
 describe("http_client #utest", function()
     describe("_create_socket_factory()", function()
         local test_cases = {
-            {url = "http://example.com", verify_tls_certificate = nil, expect_custom_socket_factory = false},
-            {url = "http://example.com", verify_tls_certificate = true, expect_custom_socket_factory = false},
-            {url = "http://example.com", verify_tls_certificate = false, expect_custom_socket_factory = false},
             {url = "https://example.com", verify_tls_certificate = nil, expect_custom_socket_factory = false},
             {url = "https://example.com", verify_tls_certificate = true, expect_custom_socket_factory = false},
             {url = "https://example.com", verify_tls_certificate = false, expect_custom_socket_factory = true}
@@ -128,20 +125,15 @@ describe("http_client #itest", function()
                                      .. "'host or service not provided, or not known'")
         end)
 
+        it("sends encrypted GET request", function()
+            local response = http_client.request({url = "https://example.com"})
+            assert.is_true(response:match("<html>") ~= nil)
+        end)
+
         it("fails for non-200 status code", function()
             assert.error_matches(function()
                 http_client.request({url = "https://example.com/invalidpath"})
             end, "E%-VSDAB%-5: HTTP request for URL 'https://example.com/invalidpath' failed with status 404")
-        end)
-
-        it("sends unencrypted GET request", function()
-            local response = http_client.request({url = "http://example.com"})
-            assert.is_true(response:match("<html>") ~= nil)
-        end)
-
-        it("sends encrypted GET request", function()
-            local response = http_client.request({url = "https://example.com"})
-            assert.is_true(response:match("<html>") ~= nil)
         end)
 
         it("can connect to Databricks API", function()

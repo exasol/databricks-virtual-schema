@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.exasol</groupId>
     <artifactId>databricks-virtual-schema</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <name>Virtual Schema for Databricks</name>
     <description>Virtual Schema for Databricks</description>
     <url>https://github.com/exasol/databricks-virtual-schema/</url>
@@ -20,8 +20,8 @@
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.11.2</version>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>5.13.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -33,19 +33,19 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>exasol-testcontainers</artifactId>
-            <version>7.1.4</version>
+            <version>7.1.7</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>test-db-builder-java</artifactId>
-            <version>3.6.0</version>
+            <version>3.6.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>hamcrest-resultset-matcher</artifactId>
-            <version>1.7.0</version>
+            <version>1.7.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -57,19 +57,31 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>virtual-schema-shared-integration-tests</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.databricks</groupId>
             <artifactId>databricks-sdk-java</artifactId>
-            <version>0.42.0</version>
+            <version>0.56.0</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <!-- We don't use this provider and it pulls vulnerable dependencies -->
+                    <groupId>com.google.auth</groupId>
+                    <artifactId>google-auth-library-oauth2-http</artifactId>
+                </exclusion>
+                <exclusion>
+                    <!-- We use jcl-over-sl4j to allow centralized logging -->
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.databricks</groupId>
             <artifactId>databricks-jdbc</artifactId>
-            <version>2.7.1</version>
+            <version>2.7.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -77,10 +89,23 @@
             <artifactId>junit-pioneer</artifactId>
             <version>2.3.0</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <!-- Fix "TestEngine with ID 'junit-jupiter' failed to discover tests" -->
+                    <groupId>org.junit.platform</groupId>
+                    <artifactId>junit-platform-launcher</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
+            <version>2.0.17</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
             <version>2.0.17</version>
             <scope>test</scope>
         </dependency>
@@ -183,7 +208,7 @@
             <plugin>
                 <groupId>com.exasol</groupId>
                 <artifactId>project-keeper-maven-plugin</artifactId>
-                <version>5.0.0</version>
+                <version>5.2.3</version>
                 <executions>
                     <execution>
                         <goals>
@@ -197,9 +222,8 @@
                 <artifactId>ossindex-maven-plugin</artifactId>
                 <configuration>
                     <excludeVulnerabilityIds>
-                        <!-- Transitive test dependency org.ini4j:ini4j:jar:0.5.4 via com.databricks:databricks-sdk-java:
-                             Uncontrolled Resource Consumption is acceptable -->
-                        <exclude>CVE-2022-41404</exclude>
+                        <!-- Already fixed in JDBC driver >= 24.2.1 but not property updated in OSS Index. -->
+                        <exclude>CVE-2024-55551</exclude>
                     </excludeVulnerabilityIds>
                 </configuration>
             </plugin>
@@ -208,7 +232,7 @@
     <parent>
         <artifactId>databricks-virtual-schema-generated-parent</artifactId>
         <groupId>com.exasol</groupId>
-        <version>1.0.1</version>
+        <version>1.0.2</version>
         <relativePath>pk_generated_parent.pom</relativePath>
     </parent>
 </project>
