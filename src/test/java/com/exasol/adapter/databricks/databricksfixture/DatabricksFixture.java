@@ -11,6 +11,7 @@ import java.util.stream.StreamSupport;
 
 import com.databricks.sdk.WorkspaceClient;
 import com.databricks.sdk.core.DatabricksConfig;
+import com.databricks.sdk.core.PatCredentialsProvider;
 import com.databricks.sdk.service.sql.*;
 import com.exasol.adapter.databricks.fixture.CleanupActions;
 import com.exasol.adapter.databricks.fixture.TestConfig;
@@ -34,6 +35,7 @@ public class DatabricksFixture implements AutoCloseable {
         final DatabricksConfig cfg = new DatabricksConfig() //
                 .setHost(testConfig.getDatabricksHost()) //
                 .setToken(testConfig.getDatabricksToken());
+        cfg.setCredentialsProvider(new PatCredentialsProvider());
         final WorkspaceClient client = new WorkspaceClient(cfg);
 
         return new DatabricksFixture(client, testConfig);
